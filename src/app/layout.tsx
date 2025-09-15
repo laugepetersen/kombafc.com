@@ -8,7 +8,10 @@ import { ReactNode } from "react";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "KOMBA",
+  title: {
+    template: "%s - KOMBA FC",
+    default: "KOMBA FC",
+  },
   description: "Denmark's Leading Stage for Striking Combat Sports.",
   icons: {
     icon: [

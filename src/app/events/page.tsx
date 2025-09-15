@@ -4,6 +4,13 @@ import ImageSlideshow from "@/components/layout/ImageSlideshow";
 import InstagramEmbed from "@/components/layout/InstagramEmbed";
 import SponsorMarquee from "@/components/layout/SponsorMarquee";
 import { globals } from "@/db";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Events",
+  description:
+    "Next event KOMBA FIGHT CLUB, Saturday October 11 in Copenhagen's K. B. Hallen. A Muay Thai & K-1 showdown with the best strikers.",
+};
 
 export default function page() {
   return (

@@ -1,5 +1,12 @@
 import DefaultHero from "@/components/layout/DefaultHero";
 import SponsorMarquee from "@/components/layout/SponsorMarquee";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Sponsors",
+  description:
+    "Become a partner with KOMBA FIGHT CLUB. Take your brand to the ringside along champions, leaders and visionaries.",
+};
 
 export default function page() {
   return (
