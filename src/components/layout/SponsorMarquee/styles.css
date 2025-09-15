@@ -1,0 +1,13 @@
+:root {
+    --animate-marquee: marquee 30s infinite linear;
+}
+
+@keyframes marquee {
+    from {
+        transform: translateX(0);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}

@@ -1,0 +1,136 @@
+@import "tailwindcss";
+
+:root {
+  --font-inter: "Inter", sans-serif;
+  --font-barlow: "Barlow", sans-serif;
+
+  --banner-height: 32px;
+  --header-height: 64px;
+  --clip-corner: 16px;
+}
+
+@media (width >= 40rem) {
+  :root {
+    --clip-corner: 24px;
+  }
+}
+
+@media (width >= 48rem) {
+  :root {
+    --clip-corner: 32px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: light;
+  hanging-punctuation: first last;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-neutral-950);
+  background: var(--color-neutral-50);
+}
+
+html,
+body {
+  overflow-x: clip;
+}
+
+img,
+picture,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  letter-spacing: -0.02em;
+}
+
+/* h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  text-wrap: balance;
+} */
+
+/* p {
+  text-wrap: pretty;
+} */
+
+h1, .h1 {
+  @apply text-white [text-shadow:0_0_8px_rgba(255,255,255,0.8)] text-[2.5rem] md:text-[4rem] font-black italic leading-[100%] uppercase;
+}
+
+h2, .h2 {
+  @apply text-[2rem] md:text-[3rem] font-extrabold leading-[110%] italic;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  :has(:target) {
+    scroll-behavior: smooth;
+    scroll-padding-top: 3rem;
+  }
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme inline {
+  --font-heading: var(--font-barlow);
+  --font-body: var(--font-inter);
+}
+
+@theme {
+  --color-accent-purple: #7b1fcc;
+  --color-accent-yellow: #f7f43e;
+
+  --color-neutral-50: #fff;
+  --color-neutral-100: #e6e6e6;
+  --color-neutral-200: #cccccc;
+  --color-neutral-300: #b3b3b3;
+  --color-neutral-400: #999999;
+  --color-neutral-500: #808080;
+  --color-neutral-600: #666666;
+  --color-neutral-700: #4d4d4d;
+  --color-neutral-800: #333333;
+  --color-neutral-900: #1a1a1a;
+  --color-neutral-950: #000;
+
+  --max-width-hero: 1024px;
+  --max-width-heading: 760px;
+  --max-width-paragraph: 540px;
+}
+
+@utility container {
+  --_pd: 4vw;
+
+  max-width: calc(90rem + var(--_pd) * 2);
+  padding-inline: var(--_pd);
+  margin-inline: auto;
+}
+
+@utility layout-block {
+  margin-block: 100px;
+
+  @variant max-md {
+    margin-block: 40px;
+  }
+
+}
