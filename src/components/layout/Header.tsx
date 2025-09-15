@@ -60,7 +60,11 @@ export default function Header() {
         { "backdrop-blur-sm": isSticky && !isOpen }
       )}
     >
-      <Link href={"/"} className={"relative z-50 w-32 h-6 ml-[4vw]"}>
+      <Link
+        href={"/"}
+        className={"relative z-50 w-32 h-6 ml-[4vw]"}
+        onClick={() => setIsOpen(false)}
+      >
         <Image
           className={"object-contain"}
           src={"/logo.png"}
@@ -123,6 +127,7 @@ export default function Header() {
                   )}
                   href={link.href}
                   style={{ "--link-index": index } as CSSProperties}
+                  onClick={() => setIsOpen(false)}
                 >
                   {link.label}
                 </Link>
@@ -132,8 +137,8 @@ export default function Header() {
               <Button
                 type="outline-white"
                 className="text-xl normal-case h-16"
-                target="_blank"
                 href={"/events"}
+                onClick={() => setIsOpen(false)}
               >
                 Next event
               </Button>
@@ -142,6 +147,7 @@ export default function Header() {
                 className="text-xl normal-case h-16"
                 target="_blank"
                 href={content.header.action.href}
+                onClick={() => setIsOpen(false)}
               >
                 Get your tickets
               </Button>

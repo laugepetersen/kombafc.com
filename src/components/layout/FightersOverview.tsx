@@ -17,7 +17,7 @@ export default function FightersOverview() {
       <div className={"container flex flex-col gap-8 items-center"}>
         <div className={"text-center max-w-3xl mx-auto"}>
           <h2
-            className={"[&>span]:text-accent-purple mb-3"}
+            className={"[&>span]:text-accent-purple mb-3 max-md:text-balance"}
             dangerouslySetInnerHTML={{
               __html: content.homePage.fightersOverview.title,
             }}
