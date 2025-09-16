@@ -1,7 +1,7 @@
 export const globals = {
   ticketLink:
     "https://www.billetlugen.dk/event/komba-fight-club-k-b-hallen-20505641/",
-  nextEventDate: new Date("2025-10-11T00:00:00+02:00"),
+  nextEventDate: new Date("2025-10-11T17:00:00+02:00"),
 };
 
 export const db = {
@@ -225,7 +225,6 @@ export const content = {
     },
     mediaContent: {
       imageSrc: "/fight-poster-komba-fc-2025.jpg",
-      eventDate: new Date(2025, 9, 28),
       title:
         "<span>Saturday October 11:</span> Komba Fight Club takes over K. B. Hallen",
       description:
