@@ -16,7 +16,6 @@ export default async function FightersPage() {
       <DefaultHero
         label={content.fightersPage.hero.label}
         title={content.fightersPage.hero.title}
-        primaryAction={content.fightersPage.hero.actions.primary}
         imageSrc={content.fightersPage.hero.backgroundImage}
       />
       <SponsorMarquee />
