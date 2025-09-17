@@ -2,6 +2,7 @@ import CountdownBanner from "@/components/layout/CountdownBanner";
 import Footer from "@/components/layout/Footer";
 import Header from "@/components/layout/Header";
 import cn from "@/utilities/cn";
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Barlow, Inter } from "next/font/google";
 import { ReactNode } from "react";
@@ -58,6 +59,7 @@ export default function RootLayout({
         <Header />
         <main className={"page"}>{children}</main>
         <Footer />
+        <Analytics />
       </body>
     </html>
   );
