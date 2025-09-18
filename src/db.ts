@@ -129,7 +129,7 @@ export const db = {
       imageSrc: "/fighters/tais-o-donell.jpg",
       title: "EUROPEAN CHAMP",
       firstName: "Tais",
-      lastName: "O'Donell",
+      lastName: "O'Donnell",
       weight: "58.0 KG",
     },
     {
