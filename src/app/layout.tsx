@@ -11,7 +11,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: {
     template: "%s - KOMBA FC",
-    default: "KOMBA FC",
+    default: "KOMBA Fight Club",
   },
   description: "Denmark's Leading Stage for Striking Combat Sports.",
   icons: {
@@ -25,6 +25,17 @@ export const metadata: Metadata = {
         media: "(prefers-color-scheme: dark)",
         url: "/favicon/icon-light.png",
         href: "/favicon/icon-light.png",
+      },
+    ],
+  },
+  openGraph: {
+    siteName: "KOMBA Fight Club",
+    images: [
+      {
+        url: "/og-image.jpg",
+        width: 1200,
+        height: 630,
+        alt: "KOMBA Fight Club",
       },
     ],
   },
