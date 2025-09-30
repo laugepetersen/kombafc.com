@@ -153,6 +153,7 @@ export const db = {
     "/sponsors/cyconsult.png",
     "/sponsors/kaffehuset.png",
     "/sponsors/tolkdanmark.png",
+    "/sponsors/tandex.png",
   ],
 };
 
