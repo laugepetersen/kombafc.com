@@ -1,6 +1,5 @@
 export const globals = {
-  ticketLink:
-    "https://www.billetlugen.dk/event/komba-fight-club-k-b-hallen-20505641/",
+  ticketLink: "https://www.billetlugen.dk/event/20505641/?affiliate=KO3",
   nextEventDate: new Date("2025-10-11T17:00:00+02:00"),
 };
 
