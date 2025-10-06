@@ -144,6 +144,7 @@ export const db = {
     "/sponsors/assouik.png",
     "/sponsors/flypenge.png",
     "/sponsors/guardian.png",
+    "/sponsors/gshock.png",
     "/sponsors/indiaroyale.png",
     "/sponsors/ns.png",
     "/sponsors/pops.png",
