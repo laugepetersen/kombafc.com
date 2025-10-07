@@ -20,7 +20,7 @@ export default function page() {
           label: "Partner inquiries",
         }}
         secondaryAction={{
-          href: "mailto:info@kombafc.com",
+          href: "mailto:support@kombafc.com",
           label: "Other inquiries",
         }}
         imageSrc={"/sample-2.png"}
