@@ -155,29 +155,40 @@ export default function Header() {
           </ul>
         </div>
       </nav>
-      <Button
-        type="yellow"
-        className="max-md:hidden h-full text-base normal-case"
-        target="_blank"
-        href={content.header.action.href}
-      >
-        {content.header.action.label}
-      </Button>
-
-      <button
-        className={
-          "z-50 md:hidden flex items-center justify-center h-full aspect-square cursor-pointer"
-        }
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <div className={"relative h-8 w-8"}>
-          {isOpen ? (
-            <Image src={"/close.svg"} alt={"Close icon"} fill />
-          ) : (
-            <Image src={"/hamburger.svg"} alt={"Hamburger icon"} fill />
-          )}
+      <div className="flex items-center gap-0 md:gap-6 h-full">
+        <div className="relative bg-gradient-to-br from-[#FF0649] to-[#AC002B] grid place-content-center rounded-full h-[32px] md:h-[36px] w-22">
+          <ScrambleLink
+            target="_blank"
+            href="https://liveliveapp.dk/app/event/JVZFKfA81LYO8OmVplfz"
+            className="-mt-0.5 !w-full py-2 px-4 font-bold"
+          >
+            WATCH
+          </ScrambleLink>
         </div>
-      </button>
+        <Button
+          type="yellow"
+          className="max-md:hidden h-full text-base normal-case"
+          target="_blank"
+          href={content.header.action.href}
+        >
+          {content.header.action.label}
+        </Button>
+
+        <button
+          className={
+            "z-50 md:hidden flex items-center justify-center h-full aspect-square cursor-pointer"
+          }
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div className={"relative h-8 w-8"}>
+            {isOpen ? (
+              <Image src={"/close.svg"} alt={"Close icon"} fill />
+            ) : (
+              <Image src={"/hamburger.svg"} alt={"Hamburger icon"} fill />
+            )}
+          </div>
+        </button>
+      </div>
     </header>
   );
 }

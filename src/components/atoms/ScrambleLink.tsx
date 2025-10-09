@@ -11,6 +11,7 @@ interface ScrambleLinkProps {
   style?: CSSProperties;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  target?: string;
 }
 
 export default function ScrambleLink({
@@ -20,6 +21,7 @@ export default function ScrambleLink({
   style,
   onMouseEnter,
   onMouseLeave,
+  target,
 }: ScrambleLinkProps) {
   const hasScrambled = useRef(false);
 
@@ -48,6 +50,7 @@ export default function ScrambleLink({
     <Link
       ref={ref}
       href={href}
+      target={target}
       className={className}
       style={{
         ...style,
