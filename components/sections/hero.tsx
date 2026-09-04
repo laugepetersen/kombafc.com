@@ -22,7 +22,7 @@ const FEATURE_PLAYBACK_ID = process.env.NEXT_PUBLIC_MUX_HERO_PLAYBACK_ID;
  */
 const poster = BACKGROUND_PLAYBACK_ID
   ? `https://image.mux.com/${BACKGROUND_PLAYBACK_ID}/thumbnail.webp?width=1920&time=0`
-  : "/komba-fight-club-1.jpg";
+  : "/hero-poster.webp";
 
 export function Hero() {
   const [playerOpen, setPlayerOpen] = useState(false);
