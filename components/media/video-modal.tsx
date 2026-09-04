@@ -15,20 +15,17 @@ const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
 });
 
 /**
- * The square is held still briefly first — without that beat it never
- * registers as a square, it just reads as the frame appearing from nothing.
- * Everything then opens as one move: the rules, the grid and the video all
- * travel on the same duration and easing.
+ * Everything opens as one move: the rules, the fill and the video all travel
+ * on the same duration and easing, starting the moment the modal opens.
  */
-const HOLD_MS = 220;
 const EXPAND_MS = 850;
 /** The overlay fades over this, starting immediately, so it never just pops. */
 const OVERLAY_MS = 500;
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
-/** Closed geometry: the edges of a 60px square in the middle of the player. */
-const CLOSED_INSET = "calc(50% - 30px)";
+/** Closed geometry: collapsed to a point dead centre of the player. */
+const CLOSED_INSET = "50%";
 
 /**
  * Dims the page behind the modal.
@@ -68,8 +65,19 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
-    const hold = setTimeout(() => setExpanded(true), HOLD_MS);
-    return () => clearTimeout(hold);
+    // Two frames, not a delay: the first lets the closed state paint, the
+    // second flips to open so the transition has something to animate from.
+    // A single frame risks both landing in one paint and the move being
+    // skipped entirely.
+    let second = 0;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => setExpanded(true));
+    });
+
+    return () => {
+      cancelAnimationFrame(first);
+      cancelAnimationFrame(second);
+    };
   }, []);
 
   // Duration and easing come from the constants above rather than utility
@@ -95,15 +103,13 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
         aria-hidden="true"
         className={cn(
           "bg-void pointer-events-none absolute inset-0 transition-[clip-path]",
-          expanded
-            ? "[clip-path:inset(0)]"
-            : "[clip-path:inset(calc(50%_-_30px))]",
+          expanded ? "[clip-path:inset(0)]" : "[clip-path:inset(50%)]",
         )}
         style={motion}
       />
 
-      {/* Four rules running edge to edge of the viewport, opening from that
-          small square out to the player's box. Positional rather than scaled,
+      {/* Four rules running edge to edge of the viewport, opening from a
+          point dead centre out to the player's box. Positional rather than scaled,
           so they stay exactly 1px the whole way out. */}
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <span
@@ -132,7 +138,7 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
           "absolute inset-0 transition-[clip-path,opacity] ease-out",
           expanded
             ? "opacity-100 [clip-path:inset(0)]"
-            : "opacity-0 [clip-path:inset(calc(50%_-_30px))]",
+            : "opacity-0 [clip-path:inset(50%)]",
         )}
         style={motion}
       >
@@ -159,9 +165,8 @@ type VideoModalProps = {
  * inertness of the page behind it and top-layer stacking without any of it
  * being reimplemented in JS.
  *
- * Opens from a 60px square in the middle: the rules, the grid and the video
- * all travel out together on one duration, while the overlay fades up behind
- * them.
+ * Opens from a point dead centre: the rules, the fill and the video all
+ * travel out together on one duration, while the overlay fades up behind them.
  */
 export function VideoModal({
   playbackId,
