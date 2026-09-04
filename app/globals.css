@@ -238,6 +238,14 @@
     max-width: 100%;
   }
 
+  /* Tailwind's preflight resets buttons to cursor:default. Put the pointer
+     back — every button on this site is a real affordance, and links already
+     get it for free. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]) {
+    cursor: pointer;
+  }
+
   h1,
   h2,
   h3,

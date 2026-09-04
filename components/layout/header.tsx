@@ -15,7 +15,7 @@ const navItems = [
 
 /** Shared by the desktop rail and the mobile panel so the two cannot drift. */
 const navLinkClass =
-  "font-body text-sm tracking-[0.06em] text-white/80 uppercase transition-colors hover:text-white";
+  "font-body text-sm tracking-[0.06em] text-white/80 uppercase transition-[color,opacity] duration-200 hover:text-white";
 
 /**
  * Wordmark geometry, in the SVG's own units. The K mark occupies x 0–28.44 and
@@ -68,10 +68,18 @@ export function Header() {
           "max-md:w-full max-md:max-w-sm",
         )}
       >
-        <div className="flex h-14 items-center">
+        <div
+          className={cn(
+            "flex h-14 items-center",
+            // While any item is hovered, every *other* item dims. Scoped with
+            // :not(:hover) so the hovered one needs no competing override.
+            "[&:has([data-nav-item]:hover)_[data-nav-item]:not(:hover)]:opacity-40",
+          )}
+        >
           <Link
             href="/"
-            className="flex h-full items-center px-6 transition-opacity hover:opacity-80"
+            data-nav-item
+            className="flex h-full items-center px-6 transition-opacity duration-200"
             aria-label="KOMBA Fight Club — home"
           >
             <span
@@ -97,7 +105,12 @@ export function Header() {
 
           <div className="flex items-center gap-7 px-12 max-md:hidden">
             {navItems.map(({ label, href }) => (
-              <Link key={href} href={href} className={navLinkClass}>
+              <Link
+                key={href}
+                href={href}
+                data-nav-item
+                className={navLinkClass}
+              >
                 {label}
               </Link>
             ))}
@@ -110,7 +123,8 @@ export function Header() {
             onClick={() => setMenuOpen((open) => !open)}
             aria-expanded={menuOpen}
             aria-label={menuOpen ? "Close menu" : "Open menu"}
-            className="flex h-full items-center px-6 transition-opacity hover:opacity-70 max-md:ml-auto"
+            data-nav-item
+            className="flex h-full items-center px-6 transition-opacity duration-200 max-md:ml-auto"
           >
             <Icon name="apps" className="size-8" />
           </button>
