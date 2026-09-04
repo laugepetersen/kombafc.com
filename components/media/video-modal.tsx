@@ -200,7 +200,7 @@ export function VideoModal({
         // Clicks land on the dialog itself only when they miss its contents.
         if (event.target === dialogRef.current) onClose();
       }}
-      className="bg-void/95 m-0 h-full max-h-none w-full max-w-none place-items-center overflow-hidden p-4 text-white backdrop:bg-black/80 open:grid md:p-10"
+      className="bg-void/60 m-0 h-full max-h-none w-full max-w-none place-items-center overflow-hidden p-4 text-white backdrop:bg-transparent open:grid md:p-10"
       aria-label={title}
     >
       <button
