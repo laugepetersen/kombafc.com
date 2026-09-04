@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { eurostile, googleSans } from "@/app/fonts";
 import { Header } from "@/components/layout/header";
+import { TextInnerShadowFilter } from "@/components/ui/text-inner-shadow";
 import { isCanonicalProduction } from "@/lib/site";
 
 import "./globals.css";
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${eurostile.variable} ${googleSans.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col">
+        <TextInnerShadowFilter />
         <Header />
         <main className="flex-1">{children}</main>
       </body>

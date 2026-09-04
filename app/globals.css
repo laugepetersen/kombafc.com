@@ -215,14 +215,26 @@
 }
 
 @utility text-chrome {
+  /* The two ends of the ramp. Pulled out so the contrast is a one-line tune —
+     the Figma pair (#ffffff -> #dfdfdf at 90%) is only about a fifth of a stop
+     apart, which is too little for the rotation to register as movement. */
+  --chrome-from: #ffffff;
+  --chrome-to: var(--color-ink-200);
+
   background-image: linear-gradient(
     var(--chrome-angle),
-    #ffffff 0%,
-    rgb(223 223 223 / 0.9) 100%
+    var(--chrome-from) 0%,
+    var(--chrome-to) 100%
   );
   background-clip: text;
   color: transparent;
   text-shadow: 0 0 8px rgb(255 255 255 / 0.4);
+
+  /* True inner shadow: CSS text-shadow has no inset, so the glyph alpha is
+     offset, blurred and punched out of itself in an SVG filter. Matches the
+     Figma layer: x1 y2, blur 3 (≈ stdDeviation 1.5), black at 20%. */
+  filter: url(#text-inner-shadow);
+
   animation: text-chrome 5s ease-in-out infinite alternate;
 
   /* A transparent fill leaves nothing to paint once the gradient is dropped,
@@ -231,6 +243,7 @@
     background-image: none;
     color: CanvasText;
     text-shadow: none;
+    filter: none;
     animation: none;
   }
 
