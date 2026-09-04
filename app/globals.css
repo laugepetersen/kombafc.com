@@ -219,7 +219,7 @@
      the Figma pair (#ffffff -> #dfdfdf at 90%) is only about a fifth of a stop
      apart, which is too little for the rotation to register as movement. */
   --chrome-from: #ffffff;
-  --chrome-to: var(--color-ink-200);
+  --chrome-to: var(--color-ink-400);
 
   background-image: linear-gradient(
     var(--chrome-angle),

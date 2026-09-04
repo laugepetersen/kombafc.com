@@ -28,15 +28,14 @@ const WORDMARK_MARK_ONLY = 28.44;
 /**
  * 1px rule between pill segments.
  *
- * Must stay a *direct* flex child of the row: `self-stretch` is what gives it
- * its height, and that only resolves against the row's cross axis. Wrapping it
- * in a plain div collapses it to zero, which is exactly how both rules went
- * missing before.
+ * Deliberately shorter than the row and centred in it: a rule that runs the
+ * full height reads as a border cutting the pill into separate boxes, rather
+ * than as a divider inside one.
  */
 function Divider({ className }: { className?: string }) {
   return (
     <div
-      className={cn("w-px self-stretch bg-white/10", className)}
+      className={cn("h-6 w-px shrink-0 self-center bg-white/10", className)}
       aria-hidden="true"
     />
   );
@@ -113,6 +112,8 @@ export function Header() {
                 />
               </span>
             </Link>
+
+            <Divider className="max-md:hidden" />
 
             {navItems.map(({ label, href }) => (
               <Link
