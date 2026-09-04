@@ -66,7 +66,7 @@ export function Header() {
           so it stays behind it without needing a z-index. */}
       <div
         aria-hidden="true"
-        className="from-void pointer-events-none fixed inset-x-0 top-0 h-36 bg-gradient-to-b to-transparent"
+        className="from-void/80 pointer-events-none fixed inset-x-0 top-0 h-24 bg-gradient-to-b to-transparent"
       />
 
       <nav

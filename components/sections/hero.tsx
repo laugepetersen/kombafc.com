@@ -47,14 +47,17 @@ export function Hero() {
       />
 
       <Container className="relative flex flex-col items-center text-center">
-        <h1 className="font-heading text-chrome leading-[0.9] font-black uppercase italic">
-          <span className="block text-lg sm:text-2xl md:text-3xl lg:text-4xl">
+        {/* Each line is trimmed to its caps, so the leading between them is set
+            explicitly here. In em, so it scales with each line rather than
+            being a fixed gap that only looks right at one breakpoint. */}
+        <h1 className="font-heading text-chrome space-y-[0.14em] leading-[0.9] font-black uppercase italic">
+          <span className="text-trim block text-lg sm:text-2xl md:text-3xl lg:text-4xl">
             The best strikers.
           </span>
-          <span className="block text-2xl sm:text-4xl md:text-5xl lg:text-6xl">
+          <span className="text-trim block text-2xl sm:text-4xl md:text-5xl lg:text-6xl">
             A new fight format.
           </span>
-          <span className="block text-lg sm:text-2xl md:text-3xl lg:text-4xl">
+          <span className="text-trim block text-lg sm:text-2xl md:text-3xl lg:text-4xl">
             In Scandinavia.
           </span>
         </h1>

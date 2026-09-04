@@ -15,18 +15,16 @@ const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
 });
 
 /**
- * Enter and exit differ in duration, not in curve. Both decelerate.
+ * Entering and leaving are different gestures, not the same one reversed.
  *
- * An accelerating exit is the textbook convention, but it reads as broken
- * here: ease-in barely moves for its first third, so a collapse appears to
- * hang at full size before snapping shut, which feels slower than the longer
- * entrance. Leading with speed instead acknowledges the dismissal instantly.
+ * Opening draws the player out of a point, which is worth watching once.
+ * Reversing that on the way out makes the user sit through the geometry a
+ * second time to get to something they have already dismissed, so leaving is
+ * a straight fade instead — shorter, and it clears the screen immediately.
  */
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)"; // decelerate
 const EXPAND_MS = 850;
-const EXPAND_EASE = EASE;
-const EXIT_MS = 300;
-const EXIT_EASE = EASE;
+const EXIT_MS = 260;
 
 /** The overlay fades over this, starting immediately, so it never just pops. */
 const OVERLAY_MS = 500;
@@ -68,9 +66,8 @@ function Overlay({ exiting }: { exiting: boolean }) {
 }
 
 /**
- * Opens the player out of a point dead centre — four rules, a placeholder
- * panel and the video all travelling on one duration — and collapses back the
- * same way, faster.
+ * Opens the player out of a point dead centre: four rules, a placeholder
+ * panel and the video all travelling on one duration. Leaving is a fade.
  *
  * Mounted only while the modal is open, so "closed" is simply its initial
  * state and there is nothing to reset on the way out.
@@ -111,15 +108,17 @@ function ExpandingPlayer({
     };
   }, []);
 
-  const open = entered && !exiting;
+  // Geometry follows `entered` alone. Exiting fades the whole thing out
+  // rather than collapsing it back, so the frame never re-animates.
+  const open = entered;
   const showVideo = open && loaded;
 
   // Duration and easing come from the constants above rather than utility
   // classes, so the timing the modal schedules its close against cannot drift
   // from the timing the transition actually runs at.
   const motion = {
-    transitionDuration: `${exiting ? EXIT_MS : EXPAND_MS}ms`,
-    transitionTimingFunction: exiting ? EXIT_EASE : EXPAND_EASE,
+    transitionDuration: `${EXPAND_MS}ms`,
+    transitionTimingFunction: EASE,
   };
   const rule = "absolute bg-rule transition-all";
 
@@ -146,7 +145,14 @@ function ExpandingPlayer({
   );
 
   return (
-    <div data-player-box className="relative aspect-video w-full max-w-6xl">
+    <div
+      data-player-box
+      className={cn(
+        "relative aspect-video w-full max-w-6xl transition-opacity ease-out",
+        exiting && "opacity-0",
+      )}
+      style={{ transitionDuration: `${EXIT_MS}ms` }}
+    >
       {/* Placeholder panel, opening on the same geometry as everything else.
           Carries a travelling sheen until the video loads, so the frame reads
           as waiting on something rather than as an empty black box. */}

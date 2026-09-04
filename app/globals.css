@@ -214,6 +214,17 @@
 }
 
 /**
+ * Trims a text box to cap height and the alphabetic baseline.
+ *
+ * The base rule does this for h1-h6, but that only trims the *outer* edges of
+ * the block — the first line's top and the last line's bottom. Stacked lines
+ * inside a heading each carry their own descent, so they need it individually.
+ */
+@utility text-trim {
+  text-box: trim-both cap alphabetic;
+}
+
+/**
  * Loading sheen for placeholder surfaces — a slow highlight travelling across
  * a dark panel, so a box that is waiting on content reads as busy rather than
  * as an empty black hole.
