@@ -31,7 +31,11 @@ export function Hero() {
   const [playerOpen, setPlayerOpen] = useState(false);
 
   return (
-    <section className="relative flex min-h-[85svh] items-center justify-center overflow-hidden md:min-h-[850px]">
+    // 80% of the viewport, floored at 600px so an unusually short or
+    // landscape-phone window cannot squash it into the section below. dvh
+    // rather than vh, so mobile browser chrome collapsing does not resize it
+    // mid-scroll.
+    <section className="relative flex h-[80dvh] min-h-[600px] items-center justify-center overflow-hidden">
       <BackgroundVideo
         playbackId={BACKGROUND_PLAYBACK_ID}
         // Interim 6s loop. Drops out the moment a Mux playback ID is set.
