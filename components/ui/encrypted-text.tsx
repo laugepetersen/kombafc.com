@@ -14,8 +14,10 @@ import { cn } from "@/lib/utils";
  * it also tagged the output `role="text"`, which is Safari-only and not in the
  * ARIA spec, and had no reduced-motion path. Behaviour and props are the same.
  *
- * Renders the real string on the server and until it scrolls in, so a client
- * that never runs this — or a crawler — sees finished text rather than noise.
+ * Renders the real string on the server and until it first scrolls in, so a
+ * client that never runs this — or a crawler — sees finished text rather than
+ * noise. After that it re-runs on every entry, parking scrambled while out of
+ * view so the next entry starts from noise rather than flashing the answer.
  */
 const DEFAULT_CHARSET =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+-={}[];:,.<>/?";
@@ -50,12 +52,13 @@ type EncryptedTextProps = {
 export function EncryptedText({
   text,
   className,
-  revealDelayMs = 45,
-  flipDelayMs = 45,
+  revealDelayMs = 60,
+  flipDelayMs = 60,
   charset = DEFAULT_CHARSET,
 }: EncryptedTextProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, amount: 0.6 });
+  // Not `once`: the run repeats every time the label comes back into view.
+  const inView = useInView(ref, { amount: 0.6 });
 
   const reduceMotion = useSyncExternalStore(
     subscribeMotion,
@@ -89,7 +92,13 @@ export function EncryptedText({
     };
 
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      // Park it scrambled on the way out. Leaving the settled string there
+      // would flash it for a frame on re-entry, before the next run starts.
+      setDisplay(scrambleOf(text, charset));
+    };
   }, [inView, reduceMotion, text, charset, revealDelayMs, flipDelayMs]);
 
   return (

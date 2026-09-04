@@ -92,7 +92,11 @@ export function Header() {
             <Link
               href="/"
               data-nav-item
-              className="flex h-full items-center transition-opacity duration-200"
+              // Padded like the menu button, with the padding pulled back off
+              // the layout so nothing shifts. Without it the target collapses
+              // with the wordmark on scroll — down to the 28px mark — while the
+              // menu button stays a comfortable 80px.
+              className="-mx-6 flex h-full items-center px-6 transition-opacity duration-200"
               aria-label="KOMBA Fight Club — home"
             >
               <span
