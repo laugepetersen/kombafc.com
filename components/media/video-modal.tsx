@@ -15,17 +15,47 @@ const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
 });
 
 /**
- * Open sequence, in order. The square is held still first — without that beat
- * it never registers as a square, it just reads as the frame appearing from
- * nothing. The video is then held back until the frame has fully settled,
- * rather than fading up underneath a frame that is still moving.
+ * The square is held still briefly first — without that beat it never
+ * registers as a square, it just reads as the frame appearing from nothing.
+ * Everything then opens as one move: the rules, the grid and the video all
+ * travel on the same duration and easing.
  */
-const HOLD_MS = 260;
-const EXPAND_MS = 900;
-const SETTLE_MS = 140;
-const FADE_MS = 500;
+const HOLD_MS = 220;
+const EXPAND_MS = 850;
+/** The overlay fades over this, starting immediately, so it never just pops. */
+const OVERLAY_MS = 500;
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
+
+/** Closed geometry: the edges of a 60px square in the middle of the player. */
+const CLOSED_INSET = "calc(50% - 30px)";
+
+/**
+ * Dims the page behind the modal.
+ *
+ * Mounted only while open, so its first paint is the transparent state and the
+ * fade actually runs — a background colour set on the dialog itself would jump
+ * straight to full the moment showModal() flips it out of display:none.
+ */
+function Overlay() {
+  const [shown, setShown] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setShown(true), 0);
+    return () => clearTimeout(t);
+  }, []);
+
+  return (
+    <div
+      aria-hidden="true"
+      className={cn(
+        "bg-void/94 fixed inset-0 transition-opacity ease-out",
+        shown ? "opacity-100" : "opacity-0",
+      )}
+      style={{ transitionDuration: `${OVERLAY_MS}ms` }}
+    />
+  );
+}
 
 /**
  * Expands a ruled grid out to the player's box, then cross-fades the video in
@@ -36,19 +66,10 @@ const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
  */
 function ExpandingPlayer({ children }: { children: ReactNode }) {
   const [expanded, setExpanded] = useState(false);
-  const [videoIn, setVideoIn] = useState(false);
 
   useEffect(() => {
     const hold = setTimeout(() => setExpanded(true), HOLD_MS);
-    const fade = setTimeout(
-      () => setVideoIn(true),
-      HOLD_MS + EXPAND_MS + SETTLE_MS,
-    );
-
-    return () => {
-      clearTimeout(hold);
-      clearTimeout(fade);
-    };
+    return () => clearTimeout(hold);
   }, []);
 
   // Duration and easing come from the constants above rather than utility
@@ -60,8 +81,7 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
   };
   const rule = "absolute bg-rule transition-all";
 
-  // Closed, the four rules sit on the edges of a 60px square in the middle.
-  const closed = "calc(50% - 30px)";
+  const closed = CLOSED_INSET;
   // Open, they sit 1px *outside* the player, so the rule stays visible
   // instead of being covered by the video.
   const open = "-1px";
@@ -109,12 +129,17 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
         />
       </div>
 
+      {/* Clipped by the same geometry as the grid, so the video opens out of
+          the square with everything else instead of fading in over a frame
+          that has already arrived. */}
       <div
         className={cn(
-          "absolute inset-0 transition-opacity ease-out",
-          videoIn ? "opacity-100" : "opacity-0",
+          "absolute inset-0 transition-[clip-path,opacity] ease-out",
+          expanded
+            ? "opacity-100 [clip-path:inset(0)]"
+            : "opacity-0 [clip-path:inset(calc(50%_-_30px))]",
         )}
-        style={{ transitionDuration: `${FADE_MS}ms` }}
+        style={motion}
       >
         {children}
       </div>
@@ -139,9 +164,9 @@ type VideoModalProps = {
  * inertness of the page behind it and top-layer stacking without any of it
  * being reimplemented in JS.
  *
- * Opens from a 60px square in the middle: four rules run out to the player's
- * box while a grid is drawn in behind them, then the video cross-fades over
- * the top.
+ * Opens from a 60px square in the middle: the rules, the grid and the video
+ * all travel out together on one duration, while the overlay fades up behind
+ * them.
  */
 export function VideoModal({
   playbackId,
@@ -238,9 +263,11 @@ export function VideoModal({
         // Clicks land on the dialog itself only when they miss its contents.
         if (event.target === dialogRef.current) onClose();
       }}
-      className="bg-void/94 m-0 h-full max-h-none w-full max-w-none place-items-center overflow-hidden p-4 text-white backdrop:bg-transparent open:grid md:p-10"
+      className="m-0 h-full max-h-none w-full max-w-none place-items-center overflow-hidden bg-transparent p-4 text-white backdrop:bg-transparent open:grid md:p-10"
       aria-label={title}
     >
+      {open ? <Overlay /> : null}
+
       <button
         type="button"
         onClick={onClose}
