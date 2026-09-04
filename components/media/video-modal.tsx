@@ -88,18 +88,13 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative aspect-video w-full max-w-6xl">
-      {/* The inner grid, drawn in as the frame opens. Clipped with the same
-          centred-square geometry as the rules below, so the two reveal in
-          lockstep. Same solid rule colour, so crossings do not compound. */}
+      {/* Solid fill, opening on the same geometry as everything else. Gives
+          the frame something to hold while the video renders in, instead of
+          the page showing through a box that is already open. */}
       <div
         aria-hidden="true"
         className={cn(
-          "pointer-events-none absolute inset-0",
-          "[background-image:repeating-linear-gradient(to_right,var(--color-rule)_0_1px,transparent_1px_calc(100%/8)),repeating-linear-gradient(to_bottom,var(--color-rule)_0_1px,transparent_1px_calc(100%/5))]",
-          // Blend the two layers instead of stacking them, so crossings stay
-          // the same value as a single line rather than doubling up.
-          "[background-blend-mode:lighten]",
-          "transition-[clip-path]",
+          "bg-void pointer-events-none absolute inset-0 transition-[clip-path]",
           expanded
             ? "[clip-path:inset(0)]"
             : "[clip-path:inset(calc(50%_-_30px))]",
