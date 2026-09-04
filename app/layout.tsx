@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { eurostile, googleSans } from "@/app/fonts";
 import { Header } from "@/components/layout/header";
 import { isCanonicalProduction } from "@/lib/site";
 
@@ -24,7 +25,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full antialiased">
+    <html
+      lang="en"
+      className={`${eurostile.variable} ${googleSans.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col">
         <Header />
         <main className="flex-1">{children}</main>

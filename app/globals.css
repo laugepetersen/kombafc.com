@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
-@import "./fonts.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -98,8 +97,8 @@
 
 @theme inline {
   --font-heading: var(--font-eurostile);
-  --font-body: var(--font-aeonik);
-  --font-sans: var(--font-aeonik);
+  --font-body: var(--font-google-sans);
+  --font-sans: var(--font-google-sans);
 
   /* shadcn / Aceternity semantic tokens, mapped onto the KOMBA palette below
      so anything installed from those registries lands on-brand by default. */

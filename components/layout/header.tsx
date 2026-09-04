@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { Icon } from "@/components/ui/icon";
+import { useScrolled } from "@/hooks/use-scrolled";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -16,13 +17,34 @@ const navItems = [
 const navLinkClass =
   "font-body text-sm tracking-[0.06em] text-white/80 uppercase transition-colors hover:text-white";
 
-/** 1px hairline between pill segments. */
-function Divider() {
-  return <div className="w-px self-stretch bg-white/10" aria-hidden="true" />;
+/**
+ * Wordmark geometry, in the SVG's own units. The K mark occupies x 0–28.44 and
+ * the lettering starts around x 41.8, so cropping the container down to the
+ * mark's width hides the word cleanly without touching the asset.
+ */
+const WORDMARK_FULL = 126.15;
+const WORDMARK_MARK_ONLY = 28.44;
+
+/**
+ * 1px rule between pill segments.
+ *
+ * Must stay a *direct* flex child of the row: `self-stretch` is what gives it
+ * its height, and that only resolves against the row's cross axis. Wrapping it
+ * in a plain div collapses it to zero, which is exactly how both rules went
+ * missing before.
+ */
+function Divider({ className }: { className?: string }) {
+  return (
+    <div
+      className={cn("w-px self-stretch bg-white/10", className)}
+      aria-hidden="true"
+    />
+  );
 }
 
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const scrolled = useScrolled();
 
   // The pill floats over the hero, so an open panel must not be left behind
   // when the viewport grows back to the desktop layout.
@@ -52,23 +74,26 @@ export function Header() {
             className="flex h-full items-center px-6 transition-opacity hover:opacity-80"
             aria-label="KOMBA Fight Club — home"
           >
-            {/* eslint-disable-next-line @next/next/no-img-element -- fixed-size
-                brand mark; next/image adds a wrapper and a second hop for an
-                SVG it will not optimise anyway. */}
-            <img
-              src="/brand/komba-wordmark.svg"
-              alt=""
-              width={126}
-              height={12}
-              className="h-3 w-[126.15px]"
-            />
+            <span
+              className="block overflow-hidden transition-[width] duration-500 ease-out"
+              style={{ width: scrolled ? WORDMARK_MARK_ONLY : WORDMARK_FULL }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element -- fixed-size
+                  brand mark; next/image adds a wrapper and a second hop for an
+                  SVG it will not optimise anyway. */}
+              <img
+                src="/brand/komba-wordmark.svg"
+                alt=""
+                width={126}
+                height={12}
+                // max-w-none defeats the global `img { max-width: 100% }`, which
+                // would squash the mark rather than crop the word.
+                className="h-3 w-[126.15px] max-w-none"
+              />
+            </span>
           </Link>
 
-          {/* Segment rules only read as rules when segments sit side by side.
-              On mobile the bar collapses to logo-left / menu-right, so they go. */}
-          <div className="max-md:hidden">
-            <Divider />
-          </div>
+          <Divider className="max-md:hidden" />
 
           <div className="flex items-center gap-7 px-12 max-md:hidden">
             {navItems.map(({ label, href }) => (
@@ -78,9 +103,7 @@ export function Header() {
             ))}
           </div>
 
-          <div className="max-md:hidden">
-            <Divider />
-          </div>
+          <Divider className="max-md:hidden" />
 
           <button
             type="button"
