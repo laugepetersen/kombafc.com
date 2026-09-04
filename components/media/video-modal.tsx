@@ -15,19 +15,23 @@ const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
 });
 
 /**
- * Enter and exit are deliberately asymmetric, which is the usual convention:
- * entering decelerates into place and takes its time, leaving accelerates away
- * and is roughly half as long. A dismissal that matches the entrance feels
- * sluggish, because by then the user has already decided to go.
+ * Enter and exit differ in duration, not in curve. Both decelerate.
+ *
+ * An accelerating exit is the textbook convention, but it reads as broken
+ * here: ease-in barely moves for its first third, so a collapse appears to
+ * hang at full size before snapping shut, which feels slower than the longer
+ * entrance. Leading with speed instead acknowledges the dismissal instantly.
  */
+const EASE = "cubic-bezier(0.16, 1, 0.3, 1)"; // decelerate
 const EXPAND_MS = 850;
-const EXPAND_EASE = "cubic-bezier(0.16, 1, 0.3, 1)"; // decelerate
-const EXIT_MS = 420;
-const EXIT_EASE = "cubic-bezier(0.7, 0, 0.84, 0)"; // accelerate
+const EXPAND_EASE = EASE;
+const EXIT_MS = 300;
+const EXIT_EASE = EASE;
 
 /** The overlay fades over this, starting immediately, so it never just pops. */
 const OVERLAY_MS = 500;
-const OVERLAY_EXIT_MS = 300;
+/** Matches EXIT_MS so the overlay and the frame land together. */
+const OVERLAY_EXIT_MS = EXIT_MS;
 
 /** Closed geometry: collapsed to a point dead centre of the player. */
 const CLOSED_INSET = "50%";
