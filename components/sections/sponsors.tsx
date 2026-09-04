@@ -39,17 +39,26 @@ export function Sponsors() {
             other value would show a seam against the page. */}
         <Marquee className="w-full" durationSeconds={45}>
           {sponsors.map(({ name, src, width, height }) => (
-            /* eslint-disable-next-line @next/next/no-img-element -- fixed-size
-               logo marks; next/image would add a wrapper and a second hop for
-               SVGs it will not optimise anyway. */
-            <img
+            /* Stencilled rather than drawn: the SVG supplies the shape as a
+               mask and the colour comes from the ink ramp, so the logos sit on
+               the palette instead of being white marks dimmed with opacity. */
+            <span
               key={name}
-              src={src}
-              alt={name}
-              width={width}
-              height={height}
-              style={{ height, width }}
-              className="max-w-none shrink-0 opacity-[0.64] transition-opacity duration-200 hover:opacity-100"
+              role="img"
+              aria-label={name}
+              style={{
+                width,
+                height,
+                maskImage: `url(${src})`,
+                WebkitMaskImage: `url(${src})`,
+                maskSize: "contain",
+                WebkitMaskSize: "contain",
+                maskRepeat: "no-repeat",
+                WebkitMaskRepeat: "no-repeat",
+                maskPosition: "center",
+                WebkitMaskPosition: "center",
+              }}
+              className="bg-ink-300 hover:bg-ink-100 shrink-0 transition-colors duration-200"
             />
           ))}
         </Marquee>
