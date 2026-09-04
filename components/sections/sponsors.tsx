@@ -28,8 +28,8 @@ const sponsors = [
 export function Sponsors() {
   return (
     <SectionFrame>
-      <div className="flex flex-col items-center gap-10 px-6 py-16 md:py-20">
-        <p className="text-ink-200 max-w-72 text-center text-base leading-[1.4] tracking-[0.01em]">
+      <div className="flex flex-col items-center gap-10 py-16 md:py-20">
+        <p className="text-ink-200 max-w-72 px-6 text-center text-base leading-[1.4] tracking-[0.01em]">
           <span className="text-white">Proudly sponsored by partners</span>
           <br />
           who believe in what we do

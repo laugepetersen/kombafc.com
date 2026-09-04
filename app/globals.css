@@ -57,11 +57,17 @@
   --text-ratio: 1.25;
   --text-base: 1rem; /* 16px */
 
-  /* Heading leading, 110%. Doubles as the gap between pre-split heading
-     lines: with the boxes trimmed to cap height the leading is gone, and this
-     is exactly the amount over 1 that is worth adding back. */
-  --heading-leading: 1.1;
-  --heading-line-gap: calc((var(--heading-leading) - 1) * 1em);
+  /* Heading leading, 100%.
+     --heading-line-gap is what that leading works out to as a *gap*, for
+     headings whose lines are split into separate trimmed boxes. Trimming
+     removes everything below the baseline, so to land where a single block at
+     this leading would, the gap has to be the leading less the cap height —
+     Eurostile's sCapHeight is 667 of 1000 units. */
+  --heading-cap-height: 0.667;
+  --heading-leading: 1;
+  --heading-line-gap: calc(
+    (var(--heading-leading) - var(--heading-cap-height)) * 1em
+  );
 
   --text-sm: calc(var(--text-base) / var(--text-ratio));
   --text-xs: calc(var(--text-sm) / var(--text-ratio));
