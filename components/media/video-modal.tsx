@@ -51,6 +51,21 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
 
   return (
     <div className="relative aspect-video w-full max-w-6xl">
+      {/* The inner grid, drawn in as the frame opens. Clipped with the same
+          centred-square geometry as the rules below, so the two reveal in
+          lockstep. Same solid rule colour, so crossings do not compound. */}
+      <div
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-0",
+          "[background-image:repeating-linear-gradient(to_right,var(--color-rule)_0_1px,transparent_1px_calc(100%/8)),repeating-linear-gradient(to_bottom,var(--color-rule)_0_1px,transparent_1px_calc(100%/5))]",
+          "transition-[clip-path] duration-[550ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+          expanded
+            ? "[clip-path:inset(0)]"
+            : "[clip-path:inset(calc(50%_-_30px))]",
+        )}
+      />
+
       {/* Four rules running edge to edge of the viewport, opening from that
           small square out to the player's box. Positional rather than scaled,
           so they stay exactly 1px the whole way out. */}
@@ -102,8 +117,9 @@ type VideoModalProps = {
  * inertness of the page behind it and top-layer stacking without any of it
  * being reimplemented in JS.
  *
- * Opens by drawing four rules out from a small square in the middle to the
- * player's box, then cross-fading the video in over them.
+ * Opens from a 60px square in the middle: four rules run out to the player's
+ * box while a grid is drawn in behind them, then the video cross-fades over
+ * the top.
  */
 export function VideoModal({
   playbackId,
@@ -200,7 +216,7 @@ export function VideoModal({
         // Clicks land on the dialog itself only when they miss its contents.
         if (event.target === dialogRef.current) onClose();
       }}
-      className="bg-void/60 m-0 h-full max-h-none w-full max-w-none place-items-center overflow-hidden p-4 text-white backdrop:bg-transparent open:grid md:p-10"
+      className="bg-void/90 m-0 h-full max-h-none w-full max-w-none place-items-center overflow-hidden p-4 text-white backdrop:bg-transparent open:grid md:p-10"
       aria-label={title}
     >
       <button
