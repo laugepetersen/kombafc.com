@@ -170,10 +170,10 @@ export default function StyleguidePage() {
           </Button>
         </div>
         <Note>
-          Primary is filled, secondary holds its fill back for hover so it reads
-          as an outline beside it. Both follow the cursor slightly and light a
-          dot field inside themselves while pointed at — the field only runs
-          during the hover, and the pull is skipped under reduced motion.
+          Primary is filled, secondary is an outline and carries no fill at any
+          state. Both follow the cursor slightly and brighten on hover; the
+          primary also lights a dot field inside itself, which runs only for as
+          long as the hover lasts. The pull is skipped under reduced motion.
         </Note>
       </Block>
 

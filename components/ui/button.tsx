@@ -25,25 +25,43 @@ const MAGNET_STRENGTH = 0.2;
 /** Soft and slightly underdamped, so it settles rather than snapping back. */
 const SPRING = { stiffness: 150, damping: 15, mass: 0.1 };
 
+/* Both variants hover by lighting up rather than by changing colour, so the
+   only properties in flight are the filter and the glow. Slow enough to read
+   as a fade rather than a state flip. */
 const base =
-  "relative inline-flex h-12 items-center justify-center overflow-clip px-6 font-body text-base font-medium tracking-[0.02em] transition-[filter,background-color,backdrop-filter,border-color] duration-200";
+  "relative inline-flex h-12 items-center justify-center overflow-clip px-6 font-body text-base font-medium tracking-[0.02em] transition-[filter,box-shadow,border-color] duration-300 ease-out";
+
+/* Shared by both variants, so the light behaves the same whichever button it
+   is coming off. Two layers rather than one: a tight core and a wide, dim
+   bloom, which is what gives it a falloff — a single shadow just reads as a
+   hard ring offset from the edge. Both layers run at very low alpha and pull
+   their spread in negative, so the glow sits close to the button and reads as
+   the edge catching light rather than as a halo around it. */
+const glow =
+  "shadow-[0_0_8px_-3px_rgb(157_92_255/0.08),0_0_18px_-2px_rgb(157_92_255/0.06)]";
+const glowHover =
+  "hover:shadow-[0_0_10px_-3px_rgb(157_92_255/0.14),0_0_26px_0_rgb(157_92_255/0.10)]";
 
 const variants = {
   /** Filled violet. One per view — this is the primary ask. */
   primary: cn(
     "from-violet-600 to-violet-500 bg-gradient-to-r text-white",
     "[text-shadow:0_0_2px_rgb(255_255_255/0.2)]",
-    "drop-shadow-[0_0_3px_rgb(122_31_255/0.2)] hover:brightness-110",
+    glow,
+    glowHover,
+    "hover:brightness-110",
   ),
   /**
-   * Outlined. Transparent at rest so it reads as a plain outline beside the
-   * filled primary; on hover it takes a wash of the page colour and blurs what
-   * is behind it, which over the dot field reads as the button frosting over.
+   * Outlined, and transparent at every state — no fill, no backdrop. On hover
+   * it does what the primary does: brightens, and pushes its glow out further.
+   * Starting dimmer, it takes a heavier hand than the primary's 110 to read as
+   * the same amount of lift.
    */
   secondary: cn(
-    "border-violet-300 border backdrop-blur-none",
-    "shadow-[0_0_6px_0_rgb(157_92_255/0.2)]",
-    "hover:bg-void/10 hover:backdrop-blur-md",
+    "border-violet-300 border",
+    glow,
+    glowHover,
+    "hover:brightness-125",
   ),
 } as const;
 
@@ -51,10 +69,7 @@ export type ButtonVariant = keyof typeof variants;
 
 /** Module scope: inline these would be new arrays every render, and PixelNoise
  *  would rebuild its grid on each one. */
-const FIELD_COLORS: Record<ButtonVariant, string[]> = {
-  primary: ["#ffffff", "#d2d2d7", "#a3a3ac"],
-  secondary: ["#7a1fff", "#9d5cff", "#c0a0ff"],
-};
+const FIELD_COLORS = ["#ffffff", "#d2d2d7", "#a3a3ac"];
 const FIELD_OPACITIES = [0, 0, 0, 0.08, 0.15, 0.28, 0.45, 0.7];
 
 const motionQuery = "(prefers-reduced-motion: reduce)";
@@ -132,26 +147,28 @@ export function Button({
       className={cn(base, variants[variant], className)}
       {...rest}
     >
-      {/* Inset by 1px: flush to the edge the dots read as breaking out of the
-          button rather than sitting inside it. */}
-      <span
-        aria-hidden="true"
-        className="absolute inset-px transition-opacity duration-300 ease-out"
-        style={{ opacity: hovered ? 1 : 0 }}
-      >
-        <PixelNoise
-          enabled={hovered}
-          // Tight pitch and single-pixel dots: at 48px tall anything coarser
-          // reads as a pattern rather than as texture in the surface.
-          pitch={4}
-          dotSize={1}
-          churn={0.2}
-          fps={20}
-          fadeUpwards={false}
-          colors={FIELD_COLORS[variant]}
-          opacities={FIELD_OPACITIES}
-        />
-      </span>
+      {/* Filled variant only. The outline has nothing solid to hold a texture,
+          so dots inside it read as loose specks rather than as a surface. */}
+      {variant === "primary" && (
+        <span
+          aria-hidden="true"
+          className="absolute inset-px transition-opacity duration-300 ease-out"
+          style={{ opacity: hovered ? 1 : 0 }}
+        >
+          <PixelNoise
+            enabled={hovered}
+            // Tight pitch and single-pixel dots: at 48px tall anything coarser
+            // reads as a pattern rather than as texture in the surface.
+            pitch={4}
+            dotSize={1}
+            churn={0.2}
+            fps={20}
+            fadeUpwards={false}
+            colors={FIELD_COLORS}
+            opacities={FIELD_OPACITIES}
+          />
+        </span>
+      )}
 
       <span
         className={cn(
