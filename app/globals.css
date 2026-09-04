@@ -201,20 +201,20 @@
  */
 @property --chrome-angle {
   syntax: "<angle>";
-  initial-value: 145deg;
+  initial-value: 125deg;
   inherits: false;
 }
 
-/* 180deg +/- 35. A CSS gradient angle points along the gradient *line*, and
+/* 180deg +/- 55. A CSS gradient angle points along the gradient *line*, and
    the first stop sits at its start — so -35deg puts the white end at the
    bottom. Rocking around 180deg keeps white at the top and swings it from
    upper-left to upper-right, which is the light direction the comp uses. */
 @keyframes text-chrome {
   from {
-    --chrome-angle: 145deg;
+    --chrome-angle: 125deg;
   }
   to {
-    --chrome-angle: 215deg;
+    --chrome-angle: 235deg;
   }
 }
 
@@ -225,7 +225,7 @@
      tints the type. This is a neutral grey, light enough to stay close to
      white while leaving the rotation something to show. */
   --chrome-from: #ffffff;
-  --chrome-to: #c8c8c8;
+  --chrome-to: #b4b4b4;
 
   background-image: linear-gradient(
     var(--chrome-angle),
@@ -257,6 +257,42 @@
     animation: none;
   }
 }
+/**
+ * Trims a text box to cap height and the alphabetic baseline.
+ *
+ * The base rule does this for h1-h6, but that only trims the *outer* edges of
+ * the block — the first line's top and the last line's bottom. Stacked lines
+ * inside a heading each carry their own descent, so they need it individually.
+ */
+@utility text-trim {
+  text-box: trim-both cap alphabetic;
+}
+
+/**
+ * DEV ONLY. Draws a red rule along the gradient's wavefront, perpendicular to
+ * --chrome-angle, so the sweep can actually be seen while tuning it.
+ *
+ * Has to sit on the same element as the animation: --chrome-angle is
+ * registered with inherits:false, so a child could not read it.
+ */
+@utility chrome-debug {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: -1.5rem;
+    pointer-events: none;
+    background-image: linear-gradient(
+      var(--chrome-angle),
+      transparent calc(50% - 1px),
+      red calc(50% - 1px),
+      red calc(50% + 1px),
+      transparent calc(50% + 1px)
+    );
+  }
+}
+
 /**
  * The violet counterpart to text-chrome, for kickers and outline buttons.
  * Static — it labels rather than performs, so it does not need to move.
@@ -369,6 +405,11 @@
   h5,
   h6 {
     @apply font-heading;
+
+    /* Headings sit on 100%. With the box trimmed to cap height there is no
+       half-leading left to absorb, so the space between stacked lines is set
+       explicitly where it is wanted rather than falling out of the leading. */
+    line-height: 1;
 
     /* -2%. Note em resolves against the element's *own* font-size and then
        inherits as a fixed px value, so a heading that sets its size on child

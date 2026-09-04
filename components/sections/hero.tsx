@@ -6,6 +6,7 @@ import { Container } from "@/components/layout/container";
 import { BackgroundVideo } from "@/components/media/background-video";
 import { VideoModal } from "@/components/media/video-modal";
 import { Icon } from "@/components/ui/icon";
+import { cn } from "@/lib/utils";
 
 /**
  * Inlined at build time. The short looping backdrop and the full-length film
@@ -15,6 +16,10 @@ import { Icon } from "@/components/ui/icon";
 const BACKGROUND_PLAYBACK_ID =
   process.env.NEXT_PUBLIC_MUX_BACKGROUND_PLAYBACK_ID;
 const FEATURE_PLAYBACK_ID = process.env.NEXT_PUBLIC_MUX_HERO_PLAYBACK_ID;
+
+/** Dev aid: draws a red rule along the gradient wavefront so the sweep is
+ *  visible while tuning. Flip to false to hide. */
+const DEBUG_CHROME = true;
 
 /** Interim source for the modal. Ignored once FEATURE_PLAYBACK_ID is set. */
 const FEATURE_YOUTUBE_ID = "yR3Cex1Cp10";
@@ -50,7 +55,12 @@ export function Hero() {
         {/* Each line is trimmed to its caps, so the leading between them is set
             explicitly here. In em, so it scales with each line rather than
             being a fixed gap that only looks right at one breakpoint. */}
-        <h1 className="font-heading text-chrome space-y-[0.14em] px-4 leading-[0.9] font-black uppercase italic">
+        <h1
+          className={cn(
+            "font-heading text-chrome space-y-[0.14em] px-4 font-black uppercase italic",
+            DEBUG_CHROME && "chrome-debug",
+          )}
+        >
           <span className="text-trim block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
             The best strikers.
           </span>

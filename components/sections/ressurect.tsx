@@ -17,23 +17,23 @@ export function Ressurect() {
   return (
     <SectionFrame markers>
       <div className="grid md:grid-cols-2">
-        <div className="flex flex-col justify-center bg-violet-200/5 px-6 py-14 md:px-[60px] md:py-20">
+        <div className="flex flex-col justify-center bg-violet-200/5 px-6 py-12 md:px-12 md:py-16 lg:px-15 lg:py-20">
           <Kicker>The Ressurect</Kicker>
 
-          <h2 className="text-chrome mt-8 text-xl leading-none font-black tracking-[-0.01em] uppercase italic sm:text-2xl md:text-3xl lg:text-4xl">
+          <h2 className="text-chrome mt-6 text-xl leading-none font-black tracking-[-0.01em] uppercase italic sm:text-2xl md:mt-8 md:text-3xl lg:text-4xl">
             <span className="text-trim block">We&rsquo;re aiming</span>
             <span className="text-trim mt-[0.14em] block">to set our mark</span>
             <span className="text-trim mt-[0.14em] block">Q1, 2027.</span>
           </h2>
 
-          <div className="text-ink-200 mt-4 flex max-w-[381px] flex-col gap-4 text-base leading-[1.4]">
+          <div className="text-ink-200 mt-4 flex max-w-96 flex-col gap-4 text-base leading-[1.4] md:mt-4">
             <p>
               We have been silent for almost a year, but not out of the game.
             </p>
             <p>Just needed some time to prepare, for the next big thing..</p>
           </div>
 
-          <div className="mt-12 flex flex-wrap gap-4">
+          <div className="mt-8 flex flex-wrap gap-4 md:mt-12">
             <Button href="/partners">Become Partner</Button>
             <Button href="/about" variant="secondary">
               About Us

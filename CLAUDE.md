@@ -24,6 +24,21 @@ Modular scale driven by `--text-ratio` (currently 1.25, major third) off a
 16px `--text-base`. Every step is a `calc()` chain, so changing the one
 variable rescales the site. Options: 1.200 / 1.250 / 1.333.
 
+## Spacing
+
+Everything lands on a 4px grid. Tailwind's default scale already is one
+(`p-1` = 4px), so use scale steps and avoid arbitrary `[Npx]` values — if a
+step does not exist, round to the nearest multiple of 4 rather than inventing
+one. Build responsively: step padding and rhythm up through the breakpoints
+rather than shipping one desktop value.
+
+The Figma is the vision, not the source of truth. Where a comp value is off the
+grid or off the type scale, snap it and note the deviation.
+
+Typographic leading is the exception — the gap between stacked lines inside a
+heading is set in `em` so it tracks the type size. That is leading, not
+spacing.
+
 ## Fonts
 
 Eurostile (headings) and Aeonik (body) are licensed and not in the repo.
