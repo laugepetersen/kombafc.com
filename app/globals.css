@@ -201,16 +201,20 @@
  */
 @property --chrome-angle {
   syntax: "<angle>";
-  initial-value: -35deg;
+  initial-value: 145deg;
   inherits: false;
 }
 
+/* 180deg +/- 35. A CSS gradient angle points along the gradient *line*, and
+   the first stop sits at its start — so -35deg puts the white end at the
+   bottom. Rocking around 180deg keeps white at the top and swings it from
+   upper-left to upper-right, which is the light direction the comp uses. */
 @keyframes text-chrome {
   from {
-    --chrome-angle: -35deg;
+    --chrome-angle: 145deg;
   }
   to {
-    --chrome-angle: 35deg;
+    --chrome-angle: 215deg;
   }
 }
 
