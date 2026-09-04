@@ -381,6 +381,94 @@
 }
 
 /**
+ * Hero parallax, driven by scroll position rather than a scroll listener.
+ *
+ * `animation-timeline: view()` ties progress to where the element sits in the
+ * viewport, so the browser runs it off the main thread — no scroll handler, no
+ * per-frame getBoundingClientRect, nothing to throttle. Only transform and
+ * opacity are touched, both of which the compositor handles without layout or
+ * paint.
+ *
+ * The whole block is behind @supports because an unsupported browser would
+ * fall back to the document timeline and simply play the animation once on
+ * load, which is worse than not having it.
+ *
+ * All three layers read one named timeline declared on the hero itself. Left
+ * to `view()` each element would time against its *own* box, so the centred
+ * copy — a few hundred pixels tall — would race ahead of the full-height
+ * backdrop, and its rate would quietly change whenever the copy did.
+ *
+ * Range is `exit`: for a viewport-height hero that runs from the moment the
+ * page starts scrolling to the moment the hero clears the top, so the effect
+ * costs nothing once it is done.
+ *
+ * One more trap: the hero must clip with `overflow: clip`, not `hidden`.
+ * `hidden` makes an element a scroll container, and the timeline then resolves
+ * against the hero — which never scrolls — leaving every layer frozen at 0%.
+ */
+@keyframes hero-content-exit {
+  to {
+    transform: translateY(12%) scale(1.06);
+    opacity: 0;
+  }
+}
+
+@keyframes hero-media-exit {
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes hero-veil-in {
+  to {
+    opacity: 0.65;
+  }
+}
+
+@utility hero-parallax-root {
+  @supports (animation-timeline: view()) {
+    view-timeline-name: --hero;
+  }
+}
+
+@utility hero-parallax-content {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: hero-content-exit linear both;
+      animation-timeline: --hero;
+      /* Gone before the hero clears, so it is not still fading against the
+         section below. */
+      animation-range: exit 0% exit 65%;
+    }
+  }
+}
+
+@utility hero-parallax-media {
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      /* Rests slightly overscaled and settles back to 1, so "zooming out"
+         never walks the frame edges into view. */
+      transform: scale(1.08);
+      animation: hero-media-exit linear both;
+      animation-timeline: --hero;
+      animation-range: exit 0% exit 100%;
+    }
+  }
+}
+
+@utility hero-parallax-veil {
+  opacity: 0;
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: hero-veil-in linear both;
+      animation-timeline: --hero;
+      animation-range: exit 0% exit 100%;
+    }
+  }
+}
+
+/**
  * Marquee. The track holds two copies of its content, so translating exactly
  * half its width lands the second copy where the first began and the loop has
  * no seam.

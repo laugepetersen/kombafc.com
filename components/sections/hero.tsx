@@ -35,8 +35,9 @@ export function Hero() {
     // landscape-phone window cannot squash it into the section below. dvh
     // rather than vh, so mobile browser chrome collapsing does not resize it
     // mid-scroll.
-    <section className="relative flex h-dvh min-h-[600px] items-center justify-center overflow-hidden">
+    <section className="hero-parallax-root relative flex h-dvh min-h-[600px] items-center justify-center overflow-clip">
       <BackgroundVideo
+        className="hero-parallax-media"
         playbackId={BACKGROUND_PLAYBACK_ID}
         // Interim 6s loop. Drops out the moment a Mux playback ID is set.
         src={BACKGROUND_PLAYBACK_ID ? undefined : "/hero-loop.mp4"}
@@ -50,7 +51,14 @@ export function Hero() {
         aria-hidden="true"
       />
 
-      <Container className="relative flex flex-col items-center text-center">
+      {/* Deepens as the hero leaves. Its own layer rather than a filter on the
+          video: opacity composites, brightness() repaints the whole frame. */}
+      <div
+        className="bg-void hero-parallax-veil absolute inset-0"
+        aria-hidden="true"
+      />
+
+      <Container className="hero-parallax-content relative flex flex-col items-center text-center">
         {/* Each line is trimmed to its caps, so the leading between them is set
             explicitly here. In em, so it scales with each line rather than
             being a fixed gap that only looks right at one breakpoint. */}
