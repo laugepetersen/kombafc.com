@@ -59,6 +59,9 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
         className={cn(
           "pointer-events-none absolute inset-0",
           "[background-image:repeating-linear-gradient(to_right,var(--color-rule)_0_1px,transparent_1px_calc(100%/8)),repeating-linear-gradient(to_bottom,var(--color-rule)_0_1px,transparent_1px_calc(100%/5))]",
+          // Blend the two layers instead of stacking them, so crossings stay
+          // the same value as a single line rather than doubling up.
+          "[background-blend-mode:lighten]",
           "transition-[clip-path] duration-[550ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
           expanded
             ? "[clip-path:inset(0)]"

@@ -29,10 +29,11 @@
   --color-ink-200: #a3a3ac;
   --color-ink-100: #d2d2d7;
 
-  /* Hairline rules. Solid rather than a translucent white: two crossing
-     translucent lines compound at the intersection and read brighter than
-     the rest. This is violet-200 at 5% over void, flattened. */
-  --color-rule: #15141b;
+  /* Hairline rules. Translucent rather than a flattened solid: these sit over
+     the modal's semi-transparent overlay, so a fixed dark value reads as a
+     patch against whatever shows through rather than as a hairline.
+     violet-200 at 10%. */
+  --color-rule: rgb(221 204 255 / 0.1);
 
   /* Violet — sampled from arena rigging, extended to an electric 500.
      Clears Tailwind's stock violet first so no off-brand steps survive. */
