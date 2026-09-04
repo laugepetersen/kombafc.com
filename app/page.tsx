@@ -15,41 +15,56 @@ const typeScale = [
   { token: "text-xs", cls: "text-xs" },
 ];
 
-const swatches = [
-  { name: "komba-purple", cls: "bg-komba-purple" },
-  { name: "komba-yellow", cls: "bg-komba-yellow" },
-  { name: "ink-600", cls: "bg-ink-600" },
-  { name: "ink-700", cls: "bg-ink-700" },
-  { name: "ink-800", cls: "bg-ink-800" },
+const inkRamp = [
+  { name: "void", cls: "bg-void" },
   { name: "ink-900", cls: "bg-ink-900" },
-  { name: "ink-950", cls: "bg-ink-950" },
+  { name: "ink-800", cls: "bg-ink-800" },
+  { name: "ink-700", cls: "bg-ink-700" },
+  { name: "ink-600", cls: "bg-ink-600" },
+  { name: "ink-500", cls: "bg-ink-500" },
+  { name: "ink-400", cls: "bg-ink-400" },
+  { name: "ink-300", cls: "bg-ink-300" },
+  { name: "ink-200", cls: "bg-ink-200" },
+  { name: "ink-100", cls: "bg-ink-100" },
+];
+
+const violetRamp = [
+  { name: "violet-950", cls: "bg-violet-950" },
+  { name: "violet-900", cls: "bg-violet-900" },
+  { name: "violet-800", cls: "bg-violet-800" },
+  { name: "violet-700", cls: "bg-violet-700" },
+  { name: "violet-600", cls: "bg-violet-600" },
+  { name: "violet-500", cls: "bg-violet-500" },
+  { name: "violet-400", cls: "bg-violet-400" },
+  { name: "violet-300", cls: "bg-violet-300" },
+  { name: "violet-200", cls: "bg-violet-200" },
 ];
 
 export default function FoundationPage() {
   return (
     <main>
-      <Section spacing="lg" className="border-b border-white/10">
-        <p className="text-komba-purple font-heading text-sm tracking-[0.2em] uppercase">
+      <Section spacing="lg" className="border-ink-800 border-b">
+        <p className="font-heading text-sm tracking-[0.2em] text-violet-500 uppercase">
           v2 foundation
         </p>
         <h1 className="mt-4 text-5xl font-black uppercase italic md:text-7xl">
           The best strikers.
           <br />A new fight format.
         </h1>
-        <p className="mt-6 max-w-[45ch] text-lg text-white/60">
+        <p className="text-ink-200 mt-6 max-w-[45ch] text-lg">
           Scaffold check — type scale, container widths, section rhythm and
           brand palette. Everything here is token-driven.
         </p>
       </Section>
 
-      <Section spacing="md" className="border-b border-white/10">
+      <Section spacing="md" className="border-ink-800 border-b">
         <h2 className="text-2xl font-bold uppercase">
-          Type scale <span className="text-white/40">— major third, 1.250</span>
+          Type scale <span className="text-ink-400">— major third, 1.250</span>
         </h2>
         <div className="mt-8 flex flex-col gap-4">
           {typeScale.map(({ token, cls }) => (
             <div key={token} className="flex items-baseline gap-6">
-              <code className="text-komba-yellow/70 w-24 shrink-0 font-mono text-xs">
+              <code className="w-24 shrink-0 font-mono text-xs text-violet-400">
                 {token}
               </code>
               <span className={`${cls} font-heading truncate`}>
@@ -60,18 +75,33 @@ export default function FoundationPage() {
         </div>
       </Section>
 
-      <Section spacing="md" className="border-b border-white/10">
+      <Section spacing="md" className="border-ink-800 border-b">
         <h2 className="text-2xl font-bold uppercase">Palette</h2>
-        <div className="mt-8 flex flex-wrap gap-4">
-          {swatches.map(({ name, cls }) => (
-            <div key={name} className="flex flex-col gap-2">
-              <div
-                className={`${cls} size-24 rounded-md ring-1 ring-white/15`}
-              />
-              <code className="font-mono text-xs text-white/50">{name}</code>
+        {[
+          { label: "Ink", ramp: inkRamp },
+          { label: "Violet", ramp: violetRamp },
+        ].map(({ label, ramp }) => (
+          <div key={label} className="mt-8">
+            <p className="text-ink-300 mb-3 font-mono text-xs uppercase">
+              {label}
+            </p>
+            <div className="ring-ink-600 flex overflow-hidden rounded-md ring-1">
+              {ramp.map(({ name, cls }) => (
+                <div key={name} className={`${cls} h-24 flex-1`} />
+              ))}
             </div>
-          ))}
-        </div>
+            <div className="mt-2 flex">
+              {ramp.map(({ name }) => (
+                <code
+                  key={name}
+                  className="text-ink-300 flex-1 font-mono text-[10px]"
+                >
+                  {name.replace(/^(ink|violet)-/, "")}
+                </code>
+              ))}
+            </div>
+          </div>
+        ))}
       </Section>
 
       <Section spacing="md" container={false}>
@@ -82,7 +112,7 @@ export default function FoundationPage() {
         <div className="mt-8 flex flex-col gap-3">
           {(["narrow", "default", "wide"] as const).map((width) => (
             <Container key={width} width={width}>
-              <div className="bg-komba-purple/20 border-komba-purple/40 rounded border border-dashed px-4 py-3 text-center font-mono text-xs">
+              <div className="rounded border border-dashed border-violet-500/50 bg-violet-500/15 px-4 py-3 text-center font-mono text-xs">
                 {width}
               </div>
             </Container>
