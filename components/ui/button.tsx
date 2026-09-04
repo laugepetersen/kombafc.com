@@ -4,7 +4,7 @@ import type { ComponentPropsWithoutRef, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 const base =
-  "inline-flex h-12 items-center justify-center px-6 font-body text-base font-medium tracking-[0.02em] transition-[filter,background-color,border-color] duration-200";
+  "inline-flex h-12 items-center justify-center px-6 font-body text-base font-medium tracking-[0.02em] transition-[filter,background-color,backdrop-filter,border-color] duration-200";
 
 const variants = {
   /** Filled violet. One per view — this is the primary ask. */
@@ -13,13 +13,16 @@ const variants = {
     "[text-shadow:0_0_2px_rgb(255_255_255/0.2)]",
     "drop-shadow-[0_0_3px_rgb(122_31_255/0.2)] hover:brightness-110",
   ),
-  /** Outlined. The fill is held back for hover so the button reads as an
-   *  outline at rest, next to the filled primary. */
+  /**
+   * Outlined. Transparent at rest so it reads as an outline beside the filled
+   * primary; on hover it takes a wash of the page colour and blurs whatever is
+   * behind it. Over the dot field that reads as the button frosting over,
+   * which a flat fill cannot do.
+   */
   secondary: cn(
-    "border-violet-300 relative border",
+    "border-violet-300 border backdrop-blur-none",
     "shadow-[0_0_6px_0_rgb(157_92_255/0.2),inset_0_0_8px_0_rgb(0_0_0/0.2)]",
-    "before:absolute before:inset-0 before:bg-[linear-gradient(99deg,rgb(187_155_247/0.14)_19%,rgb(110_91_145/0.14)_81%)]",
-    "before:opacity-0 before:transition-opacity before:duration-200 hover:before:opacity-100",
+    "hover:bg-void/10 hover:backdrop-blur-md",
   ),
 } as const;
 
