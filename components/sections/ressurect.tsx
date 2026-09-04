@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { PixelNoise } from "@/components/effects/pixel-noise";
 import { SectionFrame } from "@/components/layout/section-frame";
 import { Button } from "@/components/ui/button";
 import { Kicker } from "@/components/ui/kicker";
@@ -17,7 +18,20 @@ export function Ressurect() {
   return (
     <SectionFrame markers>
       <div className="grid lg:grid-cols-2">
-        <div className="border-rule flex flex-col justify-center border-t bg-violet-200/5 px-6 py-12 md:px-12 md:py-16 lg:border-t-0 lg:border-r lg:px-12 xl:px-15 xl:py-20">
+        <div className="border-rule relative isolate flex flex-col justify-center overflow-clip border-t px-6 py-12 md:px-12 md:py-16 lg:border-t-0 lg:border-r lg:px-12 xl:px-15 xl:py-20">
+          {/* Replaces the flat violet-200/5 that used to lift this panel. */}
+          <div className="absolute inset-0 -z-20">
+            <PixelNoise />
+          </div>
+
+          {/* Knocks the field back where the copy sits and lets it come through
+              towards the opposite corner, so it reads as depth behind the text
+              rather than texture across it. */}
+          <div
+            aria-hidden="true"
+            className="from-void to-void/30 absolute inset-0 -z-10 bg-gradient-to-bl"
+          />
+
           <Kicker>The Ressurect</Kicker>
 
           <h2 className="text-chrome text-paint-room mt-6 text-2xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-3xl xl:text-4xl">

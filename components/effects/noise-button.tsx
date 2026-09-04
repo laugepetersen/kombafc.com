@@ -6,16 +6,15 @@ import { type ReactNode, useState } from "react";
 import { PixelNoise } from "@/components/effects/pixel-noise";
 
 /**
- * SCAFFOLDING — sample for the noise lab.
- *
- * Primary CTA whose field only runs while pointed at. The canvas stays mounted
+ * Primary CTA whose dot field only runs while pointed at. The canvas stays mounted
  * so there is no first-hover stutter, but `enabled` stops the loop when idle:
  * fading out a canvas that is still churning behind opacity 0 costs exactly
  * what showing it costs. Focus counts as hover, or the effect would be
  * mouse-only.
  *
- * Deliberately a copy of Button's look rather than a prop added to it. If this
- * is kept, fold it into Button then and delete this file.
+ * Still a copy of Button's look rather than a prop on it. Worth folding into
+ * Button as a variant once it is used somewhere real rather than only in the
+ * styleguide.
  */
 
 /** Hoisted: passed inline these would be new arrays every render, and

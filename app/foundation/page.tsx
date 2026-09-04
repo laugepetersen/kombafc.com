@@ -1,117 +1,289 @@
+import Image from "next/image";
+import type { ReactNode } from "react";
+
+import { NoiseButton } from "@/components/effects/noise-button";
+import { PixelNoise } from "@/components/effects/pixel-noise";
 import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
+import { Button } from "@/components/ui/button";
+import { Kicker } from "@/components/ui/kicker";
+
+export const metadata = { title: "Styleguide" };
 
 const typeScale = [
-  { token: "text-7xl", cls: "text-7xl" },
-  { token: "text-6xl", cls: "text-6xl" },
-  { token: "text-5xl", cls: "text-5xl" },
-  { token: "text-4xl", cls: "text-4xl" },
-  { token: "text-3xl", cls: "text-3xl" },
-  { token: "text-2xl", cls: "text-2xl" },
-  { token: "text-xl", cls: "text-xl" },
-  { token: "text-lg", cls: "text-lg" },
-  { token: "text-base", cls: "text-base" },
-  { token: "text-sm", cls: "text-sm" },
-  { token: "text-xs", cls: "text-xs" },
+  "text-7xl",
+  "text-6xl",
+  "text-5xl",
+  "text-4xl",
+  "text-3xl",
+  "text-2xl",
+  "text-xl",
+  "text-lg",
+  "text-base",
+  "text-sm",
+  "text-xs",
 ];
 
+/* Literal class strings, not `bg-${token}`. Tailwind scans source text for
+   complete class names, so anything assembled at runtime is never generated
+   and the swatch renders with no colour at all. */
 const inkRamp = [
-  { name: "void", cls: "bg-void" },
-  { name: "ink-900", cls: "bg-ink-900" },
-  { name: "ink-800", cls: "bg-ink-800" },
-  { name: "ink-700", cls: "bg-ink-700" },
-  { name: "ink-600", cls: "bg-ink-600" },
-  { name: "ink-500", cls: "bg-ink-500" },
-  { name: "ink-400", cls: "bg-ink-400" },
-  { name: "ink-300", cls: "bg-ink-300" },
-  { name: "ink-200", cls: "bg-ink-200" },
-  { name: "ink-100", cls: "bg-ink-100" },
+  ["void", "bg-void"],
+  ["900", "bg-ink-900"],
+  ["800", "bg-ink-800"],
+  ["700", "bg-ink-700"],
+  ["600", "bg-ink-600"],
+  ["500", "bg-ink-500"],
+  ["400", "bg-ink-400"],
+  ["300", "bg-ink-300"],
+  ["200", "bg-ink-200"],
+  ["100", "bg-ink-100"],
 ];
 
 const violetRamp = [
-  { name: "violet-950", cls: "bg-violet-950" },
-  { name: "violet-900", cls: "bg-violet-900" },
-  { name: "violet-800", cls: "bg-violet-800" },
-  { name: "violet-700", cls: "bg-violet-700" },
-  { name: "violet-600", cls: "bg-violet-600" },
-  { name: "violet-500", cls: "bg-violet-500" },
-  { name: "violet-400", cls: "bg-violet-400" },
-  { name: "violet-300", cls: "bg-violet-300" },
-  { name: "violet-200", cls: "bg-violet-200" },
+  ["950", "bg-violet-950"],
+  ["900", "bg-violet-900"],
+  ["800", "bg-violet-800"],
+  ["700", "bg-violet-700"],
+  ["600", "bg-violet-600"],
+  ["500", "bg-violet-500"],
+  ["400", "bg-violet-400"],
+  ["300", "bg-violet-300"],
+  ["200", "bg-violet-200"],
 ];
 
-export const metadata = { title: "Foundation" };
+/** Module scope: passed inline these would be new arrays on every render, and
+ *  PixelNoise would rebuild its grid on each one. */
+const VIOLET = ["#7a1fff", "#9d5cff", "#c0a0ff", "#5311c4"];
+const WHITE = ["#ffffff", "#d2d2d7", "#a3a3ac"];
+const SPARSE = [0, 0, 0, 0, 0, 0.08, 0.16, 0.3];
 
-export default function FoundationPage() {
+function Block({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <main>
-      <Section spacing="lg" className="border-ink-800 border-b">
-        <p className="font-heading text-sm tracking-[0.2em] text-violet-500 uppercase">
-          v2 foundation
-        </p>
-        <h1 className="mt-4 text-5xl font-black uppercase italic md:text-7xl">
-          The best strikers.
-          <br />A new fight format.
+    <Section spacing="md" className="border-ink-800 border-b">
+      <h2 className="text-ink-300 mb-8 font-mono text-xs tracking-[0.2em] uppercase">
+        {title}
+      </h2>
+      {children}
+    </Section>
+  );
+}
+
+function Note({ children }: { children: ReactNode }) {
+  return <p className="text-ink-300 mb-4 max-w-[60ch] text-sm">{children}</p>;
+}
+
+function Ramp({ tokens, label }: { tokens: string[][]; label: string }) {
+  return (
+    <div className="mb-8">
+      <p className="text-ink-300 mb-3 font-mono text-xs uppercase">{label}</p>
+      <div className="ring-ink-700 flex overflow-hidden rounded-md ring-1">
+        {tokens.map(([name, className]) => (
+          <div key={name} className={`${className} h-20 flex-1`} />
+        ))}
+      </div>
+      <div className="mt-2 flex">
+        {tokens.map(([name]) => (
+          <code
+            key={name}
+            className="text-ink-400 flex-1 font-mono text-[10px]"
+          >
+            {name}
+          </code>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function StyleguidePage() {
+  return (
+    <main className="pt-32">
+      <Section spacing="md">
+        <Kicker>Styleguide</Kicker>
+        <h1 className="text-chrome text-paint-room mt-6 text-4xl font-black uppercase italic md:text-6xl">
+          KOMBA foundation
         </h1>
-        <p className="text-ink-200 mt-6 max-w-[45ch] text-lg">
-          Scaffold check — type scale, container widths, section rhythm and
-          brand palette. Everything here is token-driven.
-        </p>
       </Section>
 
-      <Section spacing="md" className="border-ink-800 border-b">
-        <h2 className="text-2xl font-bold uppercase">
-          Type scale <span className="text-ink-400">— major third, 1.250</span>
-        </h2>
-        <div className="mt-8 flex flex-col gap-4">
-          {typeScale.map(({ token, cls }) => (
-            <div key={token} className="flex items-baseline gap-6">
+      <Block title="Fonts">
+        <div className="grid gap-10 md:grid-cols-2">
+          <div>
+            <p className="text-ink-300 mb-2 font-mono text-xs uppercase">
+              Eurostile — headings
+            </p>
+            <p className="font-heading text-4xl font-black uppercase italic">
+              Komba Fight Club
+            </p>
+            <Note>
+              Licensed, so the files ship with the repo. Loaded through
+              next/font/local in Bold and Black, roman and italic.
+            </Note>
+          </div>
+          <div>
+            <p className="text-ink-300 mb-2 font-mono text-xs uppercase">
+              Google Sans Flex — body
+            </p>
+            <p className="font-body text-2xl">Komba Fight Club</p>
+            <Note>
+              Variable, self-hosted through next/font/google, so there is no
+              request to fonts.googleapis.com on load.
+            </Note>
+          </div>
+        </div>
+      </Block>
+
+      <Block title="Type scale">
+        <Note>
+          Modular scale off a 16px base. Every step is a calc() chain from
+          <code className="text-violet-300"> --text-ratio</code>, currently
+          1.250, so swapping the ratio rescales the whole site. Headings sit on
+          100% leading and are trimmed to cap height.
+        </Note>
+        <div className="flex flex-col gap-4">
+          {typeScale.map((step) => (
+            <div key={step} className="flex items-baseline gap-6">
               <code className="w-24 shrink-0 font-mono text-xs text-violet-400">
-                {token}
+                {step}
               </code>
-              <span className={`${cls} font-heading truncate`}>
+              <span className={`${step} font-heading truncate`}>
                 Komba Fight Club
               </span>
             </div>
           ))}
         </div>
-      </Section>
+      </Block>
 
-      <Section spacing="md" className="border-ink-800 border-b">
-        <h2 className="text-2xl font-bold uppercase">Palette</h2>
-        {[
-          { label: "Ink", ramp: inkRamp },
-          { label: "Violet", ramp: violetRamp },
-        ].map(({ label, ramp }) => (
-          <div key={label} className="mt-8">
-            <p className="text-ink-300 mb-3 font-mono text-xs uppercase">
-              {label}
+      <Block title="Colour">
+        <Note>
+          Note the ink ramp runs light-numbered = light, so ink-100 is the
+          palest and ink-900 the darkest, with void beneath it.
+        </Note>
+        <Ramp label="Ink" tokens={inkRamp} />
+        <Ramp label="Violet" tokens={violetRamp} />
+      </Block>
+
+      <Block title="Calls to action">
+        <div className="flex flex-wrap items-center gap-4">
+          <Button href="#">Become Partner</Button>
+          <Button href="#" variant="secondary">
+            About Us
+          </Button>
+          <NoiseButton href="#">Hover for noise</NoiseButton>
+        </div>
+        <Note>
+          Primary is filled, secondary holds its fill back for hover so it reads
+          as an outline beside it. The third carries a dot field that only runs
+          while pointed at.
+        </Note>
+      </Block>
+
+      <Block title="Text treatments">
+        <div className="flex flex-col gap-8">
+          <div>
+            <code className="text-ink-400 font-mono text-xs">.text-chrome</code>
+            <p className="text-chrome text-paint-room font-heading mt-2 text-4xl font-black uppercase italic">
+              A new fight format
             </p>
-            <div className="ring-ink-600 flex overflow-hidden rounded-md ring-1">
-              {ramp.map(({ name, cls }) => (
-                <div key={name} className={`${cls} h-24 flex-1`} />
-              ))}
-            </div>
-            <div className="mt-2 flex">
-              {ramp.map(({ name }) => (
-                <code
-                  key={name}
-                  className="text-ink-300 flex-1 font-mono text-[10px]"
-                >
-                  {name.replace(/^(ink|violet)-/, "")}
-                </code>
-              ))}
+            <Note>
+              Gradient fill whose angle rocks between the two diagonals, so the
+              light appears to move across the type. Painted with
+              background-clip, which is why headings using it need
+              <code className="text-violet-300"> .text-paint-room</code> — glyph
+              parts outside the box would otherwise go unpainted.
+            </Note>
+          </div>
+          <div>
+            <code className="text-ink-400 font-mono text-xs">
+              .text-chrome-violet
+            </code>
+            <div className="mt-2">
+              <Kicker>The Ressurect</Kicker>
             </div>
           </div>
-        ))}
-      </Section>
+        </div>
+      </Block>
+
+      <Block title="Dot field">
+        <Note>
+          A flickering dot matrix on a 2D canvas. Drawn at a fixed low frame
+          rate, skipped entirely while off-screen or the tab is hidden, and
+          static under prefers-reduced-motion.
+        </Note>
+        <div className="grid gap-10 lg:grid-cols-2">
+          <div>
+            <p className="mb-3 font-mono text-xs text-violet-400 uppercase">
+              Violet
+            </p>
+            <div className="bg-void h-56 overflow-clip">
+              <PixelNoise />
+            </div>
+          </div>
+          <div>
+            <p className="mb-3 font-mono text-xs text-violet-400 uppercase">
+              White
+            </p>
+            <div className="bg-void h-56 overflow-clip">
+              <PixelNoise colors={WHITE} />
+            </div>
+          </div>
+          <div>
+            <p className="mb-3 font-mono text-xs text-violet-400 uppercase">
+              Over a photograph — screen
+            </p>
+            <div className="bg-void relative isolate h-56 overflow-clip">
+              <Image
+                src="/ressurect.webp"
+                alt=""
+                fill
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="object-cover"
+              />
+              <div className="absolute inset-0">
+                <PixelNoise
+                  className="mix-blend-screen"
+                  colors={VIOLET}
+                  opacities={SPARSE}
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <p className="mb-3 font-mono text-xs text-violet-400 uppercase">
+              Over the video — screen
+            </p>
+            <div className="bg-void relative isolate h-56 overflow-clip">
+              <video
+                src="/hero-loop.mp4"
+                poster="/hero-poster.webp"
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 size-full object-cover"
+              />
+              <div className="absolute inset-0">
+                <PixelNoise
+                  className="mix-blend-screen"
+                  colors={WHITE}
+                  pitch={5}
+                  churn={0.18}
+                  opacities={SPARSE}
+                  fadeUpwards={false}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Block>
 
       <Section spacing="md" container={false}>
         <Container>
-          <h2 className="text-2xl font-bold uppercase">Container widths</h2>
+          <h2 className="text-ink-300 mb-8 font-mono text-xs tracking-[0.2em] uppercase">
+            Container widths
+          </h2>
         </Container>
-
-        <div className="mt-8 flex flex-col gap-3">
+        <div className="flex flex-col gap-3">
           {(["narrow", "default", "wide"] as const).map((width) => (
             <Container key={width} width={width}>
               <div className="rounded border border-dashed border-violet-500/50 bg-violet-500/15 px-4 py-3 text-center font-mono text-xs">
