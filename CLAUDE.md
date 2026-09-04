@@ -31,6 +31,18 @@ Eurostile (headings) and Aeonik (body) are licensed and not in the repo.
 missing file degrades rather than breaking the build. Once the real files
 land, move to `next/font/local` for preloading and size-adjust metrics.
 
+## Icons
+
+Material Symbols for everything. The only non-Material vector in the project is
+the KOMBA wordmark (`public/brand/komba-wordmark.svg`), which is a brand mark,
+not an icon.
+
+Icons live in `components/ui/icon.tsx` as inlined path data — no icon font, no
+per-icon request, unused entries dropped by the bundler. To add one, copy the
+`d` attribute from `node_modules/@material-symbols/svg-400/outlined/<name>.svg`
+into the `paths` map. All Material Symbols share the `0 -960 960 960` viewBox,
+so nothing else changes. Do not hand-draw SVG paths for icons.
+
 ## Components
 
 - `components/ui/` — shadcn + Aceternity registry installs. Do not hand-edit
