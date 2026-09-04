@@ -36,11 +36,7 @@ export function Ressurect() {
           <Kicker>The Ressurect</Kicker>
 
           <h2 className="text-chrome text-paint-room mt-6 text-2xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-3xl xl:text-4xl">
-            We&rsquo;re aiming
-            <br />
-            to set our mark
-            <br />
-            Q1, 2027.
+            We&rsquo;re aiming to set our mark Q1, 2027.
           </h2>
 
           <div className="text-ink-200 mt-8 flex max-w-96 flex-col gap-4 text-base leading-[1.4]">
