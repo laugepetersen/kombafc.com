@@ -60,6 +60,15 @@ export function Header() {
 
   return (
     <header className="fixed inset-x-0 top-5 z-50 flex justify-center px-4">
+      {/* Full-bleed scrim behind the pill, solid at the very top and fading
+          out below it, so content scrolling up dissolves into the page edge
+          instead of sliding under a hard line. Sits before the pill in the DOM,
+          so it stays behind it without needing a z-index. */}
+      <div
+        aria-hidden="true"
+        className="from-void pointer-events-none fixed inset-x-0 top-0 h-36 bg-gradient-to-b to-transparent"
+      />
+
       <nav
         className={cn(
           // An inset ring rather than a border: the pill is 56px in the comp,
