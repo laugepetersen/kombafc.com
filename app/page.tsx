@@ -1,5 +1,6 @@
 import { Hero } from "@/components/sections/hero";
 import { FrameSpacer, Ressurect } from "@/components/sections/ressurect";
+import { Sponsors } from "@/components/sections/sponsors";
 
 export default function HomePage() {
   return (
@@ -7,6 +8,7 @@ export default function HomePage() {
       <Hero />
       <FrameSpacer />
       <Ressurect />
+      <Sponsors />
     </>
   );
 }

@@ -320,6 +320,30 @@
 }
 
 /**
+ * Marquee. The track holds two copies of its content, so translating exactly
+ * half its width lands the second copy where the first began and the loop has
+ * no seam.
+ */
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@utility animate-marquee {
+  animation: marquee var(--marquee-duration, 40s) linear infinite;
+
+  /* Continuous motion with no way to stop it is exactly what this setting is
+     for. The row stays readable and becomes scrollable instead. */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/**
  * The 7px square pinned at each corner of a framed section — a survey marker
  * on the grid rather than decoration.
  */

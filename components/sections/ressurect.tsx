@@ -17,17 +17,15 @@ export function Ressurect() {
   return (
     <SectionFrame markers>
       <div className="grid lg:grid-cols-2">
-        <div className="flex flex-col justify-center bg-violet-200/5 px-6 py-12 md:px-12 md:py-16 lg:px-12 xl:px-15 xl:py-20">
+        <div className="border-rule flex flex-col justify-center border-t bg-violet-200/5 px-6 py-12 md:px-12 md:py-16 lg:border-t-0 lg:border-r lg:px-12 xl:px-15 xl:py-20">
           <Kicker>The Ressurect</Kicker>
 
           <h2 className="text-chrome text-paint-room mt-6 text-2xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-3xl xl:text-4xl">
-            <span className="text-trim block">We&rsquo;re aiming</span>
-            <span className="text-trim mt-(--heading-line-gap) block">
-              to set our mark
-            </span>
-            <span className="text-trim mt-(--heading-line-gap) block">
-              Q1, 2027.
-            </span>
+            We&rsquo;re aiming
+            <br />
+            to set our mark
+            <br />
+            Q1, 2027.
           </h2>
 
           <div className="text-ink-200 mt-4 flex max-w-96 flex-col gap-4 text-base leading-[1.4] md:mt-4">

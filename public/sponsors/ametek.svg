@@ -1,0 +1,34 @@
+<svg width="122" height="20" viewBox="0 0 122 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="122" height="20" fill="#1E1E1E"/>
+<g id="Frame 1000003705">
+<rect width="1440" height="5295" transform="translate(-653.5 -1739)" fill="#0A0A0F"/>
+<g id="Frame 1000003712">
+<mask id="path-1-inside-1_1537_188" fill="white">
+<path d="M-653.5 -169H786.5V107H-653.5V-169Z"/>
+</mask>
+<path d="M-653.5 -169V-168H786.5V-169V-170H-653.5V-169ZM786.5 107V106H-653.5V107V108H786.5V107Z" fill="#1F1D27" mask="url(#path-1-inside-1_1537_188)"/>
+<g id="Frame 1000003713">
+<mask id="path-3-inside-2_1537_188" fill="white">
+<path d="M-573.5 -168H706.5V106H-573.5V-168Z"/>
+</mask>
+<path d="M706.5 -168H705.5V106H706.5H707.5V-168H706.5ZM-573.5 106H-572.5V-168H-573.5H-574.5V106H-573.5Z" fill="#DDCCFF" fill-opacity="0.1" mask="url(#path-3-inside-2_1537_188)"/>
+<g id="Frame 1000003698">
+<g id="AMETEK, Inc." clip-path="url(#clip0_1537_188)">
+<path id="Vector" fill-rule="evenodd" clip-rule="evenodd" d="M3.61032 13.4106H10.3793L6.90334 19.5186H0.244141L3.61032 13.4106Z" fill="#A3A3AC"/>
+<path id="Vector_2" fill-rule="evenodd" clip-rule="evenodd" d="M10.6353 0.243774L21.5389 19.4819H13.9284L6.83008 7.04662L10.6353 0.243774Z" fill="#A3A3AC"/>
+<path id="Vector_3" fill-rule="evenodd" clip-rule="evenodd" d="M21.502 1.92639H30.0273L33.9423 10.6677L37.9671 1.92639H46.602V19.4821H40.3087V11.5089L36.6131 19.5553H31.4176L27.8318 11.5089V19.4821H21.502V1.92639Z" fill="#A3A3AC"/>
+<path id="Vector_4" fill-rule="evenodd" clip-rule="evenodd" d="M48.541 1.88965H64.4208V6.60774H54.9077V7.85128H64.4208V12.3499H54.9077V14.5078H64.4208V19.4819H48.541V1.88965Z" fill="#A3A3AC"/>
+<path id="Vector_5" fill-rule="evenodd" clip-rule="evenodd" d="M85.2773 1.92627H101.23V6.60779H91.6804V7.85133H101.23V12.3865H91.6804V14.5444H101.23V19.482H85.2773V1.92627Z" fill="#A3A3AC"/>
+<path id="Vector_6" fill-rule="evenodd" clip-rule="evenodd" d="M65.5547 1.88977H84.0687V6.5713H77.9584V19.4455H71.5917V6.5713H65.5547V1.88977Z" fill="#A3A3AC"/>
+<path id="Vector_7" fill-rule="evenodd" clip-rule="evenodd" d="M102.986 1.88977H109.609V6.71759L113.927 1.88977H121.025L114.695 8.91205L121.757 19.4455H113.78L110.341 13.5936L109.609 14.5079V19.4455H102.986V1.88977Z" fill="#A3A3AC"/>
+</g>
+</g>
+</g>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_1537_188">
+<rect width="122" height="20" fill="white"/>
+</clipPath>
+</defs>
+</svg>
