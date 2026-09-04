@@ -22,9 +22,7 @@ const EXPAND_MS = 550;
  * over it.
  *
  * Mounted only while the modal is open, so "closed" is simply its initial
- * state and there is nothing to reset on the way out. The grid is revealed
- * with `clip-path` rather than a transform, so the rules stay 1px and evenly
- * spaced the whole way out — a scale would smear them.
+ * state and there is nothing to reset on the way out.
  */
 function ExpandingPlayer({ children }: { children: ReactNode }) {
   const [expanded, setExpanded] = useState(false);
@@ -42,17 +40,38 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
     };
   }, []);
 
+  const rule =
+    "absolute bg-rule transition-all duration-[550ms] ease-[cubic-bezier(0.16,1,0.3,1)]";
+
+  // Closed, the four rules sit on the edges of a 60px square in the middle.
+  const closed = "calc(50% - 30px)";
+  // Open, they sit 1px *outside* the player, so the rule stays visible
+  // instead of being covered by the video.
+  const open = "-1px";
+
   return (
     <div className="relative aspect-video w-full max-w-6xl">
-      <div
-        aria-hidden="true"
-        className={cn(
-          "absolute inset-0 ring-1 ring-violet-500/40",
-          "[background-image:repeating-linear-gradient(to_right,rgb(122_31_255/0.28)_0_1px,transparent_1px_calc(100%/8)),repeating-linear-gradient(to_bottom,rgb(122_31_255/0.28)_0_1px,transparent_1px_calc(100%/5))]",
-          "transition-[clip-path] duration-[550ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
-          expanded ? "[clip-path:inset(0)]" : "[clip-path:inset(42%_46%)]",
-        )}
-      />
+      {/* Four rules running edge to edge of the viewport, opening from that
+          small square out to the player's box. Positional rather than scaled,
+          so they stay exactly 1px the whole way out. */}
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+        <span
+          className={cn(rule, "-right-[100vw] -left-[100vw] h-px")}
+          style={{ top: expanded ? open : closed }}
+        />
+        <span
+          className={cn(rule, "-right-[100vw] -left-[100vw] h-px")}
+          style={{ bottom: expanded ? open : closed }}
+        />
+        <span
+          className={cn(rule, "-top-[100vh] -bottom-[100vh] w-px")}
+          style={{ left: expanded ? open : closed }}
+        />
+        <span
+          className={cn(rule, "-top-[100vh] -bottom-[100vh] w-px")}
+          style={{ right: expanded ? open : closed }}
+        />
+      </div>
 
       <div
         className={cn(
@@ -83,10 +102,8 @@ type VideoModalProps = {
  * inertness of the page behind it and top-layer stacking without any of it
  * being reimplemented in JS.
  *
- * Opens by expanding a ruled grid out to the player's box, then cross-fading
- * the video in over it. The grid is revealed with `clip-path` rather than a
- * transform so the rules stay 1px and evenly spaced the whole way out — a
- * scale would smear them.
+ * Opens by drawing four rules out from a small square in the middle to the
+ * player's box, then cross-fading the video in over them.
  */
 export function VideoModal({
   playbackId,
