@@ -21,7 +21,10 @@ const variants = {
    */
   secondary: cn(
     "border-violet-300 border backdrop-blur-none",
-    "shadow-[0_0_6px_0_rgb(157_92_255/0.2),inset_0_0_8px_0_rgb(0_0_0/0.2)]",
+    // Glow only. The comp also carried an inset black at 20%, which made
+    // sense against its translucent violet fill — with the button fully
+    // transparent it just darkened whatever sat behind it.
+    "shadow-[0_0_6px_0_rgb(157_92_255/0.2)]",
     "hover:bg-void/10 hover:backdrop-blur-md",
   ),
 } as const;
