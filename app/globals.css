@@ -320,6 +320,61 @@
 }
 
 /**
+ * A highlight travelling around an element's border.
+ *
+ * Aceternity's moving-border does this by animating an element along an SVG
+ * path with JS. This gets the same result from a conic gradient whose start
+ * angle rotates: the bright part of the ramp sweeps around the perimeter on
+ * its own, with no script and nothing to keep in sync.
+ *
+ * The gradient fills the whole box, then a two-layer mask punches the interior
+ * out — one layer clipped to the content box, one to the border box,
+ * composited to exclude — leaving only the 1px ring painted.
+ */
+@property --shine-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes shine-rotate {
+  to {
+    --shine-angle: 360deg;
+  }
+}
+
+@utility shine-border {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    pointer-events: none;
+    background: conic-gradient(
+      from var(--shine-angle),
+      rgb(255 255 255 / 0.1),
+      rgb(255 255 255 / 0.6) 49%,
+      rgb(255 255 255 / 0.1)
+    );
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: shine-rotate var(--shine-duration, 6s) linear infinite;
+  }
+
+  /* Holds the highlight still rather than looping it. */
+  @media (prefers-reduced-motion: reduce) {
+    &::before {
+      animation: none;
+    }
+  }
+}
+
+/**
  * Marquee. The track holds two copies of its content, so translating exactly
  * half its width lands the second copy where the first began and the loop has
  * no seam.

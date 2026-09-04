@@ -70,9 +70,10 @@ export function Header() {
 
       <nav
         className={cn(
-          // An inset ring rather than a border: the pill is 56px in the comp,
-          // and a border would add its 2px on top of the 56px row.
-          "flex flex-col bg-white/5 inset-ring-1 inset-ring-white/10 backdrop-blur-[12px]",
+          // shine-border draws the outline as a masked ring on a pseudo
+          // element, so like the inset ring it replaced it adds no layout
+          // height — the pill stays 56px, as in the comp.
+          "shine-border flex flex-col bg-white/5 backdrop-blur-[12px]",
           "max-md:w-full max-md:max-w-sm",
         )}
       >
