@@ -213,6 +213,38 @@
   }
 }
 
+/**
+ * Loading sheen for placeholder surfaces — a slow highlight travelling across
+ * a dark panel, so a box that is waiting on content reads as busy rather than
+ * as an empty black hole.
+ */
+@keyframes sheen {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@utility sheen {
+  background-image: linear-gradient(
+    100deg,
+    transparent 25%,
+    rgb(255 255 255 / 0.05) 45%,
+    rgb(255 255 255 / 0.05) 55%,
+    transparent 75%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: sheen 1.8s linear infinite;
+
+  /* A looping highlight is exactly the kind of motion this setting is for. */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
 /* ---------------------------------------------------------------------------
    Base
 --------------------------------------------------------------------------- */
