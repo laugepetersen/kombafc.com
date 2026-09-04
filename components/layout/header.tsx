@@ -85,40 +85,41 @@ export function Header() {
             "[&:has([data-nav-item]:hover)_[data-nav-item]:not(:hover)]:opacity-40",
           )}
         >
-          <Link
-            href="/"
-            data-nav-item
-            className="flex h-full items-center px-6 transition-opacity duration-200"
-            aria-label="KOMBA Fight Club — home"
-          >
-            <span
-              className="block overflow-hidden transition-[width] duration-500 ease-out"
-              style={{ width: scrolled ? WORDMARK_MARK_ONLY : WORDMARK_FULL }}
+          {/* Logo sits in the same segment as the links, on the same gap,
+              so the wordmark reads as the first nav item rather than as a
+              separate badge. Only the menu button gets its own box. */}
+          <div className="flex h-full items-center gap-7 px-6">
+            <Link
+              href="/"
+              data-nav-item
+              className="flex h-full items-center transition-opacity duration-200"
+              aria-label="KOMBA Fight Club — home"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- fixed-size
-                  brand mark; next/image adds a wrapper and a second hop for an
-                  SVG it will not optimise anyway. */}
-              <img
-                src="/brand/komba-wordmark.svg"
-                alt=""
-                width={126}
-                height={12}
-                // max-w-none defeats the global `img { max-width: 100% }`, which
-                // would squash the mark rather than crop the word.
-                className="h-3 w-[126.15px] max-w-none"
-              />
-            </span>
-          </Link>
+              <span
+                className="block overflow-hidden transition-[width] duration-500 ease-out"
+                style={{ width: scrolled ? WORDMARK_MARK_ONLY : WORDMARK_FULL }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- fixed-size
+                    brand mark; next/image adds a wrapper and a second hop for an
+                    SVG it will not optimise anyway. */}
+                <img
+                  src="/brand/komba-wordmark.svg"
+                  alt=""
+                  width={126}
+                  height={12}
+                  // max-w-none defeats the global `img { max-width: 100% }`, which
+                  // would squash the mark rather than crop the word.
+                  className="h-3 w-[126.15px] max-w-none"
+                />
+              </span>
+            </Link>
 
-          <Divider className="max-md:hidden" />
-
-          <div className="flex items-center gap-7 px-12 max-md:hidden">
             {navItems.map(({ label, href }) => (
               <Link
                 key={href}
                 href={href}
                 data-nav-item
-                className={navLinkClass}
+                className={cn(navLinkClass, "max-md:hidden")}
               >
                 {label}
               </Link>
