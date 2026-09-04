@@ -219,11 +219,13 @@
 }
 
 @utility text-chrome {
-  /* The two ends of the ramp. Pulled out so the contrast is a one-line tune —
-     the Figma pair (#ffffff -> #dfdfdf at 90%) is only about a fifth of a stop
-     apart, which is too little for the rotation to register as movement. */
+  /* The two ends of the ramp. Pulled out so the contrast is a one-line tune.
+     Deliberately NOT from the ink ramp: those tones carry a blue-violet cast
+     by design (ink-400 is #4e4e5c — blue channel above red and green), which
+     tints the type. This is a neutral grey, light enough to stay close to
+     white while leaving the rotation something to show. */
   --chrome-from: #ffffff;
-  --chrome-to: var(--color-ink-400);
+  --chrome-to: #c8c8c8;
 
   background-image: linear-gradient(
     var(--chrome-angle),
@@ -255,6 +257,44 @@
     animation: none;
   }
 }
+/**
+ * The violet counterpart to text-chrome, for kickers and outline buttons.
+ * Static — it labels rather than performs, so it does not need to move.
+ */
+@utility text-chrome-violet {
+  background-image: linear-gradient(
+    174deg,
+    var(--color-violet-300) 24%,
+    var(--color-violet-200) 47%,
+    var(--color-violet-300) 76%
+  );
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 2px rgb(157 92 255 / 0.4);
+
+  @media (forced-colors: active) {
+    background-image: none;
+    color: CanvasText;
+    text-shadow: none;
+  }
+}
+
+/**
+ * The 7px square pinned at each corner of a framed section — a survey marker
+ * on the grid rather than decoration.
+ */
+@utility corner-marker {
+  background-image: linear-gradient(
+    135deg,
+    var(--color-violet-300) 24%,
+    var(--color-violet-200) 47%,
+    var(--color-violet-300) 76%
+  );
+  box-shadow:
+    0 0 2px rgb(157 92 255 / 0.4),
+    inset 0.25px 0.25px 0.5px rgb(0 0 0 / 0.2);
+}
+
 
 @keyframes sheen {
   from {
