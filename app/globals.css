@@ -358,11 +358,16 @@
     inset: 0;
     padding: 1px;
     pointer-events: none;
+    /* The bright stop is held to a narrow band rather than ramped across the
+       whole sweep, so most of the ring sits at the base value and the highlight
+       reads as a beam passing over it. */
     background: conic-gradient(
       from var(--shine-angle),
-      rgb(255 255 255 / 0.1),
-      rgb(255 255 255 / 0.6) 49%,
-      rgb(255 255 255 / 0.1)
+      rgb(255 255 255 / 0.1) 0%,
+      rgb(255 255 255 / 0.1) 40%,
+      rgb(255 255 255 / 0.55) 50%,
+      rgb(255 255 255 / 0.1) 60%,
+      rgb(255 255 255 / 0.1) 100%
     );
     mask:
       linear-gradient(#000 0 0) content-box,

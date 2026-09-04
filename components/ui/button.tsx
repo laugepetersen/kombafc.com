@@ -13,12 +13,13 @@ const variants = {
     "[text-shadow:0_0_2px_rgb(255_255_255/0.2)]",
     "drop-shadow-[0_0_3px_rgb(122_31_255/0.2)] hover:brightness-110",
   ),
-  /** Outlined, with the violet gradient carried through to the label. */
+  /** Outlined. The fill is held back for hover so the button reads as an
+   *  outline at rest, next to the filled primary. */
   secondary: cn(
     "border-violet-300 relative border",
     "shadow-[0_0_6px_0_rgb(157_92_255/0.2),inset_0_0_8px_0_rgb(0_0_0/0.2)]",
-    "before:absolute before:inset-0 before:bg-[linear-gradient(99deg,rgb(187_155_247/0.1)_19%,rgb(110_91_145/0.1)_81%)]",
-    "hover:before:opacity-70",
+    "before:absolute before:inset-0 before:bg-[linear-gradient(99deg,rgb(187_155_247/0.14)_19%,rgb(110_91_145/0.14)_81%)]",
+    "before:opacity-0 before:transition-opacity before:duration-200 hover:before:opacity-100",
   ),
 } as const;
 

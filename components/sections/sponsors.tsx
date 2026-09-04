@@ -49,7 +49,7 @@ export function Sponsors() {
               width={width}
               height={height}
               style={{ height, width }}
-              className="max-w-none shrink-0 opacity-70 transition-opacity duration-200 hover:opacity-100"
+              className="max-w-none shrink-0 opacity-[0.64] transition-opacity duration-200 hover:opacity-100"
             />
           ))}
         </Marquee>

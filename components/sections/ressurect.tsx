@@ -28,7 +28,7 @@ export function Ressurect() {
             Q1, 2027.
           </h2>
 
-          <div className="text-ink-200 mt-4 flex max-w-96 flex-col gap-4 text-base leading-[1.4] md:mt-4">
+          <div className="text-ink-200 mt-8 flex max-w-96 flex-col gap-4 text-base leading-[1.4]">
             <p>
               We have been silent for almost a year, but not out of the game.
             </p>
