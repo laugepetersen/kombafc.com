@@ -20,10 +20,14 @@ export function Ressurect() {
         <div className="flex flex-col justify-center bg-violet-200/5 px-6 py-12 md:px-12 md:py-16 lg:px-15 lg:py-20">
           <Kicker>The Ressurect</Kicker>
 
-          <h2 className="text-chrome mt-6 text-xl leading-none font-black tracking-[-0.01em] uppercase italic sm:text-2xl md:mt-8 md:text-3xl lg:text-4xl">
+          <h2 className="text-chrome mt-6 text-xl font-black tracking-[-0.01em] uppercase italic sm:text-2xl md:mt-8 md:text-3xl lg:text-4xl">
             <span className="text-trim block">We&rsquo;re aiming</span>
-            <span className="text-trim mt-[0.14em] block">to set our mark</span>
-            <span className="text-trim mt-[0.14em] block">Q1, 2027.</span>
+            <span className="text-trim mt-(--heading-line-gap) block">
+              to set our mark
+            </span>
+            <span className="text-trim mt-(--heading-line-gap) block">
+              Q1, 2027.
+            </span>
           </h2>
 
           <div className="text-ink-200 mt-4 flex max-w-96 flex-col gap-4 text-base leading-[1.4] md:mt-4">

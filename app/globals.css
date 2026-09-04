@@ -57,6 +57,12 @@
   --text-ratio: 1.25;
   --text-base: 1rem; /* 16px */
 
+  /* Heading leading, 110%. Doubles as the gap between pre-split heading
+     lines: with the boxes trimmed to cap height the leading is gone, and this
+     is exactly the amount over 1 that is worth adding back. */
+  --heading-leading: 1.1;
+  --heading-line-gap: calc((var(--heading-leading) - 1) * 1em);
+
   --text-sm: calc(var(--text-base) / var(--text-ratio));
   --text-xs: calc(var(--text-sm) / var(--text-ratio));
   --text-lg: calc(var(--text-base) * var(--text-ratio));
@@ -70,20 +76,23 @@
   --text-8xl: calc(var(--text-7xl) * var(--text-ratio));
   --text-9xl: calc(var(--text-8xl) * var(--text-ratio));
 
-  /* Leading tightens as type grows — display copy should not sit on 1.5. */
+  /* Body steps keep generous leading. Display steps all resolve to
+     --heading-leading, because a `text-3xl` utility sets line-height as well as
+     size and would otherwise beat the base heading rule — utilities outrank
+     @layer base, so the token has to be wired in here to actually win. */
   --text-xs--line-height: 1.5;
   --text-sm--line-height: 1.5;
   --text-base--line-height: 1.55;
   --text-lg--line-height: 1.5;
   --text-xl--line-height: 1.4;
-  --text-2xl--line-height: 1.25;
-  --text-3xl--line-height: 1.15;
-  --text-4xl--line-height: 1.08;
-  --text-5xl--line-height: 1.02;
-  --text-6xl--line-height: 1;
-  --text-7xl--line-height: 0.98;
-  --text-8xl--line-height: 0.95;
-  --text-9xl--line-height: 0.92;
+  --text-2xl--line-height: var(--heading-leading);
+  --text-3xl--line-height: var(--heading-leading);
+  --text-4xl--line-height: var(--heading-leading);
+  --text-5xl--line-height: var(--heading-leading);
+  --text-6xl--line-height: var(--heading-leading);
+  --text-7xl--line-height: var(--heading-leading);
+  --text-8xl--line-height: var(--heading-leading);
+  --text-9xl--line-height: var(--heading-leading);
 
   /* -- Layout ------------------------------------------------------------ *
      Content width is 1280px. The gutter is the *minimum* breathing room,
@@ -201,23 +210,24 @@
  */
 @property --chrome-angle {
   syntax: "<angle>";
-  initial-value: 125deg;
+  initial-value: 135deg;
   /* Inherits so the debug overlay, which is a pseudo-element and therefore a
      child for inheritance, sees the animated value rather than the initial
      one. With inherits:false the red rule sits frozen at 125deg. */
   inherits: true;
 }
 
-/* 180deg +/- 55. A CSS gradient angle points along the gradient *line*, and
-   the first stop sits at its start — so -35deg puts the white end at the
-   bottom. Rocking around 180deg keeps white at the top and swings it from
-   upper-left to upper-right, which is the light direction the comp uses. */
+/* The two diagonals. A CSS gradient angle points along the gradient *line* and
+   the first stop sits at its start, so 135deg runs upper-left to lower-right
+   with white at the top-left, and 225deg runs upper-right to lower-left. The
+   light rocks between those two corners rather than swinging through a wider
+   arc, which reads closer to a half turn than a tilt. */
 @keyframes text-chrome {
   from {
-    --chrome-angle: 125deg;
+    --chrome-angle: 135deg;
   }
   to {
-    --chrome-angle: 235deg;
+    --chrome-angle: 225deg;
   }
 }
 
@@ -406,10 +416,11 @@
   h6 {
     @apply font-heading;
 
-    /* Headings sit on 100%. With the box trimmed to cap height there is no
-       half-leading left to absorb, so the space between stacked lines is set
-       explicitly where it is wanted rather than falling out of the leading. */
-    line-height: 1;
+    /* 110%. Note this only governs headings that wrap on their own; where a
+       heading stacks pre-split lines, each is trimmed to its caps and the
+       half-leading is gone, so the gap there comes from --heading-leading
+       below instead. */
+    line-height: var(--heading-leading);
 
     /* -2%. Note em resolves against the element's *own* font-size and then
        inherits as a fixed px value, so a heading that sets its size on child

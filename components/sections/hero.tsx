@@ -57,7 +57,7 @@ export function Hero() {
             being a fixed gap that only looks right at one breakpoint. */}
         <h1
           className={cn(
-            "font-heading text-chrome space-y-[0.14em] px-4 font-black uppercase italic",
+            "font-heading text-chrome space-y-(--heading-line-gap) px-4 font-black uppercase italic",
             DEBUG_CHROME && "chrome-debug",
           )}
         >
