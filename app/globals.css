@@ -35,12 +35,12 @@
      violet-200 at 10%. */
   --color-rule: rgb(221 204 255 / 0.1);
 
-  /* Panel ground: the page colour carrying 4% of the pale violet. Barely a
+  /* Panel ground: the page colour carrying 10% of the pale violet. Barely a
      tint on its own, but enough to keep a panel from reading as flat black
      next to the surrounding void. */
   --color-panel: color-mix(
     in srgb,
-    var(--color-violet-200) 4%,
+    var(--color-violet-200) 10%,
     var(--color-void)
   );
 
