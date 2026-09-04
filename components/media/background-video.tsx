@@ -1,7 +1,7 @@
 "use client";
 
 import { MuxBackgroundVideo } from "@mux/mux-background-video/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -18,42 +18,59 @@ type BackgroundVideoProps = {
   className?: string;
 };
 
+const REDUCED_MOTION = "(prefers-reduced-motion: reduce)";
+
+type NetworkInformation = EventTarget & {
+  saveData?: boolean;
+  effectiveType?: string;
+};
+
+function getConnection(): NetworkInformation | undefined {
+  return (navigator as Navigator & { connection?: NetworkInformation })
+    .connection;
+}
+
+function subscribe(onChange: () => void) {
+  const motion = window.matchMedia(REDUCED_MOTION);
+  const connection = getConnection();
+
+  motion.addEventListener("change", onChange);
+  connection?.addEventListener("change", onChange);
+
+  return () => {
+    motion.removeEventListener("change", onChange);
+    connection?.removeEventListener("change", onChange);
+  };
+}
+
+/** Cheap enough to recompute per render, and returns a primitive so the
+ *  store stays referentially stable. */
+function getSnapshot() {
+  if (window.matchMedia(REDUCED_MOTION).matches) return false;
+
+  const connection = getConnection();
+  if (connection?.saveData) return false;
+  if (
+    connection?.effectiveType === "slow-2g" ||
+    connection?.effectiveType === "2g"
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 /**
- * Decides whether it is reasonable to pull video at all.
+ * Whether it is reasonable to pull video at all.
  *
- * Read once on mount rather than in render, since all three signals are
- * browser-only and would desync server and client markup.
+ * All three signals are browser-only, so this goes through
+ * useSyncExternalStore: the server snapshot is always false, which keeps
+ * hydration honest, and switching Data Saver or reduced-motion on takes effect
+ * immediately rather than only on the next full load.
  */
 function useShouldLoadVideo(enabled: boolean) {
-  const [shouldLoad, setShouldLoad] = useState(false);
-
-  useEffect(() => {
-    if (!enabled) return;
-
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    ).matches;
-    if (prefersReducedMotion) return;
-
-    // Respect Data Saver and skip video outright on 2G.
-    const connection = (
-      navigator as Navigator & {
-        connection?: { saveData?: boolean; effectiveType?: string };
-      }
-    ).connection;
-
-    if (connection?.saveData) return;
-    if (
-      connection?.effectiveType === "slow-2g" ||
-      connection?.effectiveType === "2g"
-    ) {
-      return;
-    }
-
-    setShouldLoad(true);
-  }, [enabled]);
-
-  return shouldLoad;
+  const permitted = useSyncExternalStore(subscribe, getSnapshot, () => false);
+  return enabled && permitted;
 }
 
 /**
