@@ -24,12 +24,13 @@ export function Ressurect() {
             <PixelNoise />
           </div>
 
-          {/* Knocks the field back where the copy sits and lets it come through
-              towards the opposite corner, so it reads as depth behind the text
-              rather than texture across it. */}
+          {/* Solid page colour at the top right, easing to a half-strength
+              violet tint at the bottom left. Hides the field completely where
+              the copy sits and lets it come through towards the far corner, so
+              it reads as depth behind the text rather than texture across it. */}
           <div
             aria-hidden="true"
-            className="from-panel to-panel/50 absolute inset-0 -z-10 bg-gradient-to-bl"
+            className="from-void to-panel/50 absolute inset-0 -z-10 bg-gradient-to-bl"
           />
 
           <Kicker>The Ressurect</Kicker>
