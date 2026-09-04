@@ -211,9 +211,6 @@
 @property --chrome-angle {
   syntax: "<angle>";
   initial-value: 135deg;
-  /* Inherits so the debug overlay, which is a pseudo-element and therefore a
-     child for inheritance, sees the animated value rather than the initial
-     one. With inherits:false the red rule sits frozen at 125deg. */
   inherits: true;
 }
 
@@ -282,25 +279,22 @@
 }
 
 /**
- * DEV ONLY. Draws a red rule along the gradient's wavefront, perpendicular to
- * --chrome-angle, so the sweep can actually be seen while tuning it.
+ * Gives a gradient-filled heading room to paint outside its own box.
+ *
+ * background-clip:text only fills inside the element's box, and a trimmed
+ * heading has a very tight one: cap height at the top, the alphabetic baseline
+ * at the bottom. Anything past that goes unpainted and reads as a clipped
+ * glyph — italic overhang at the sides, and any descender at the bottom, which
+ * is what crops a comma.
+ *
+ * Pads the paint box out and pulls the same amount back off the layout, so
+ * nothing moves. In em, so it tracks the type size.
  */
-@utility chrome-debug {
-  position: relative;
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: -1.5rem;
-    pointer-events: none;
-    background-image: linear-gradient(
-      var(--chrome-angle),
-      transparent calc(50% - 1px),
-      red calc(50% - 1px),
-      red calc(50% + 1px),
-      transparent calc(50% + 1px)
-    );
-  }
+@utility text-paint-room {
+  padding-inline: 0.25em;
+  margin-inline: -0.25em;
+  padding-bottom: 0.25em;
+  margin-bottom: -0.25em;
 }
 
 /**
@@ -340,7 +334,6 @@
     0 0 2px rgb(157 92 255 / 0.4),
     inset 0.25px 0.25px 0.5px rgb(0 0 0 / 0.2);
 }
-
 
 @keyframes sheen {
   from {

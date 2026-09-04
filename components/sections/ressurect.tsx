@@ -16,11 +16,11 @@ export function FrameSpacer({ className }: { className?: string }) {
 export function Ressurect() {
   return (
     <SectionFrame markers>
-      <div className="grid md:grid-cols-2">
-        <div className="flex flex-col justify-center bg-violet-200/5 px-6 py-12 md:px-12 md:py-16 lg:px-15 lg:py-20">
+      <div className="grid lg:grid-cols-2">
+        <div className="flex flex-col justify-center bg-violet-200/5 px-6 py-12 md:px-12 md:py-16 lg:px-12 xl:px-15 xl:py-20">
           <Kicker>The Ressurect</Kicker>
 
-          <h2 className="text-chrome mt-6 text-xl font-black tracking-[-0.01em] uppercase italic sm:text-2xl md:mt-8 md:text-3xl lg:text-4xl">
+          <h2 className="text-chrome text-paint-room mt-6 text-2xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-3xl xl:text-4xl">
             <span className="text-trim block">We&rsquo;re aiming</span>
             <span className="text-trim mt-(--heading-line-gap) block">
               to set our mark
@@ -47,7 +47,7 @@ export function Ressurect() {
 
         {/* Square when stacked; from md the grid row stretches it to match the
             text column, which is taller than 1:1 once the copy wraps. */}
-        <div className="relative aspect-square max-md:order-first md:aspect-auto">
+        <div className="relative aspect-square max-lg:order-first lg:aspect-auto">
           <Image
             src="/ressurect.webp"
             alt="A KOMBA fighter in the ring, flags raised after the bout"
