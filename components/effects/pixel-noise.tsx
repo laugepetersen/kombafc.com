@@ -54,6 +54,17 @@ export function PixelNoise({
 }: PixelNoiseProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
+  // Read by the loop rather than depended on, so toggling it does not tear the
+  // effect down. As a dependency it rebuilt the grid on every hover, which is
+  // visible as the pattern jumping the moment the field fades in.
+  const enabledRef = useRef(enabled);
+  useEffect(() => {
+    enabledRef.current = enabled;
+  }, [enabled]);
+
+  const colorKey = colors.join();
+  const opacityKey = opacities.join();
+
   useEffect(() => {
     const canvas = canvasRef.current;
     const context = canvas?.getContext("2d");
@@ -116,7 +127,8 @@ export function PixelNoise({
 
     const tick = (now: number) => {
       frame = requestAnimationFrame(tick);
-      if (!visible || now - lastDraw < 1000 / fps) return;
+      if (!visible || !enabledRef.current || now - lastDraw < 1000 / fps)
+        return;
       lastDraw = now;
 
       const rolls = Math.round(cellOpacity.length * churn);
@@ -131,7 +143,7 @@ export function PixelNoise({
 
     // Nothing is spent while the field is scrolled past or the tab is hidden.
     const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting && !document.hidden && enabled;
+      visible = entry.isIntersecting && !document.hidden;
     });
     observer.observe(canvas);
 
@@ -146,7 +158,7 @@ export function PixelNoise({
     });
     resizeObserver.observe(canvas);
 
-    if (!reduceMotion && enabled) frame = requestAnimationFrame(tick);
+    if (!reduceMotion) frame = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(frame);
@@ -154,7 +166,11 @@ export function PixelNoise({
       resizeObserver.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [colors, dotSize, pitch, opacities, fps, churn, fadeUpwards, enabled]);
+    // Arrays are compared by content, not identity. A caller passing a literal
+    // — which is the natural way to write it — would otherwise hand this a new
+    // array every render, tearing the grid down and rebuilding it mid-hover.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [colorKey, opacityKey, dotSize, pitch, fps, churn, fadeUpwards, enabled]);
 
   return (
     <canvas

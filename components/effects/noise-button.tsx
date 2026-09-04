@@ -4,36 +4,33 @@ import Link from "next/link";
 import { type ReactNode, useState } from "react";
 
 import { PixelNoise } from "@/components/effects/pixel-noise";
-import { cn } from "@/lib/utils";
 
 /**
  * SCAFFOLDING — sample for the noise lab.
  *
- * Deliberately a copy of Button's look rather than a prop added to it: the
- * lab is meant to be deletable in one go, and the real Button should not grow
- * a slot for an experiment that may not survive. If a variant is chosen, fold
- * it into Button then and delete this.
+ * Primary CTA whose field only runs while pointed at. The canvas stays mounted
+ * so there is no first-hover stutter, but `enabled` stops the loop when idle:
+ * fading out a canvas that is still churning behind opacity 0 costs exactly
+ * what showing it costs. Focus counts as hover, or the effect would be
+ * mouse-only.
  *
- * The field is clipped to the button box and sits above the fill but below the
- * label, so it reads as texture in the surface rather than something layered
- * over the whole control.
+ * Deliberately a copy of Button's look rather than a prop added to it. If this
+ * is kept, fold it into Button then and delete this file.
  */
-const base =
-  "relative inline-flex h-12 items-center justify-center overflow-clip px-6 font-body text-base font-medium tracking-[0.02em]";
+
+/** Hoisted: passed inline these would be new arrays every render, and
+ *  PixelNoise would rebuild its grid on each one. */
+const WHITE = ["#ffffff", "#f4f0ff", "#ddccff"];
+const OPACITIES = [0, 0, 0, 0.08, 0.15, 0.28, 0.45, 0.7];
 
 export function NoiseButton({
   href,
   children,
-  variant = "primary",
-  onHoverOnly = false,
 }: {
   href: string;
   children: ReactNode;
-  variant?: "primary" | "secondary";
-  onHoverOnly?: boolean;
 }) {
   const [hovered, setHovered] = useState(false);
-  const showField = onHoverOnly ? hovered : true;
 
   return (
     <Link
@@ -42,20 +39,16 @@ export function NoiseButton({
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setHovered(true)}
       onBlur={() => setHovered(false)}
-      className={cn(
-        base,
-        variant === "primary" &&
-          "bg-gradient-to-r from-violet-600 to-violet-500 text-white drop-shadow-[0_0_3px_rgb(122_31_255/0.2)] [text-shadow:0_0_2px_rgb(255_255_255/0.2)]",
-        variant === "secondary" &&
-          "border border-violet-300 shadow-[0_0_6px_0_rgb(157_92_255/0.2),inset_0_0_8px_0_rgb(0_0_0/0.2)]",
-      )}
+      className="font-body relative inline-flex h-12 items-center justify-center overflow-clip bg-gradient-to-r from-violet-600 to-violet-500 px-6 text-base font-medium tracking-[0.02em] text-white drop-shadow-[0_0_3px_rgb(122_31_255/0.2)] [text-shadow:0_0_2px_rgb(255_255_255/0.2)]"
     >
       <span
         className="absolute inset-0 transition-opacity duration-300 ease-out"
-        style={{ opacity: showField ? 1 : 0 }}
+        style={{ opacity: hovered ? 1 : 0 }}
       >
+        {/* No blend mode: overlay pushed the white dots back towards the violet
+            fill underneath, which is what made them turn violet on hover. */}
         <PixelNoise
-          enabled={showField}
+          enabled={hovered}
           // Tight pitch and single-pixel dots: at 48px tall anything coarser
           // reads as a pattern rather than as texture in the surface.
           pitch={4}
@@ -63,24 +56,12 @@ export function NoiseButton({
           churn={0.2}
           fps={20}
           fadeUpwards={false}
-          colors={
-            variant === "primary"
-              ? ["#ffffff", "#ddccff", "#c0a0ff"]
-              : ["#7a1fff", "#9d5cff", "#c0a0ff"]
-          }
-          opacities={[0, 0, 0, 0.08, 0.15, 0.28, 0.45, 0.7]}
-          className={variant === "primary" ? "mix-blend-overlay" : undefined}
+          colors={WHITE}
+          opacities={OPACITIES}
         />
       </span>
 
-      <span
-        className={cn(
-          "relative",
-          variant === "secondary" && "text-chrome-violet",
-        )}
-      >
-        {children}
-      </span>
+      <span className="relative">{children}</span>
     </Link>
   );
 }
