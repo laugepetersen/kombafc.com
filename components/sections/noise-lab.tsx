@@ -20,7 +20,9 @@ import { Kicker } from "@/components/ui/kicker";
 /** Module scope, not inline: passed as literals these would be new arrays on
  *  every render and PixelNoise would rebuild its grid on each one. */
 const VIOLET = ["#7a1fff", "#9d5cff", "#c0a0ff", "#5311c4"];
-const WHITE = ["#ffffff", "#d2d2d7", "#c0a0ff"];
+/* Neutral all the way down — white plus ink-100 and ink-200. Earlier this
+   carried violet-300, which is where the violet specks came from. */
+const WHITE = ["#ffffff", "#d2d2d7", "#a3a3ac"];
 const SPARSE = [0, 0, 0, 0, 0, 0.08, 0.16, 0.3];
 
 function Group({ title, children }: { title: string; children: ReactNode }) {

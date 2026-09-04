@@ -20,7 +20,7 @@ import { PixelNoise } from "@/components/effects/pixel-noise";
 
 /** Hoisted: passed inline these would be new arrays every render, and
  *  PixelNoise would rebuild its grid on each one. */
-const WHITE = ["#ffffff", "#f4f0ff", "#ddccff"];
+const WHITE = ["#ffffff", "#d2d2d7", "#a3a3ac"];
 const OPACITIES = [0, 0, 0, 0.08, 0.15, 0.28, 0.45, 0.7];
 
 export function NoiseButton({
