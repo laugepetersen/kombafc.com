@@ -5,7 +5,10 @@ import { useState } from "react";
 import { Container } from "@/components/layout/container";
 import { BackgroundVideo } from "@/components/media/background-video";
 import { VideoModal } from "@/components/media/video-modal";
+import { CardStack } from "@/components/ui/card-stack";
 import { Icon } from "@/components/ui/icon";
+import { PersonCard } from "@/components/ui/person-card";
+import { team } from "@/content/team";
 
 /**
  * Inlined at build time. The short looping backdrop and the full-length film
@@ -86,6 +89,27 @@ export function Hero() {
             Watch the film
           </span>
         </button>
+      </Container>
+
+      {/* Bottom right, pinned to the container edge so it lines up with the
+          page grid rather than floating against the viewport. The stack is
+          only as wide as its widest card, so the row is what gets stretched
+          across the container and the cards sit at its right end.
+          
+          Deliberately NOT on hero-parallax-content: that utility runs a
+          scroll-driven animation, and an animated ancestor becomes the
+          backdrop root for everything under it — the cards' backdrop-filter
+          would then have only the container to sample, not the video, and the
+          frosting would silently do nothing. The stack scrolls away with the
+          hero regardless; it just does not take part in the exit. */}
+      <Container className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-end md:bottom-12">
+        <CardStack
+          className="pointer-events-auto"
+          items={team.map((person) => ({
+            id: person.id,
+            content: <PersonCard person={person} />,
+          }))}
+        />
       </Container>
 
       <VideoModal

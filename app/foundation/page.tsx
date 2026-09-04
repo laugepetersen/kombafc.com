@@ -5,7 +5,10 @@ import { PixelNoise } from "@/components/effects/pixel-noise";
 import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
+import { CardStack } from "@/components/ui/card-stack";
 import { Kicker } from "@/components/ui/kicker";
+import { PersonCard } from "@/components/ui/person-card";
+import { team } from "@/content/team";
 
 export const metadata = { title: "Styleguide" };
 
@@ -273,6 +276,24 @@ export default function StyleguidePage() {
               </div>
             </div>
           </div>
+        </div>
+      </Block>
+
+      <Block title="Card stack">
+        <Note>
+          Chips sharing one grid cell, the card at the back coming forward every
+          five seconds. Each card behind is lifted 4px and gives up 12% of its
+          size, both measured off the comp. The deck holds still under
+          prefers-reduced-motion.
+        </Note>
+        {/* Headroom: the cards behind paint above the stack's own box. */}
+        <div className="pt-3">
+          <CardStack
+            items={team.map((person) => ({
+              id: person.id,
+              content: <PersonCard person={person} />,
+            }))}
+          />
         </div>
       </Block>
 
