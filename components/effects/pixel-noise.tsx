@@ -32,6 +32,12 @@ type PixelNoiseProps = {
   churn?: number;
   /** Fades the field out towards the top, as in the reference. */
   fadeUpwards?: boolean;
+  /**
+   * Runs the loop. False holds the last frame and stops drawing, which is what
+   * a hover-triggered field wants — fading a canvas that is still churning
+   * behind an opacity of 0 spends the same as showing it.
+   */
+  enabled?: boolean;
   className?: string;
 };
 
@@ -43,6 +49,7 @@ export function PixelNoise({
   fps = 20,
   churn = 0.08,
   fadeUpwards = true,
+  enabled = true,
   className,
 }: PixelNoiseProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -124,7 +131,7 @@ export function PixelNoise({
 
     // Nothing is spent while the field is scrolled past or the tab is hidden.
     const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting && !document.hidden;
+      visible = entry.isIntersecting && !document.hidden && enabled;
     });
     observer.observe(canvas);
 
@@ -139,7 +146,7 @@ export function PixelNoise({
     });
     resizeObserver.observe(canvas);
 
-    if (!reduceMotion) frame = requestAnimationFrame(tick);
+    if (!reduceMotion && enabled) frame = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(frame);
@@ -147,7 +154,7 @@ export function PixelNoise({
       resizeObserver.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [colors, dotSize, pitch, opacities, fps, churn, fadeUpwards]);
+  }, [colors, dotSize, pitch, opacities, fps, churn, fadeUpwards, enabled]);
 
   return (
     <canvas
