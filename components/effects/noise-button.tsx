@@ -42,7 +42,9 @@ export function NoiseButton({
       className="font-body relative inline-flex h-12 items-center justify-center overflow-clip bg-gradient-to-r from-violet-600 to-violet-500 px-6 text-base font-medium tracking-[0.02em] text-white drop-shadow-[0_0_3px_rgb(122_31_255/0.2)] [text-shadow:0_0_2px_rgb(255_255_255/0.2)]"
     >
       <span
-        className="absolute inset-0 transition-opacity duration-300 ease-out"
+        // Inset by 1px. Flush to the edge the dots read as breaking out of
+        // the button rather than sitting inside it.
+        className="absolute inset-px transition-opacity duration-300 ease-out"
         style={{ opacity: hovered ? 1 : 0 }}
       >
         {/* No blend mode: overlay pushed the white dots back towards the violet

@@ -97,16 +97,21 @@ export function NoiseLab() {
         <Kicker>Noise lab</Kicker>
 
         <Group title="Field">
-          <Swatch label="A — Default" note="Violet ramp, fading upward.">
+          <Swatch label="A — Violet" note="Default ramp, fading upward.">
             <div className="bg-void h-56 overflow-clip">
               <PixelNoise />
+            </div>
+          </Swatch>
+          <Swatch label="B — White" note="Same field in neutral tones.">
+            <div className="bg-void h-56 overflow-clip">
+              <PixelNoise colors={WHITE} />
             </div>
           </Swatch>
         </Group>
 
         <Group title="Inside a control">
           <Swatch
-            label="B — Primary CTA, on hover"
+            label="C — Primary CTA, on hover"
             note="White dots, no blend. Loop stops when idle."
           >
             <div className="bg-void flex h-40 items-center justify-center">
@@ -116,7 +121,7 @@ export function NoiseLab() {
         </Group>
 
         <Group title="Over a photograph — screen">
-          <Swatch label="C — Violet" note="Dots as light in the shadows.">
+          <Swatch label="D — Violet" note="Dots as light in the shadows.">
             <Media>
               <PixelNoise
                 className="mix-blend-screen"
@@ -125,7 +130,7 @@ export function NoiseLab() {
               />
             </Media>
           </Swatch>
-          <Swatch label="D — White" note="Same, reading as clean grain.">
+          <Swatch label="E — White" note="Same, reading as clean grain.">
             <Media>
               <PixelNoise
                 className="mix-blend-screen"
@@ -137,7 +142,7 @@ export function NoiseLab() {
         </Group>
 
         <Group title="Over the video — screen">
-          <Swatch label="E — Violet" note="Tints the footage as it moves.">
+          <Swatch label="F — Violet" note="Tints the footage as it moves.">
             <Media video>
               <PixelNoise
                 className="mix-blend-screen"
@@ -149,7 +154,7 @@ export function NoiseLab() {
               />
             </Media>
           </Swatch>
-          <Swatch label="F — White" note="Neutral grain over the footage.">
+          <Swatch label="G — White" note="Neutral grain over the footage.">
             <Media video>
               <PixelNoise
                 className="mix-blend-screen"
