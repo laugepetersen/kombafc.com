@@ -29,11 +29,12 @@
   --color-ink-200: #a3a3ac;
   --color-ink-100: #d2d2d7;
 
-  /* Hairline rules. Translucent rather than a flattened solid: these sit over
-     the modal's semi-transparent overlay, so a fixed dark value reads as a
-     patch against whatever shows through rather than as a hairline.
-     violet-200 at 10%. */
-  --color-rule: rgb(221 204 255 / 0.1);
+  /* Hairline rules — every section border and divider, and the modal frame.
+     Translucent rather than a flattened solid: these sit over backdrops of
+     varying opacity, so a fixed dark value would read as a patch against
+     whatever shows through rather than as a hairline. violet-200 at 5%.
+     Excludes the navbar and the CTAs, which carry their own treatments. */
+  --color-rule: rgb(221 204 255 / 0.05);
 
   /* Panel ground: the page colour carrying 10% of the pale violet. Barely a
      tint on its own, but enough to keep a panel from reading as flat black

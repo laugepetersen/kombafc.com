@@ -52,8 +52,8 @@ type EncryptedTextProps = {
 export function EncryptedText({
   text,
   className,
-  revealDelayMs = 60,
-  flipDelayMs = 60,
+  revealDelayMs = 120,
+  flipDelayMs = 120,
   charset = DEFAULT_CHARSET,
 }: EncryptedTextProps) {
   const ref = useRef<HTMLSpanElement>(null);

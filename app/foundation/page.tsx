@@ -60,7 +60,7 @@ const SPARSE = [0, 0, 0, 0, 0, 0.08, 0.16, 0.3];
 
 function Block({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <Section spacing="md" className="border-ink-800 border-b">
+    <Section spacing="md" className="border-rule border-b">
       <h2 className="text-ink-300 mb-8 font-mono text-xs tracking-[0.2em] uppercase">
         {title}
       </h2>
@@ -77,7 +77,7 @@ function Ramp({ tokens, label }: { tokens: string[][]; label: string }) {
   return (
     <div className="mb-8">
       <p className="text-ink-300 mb-3 font-mono text-xs uppercase">{label}</p>
-      <div className="ring-ink-700 flex overflow-hidden rounded-md ring-1">
+      <div className="ring-rule flex overflow-hidden rounded-md ring-1">
         {tokens.map(([name, className]) => (
           <div key={name} className={`${className} h-20 flex-1`} />
         ))}
