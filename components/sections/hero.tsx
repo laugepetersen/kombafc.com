@@ -16,6 +16,9 @@ const BACKGROUND_PLAYBACK_ID =
   process.env.NEXT_PUBLIC_MUX_BACKGROUND_PLAYBACK_ID;
 const FEATURE_PLAYBACK_ID = process.env.NEXT_PUBLIC_MUX_HERO_PLAYBACK_ID;
 
+/** Interim source for the modal. Ignored once FEATURE_PLAYBACK_ID is set. */
+const FEATURE_YOUTUBE_ID = "yR3Cex1Cp10";
+
 /**
  * Mux renders a poster straight off the asset, which avoids shipping a
  * separate full-size image. Falls back to a still while the asset is pending.
@@ -72,6 +75,7 @@ export function Hero() {
 
       <VideoModal
         playbackId={FEATURE_PLAYBACK_ID}
+        youtubeId={FEATURE_YOUTUBE_ID}
         open={playerOpen}
         onClose={() => setPlayerOpen(false)}
         title="KOMBA Fight Club — The Ressurect"

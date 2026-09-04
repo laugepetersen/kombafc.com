@@ -1,9 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/ui/icon";
+import { cn } from "@/lib/utils";
 
 /**
  * The player is a sizeable chunk of JS that nobody needs until they actually
@@ -13,8 +14,63 @@ const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
   ssr: false,
 });
 
+/** How long the grid takes to expand before the video is faded in over it. */
+const EXPAND_MS = 550;
+
+/**
+ * Expands a ruled grid out to the player's box, then cross-fades the video in
+ * over it.
+ *
+ * Mounted only while the modal is open, so "closed" is simply its initial
+ * state and there is nothing to reset on the way out. The grid is revealed
+ * with `clip-path` rather than a transform, so the rules stay 1px and evenly
+ * spaced the whole way out — a scale would smear them.
+ */
+function ExpandingPlayer({ children }: { children: ReactNode }) {
+  const [expanded, setExpanded] = useState(false);
+  const [videoIn, setVideoIn] = useState(false);
+
+  useEffect(() => {
+    // Next frame, so the closed clip-path is committed and the change
+    // animates rather than collapsing into the initial paint.
+    const raf = requestAnimationFrame(() => setExpanded(true));
+    const timer = setTimeout(() => setVideoIn(true), EXPAND_MS);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(timer);
+    };
+  }, []);
+
+  return (
+    <div className="relative aspect-video w-full max-w-6xl">
+      <div
+        aria-hidden="true"
+        className={cn(
+          "absolute inset-0 ring-1 ring-violet-500/40",
+          "[background-image:repeating-linear-gradient(to_right,rgb(122_31_255/0.28)_0_1px,transparent_1px_calc(100%/8)),repeating-linear-gradient(to_bottom,rgb(122_31_255/0.28)_0_1px,transparent_1px_calc(100%/5))]",
+          "transition-[clip-path] duration-[550ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+          expanded ? "[clip-path:inset(0)]" : "[clip-path:inset(42%_46%)]",
+        )}
+      />
+
+      <div
+        className={cn(
+          "absolute inset-0 transition-opacity duration-500 ease-out",
+          videoIn ? "opacity-100" : "opacity-0",
+        )}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
 type VideoModalProps = {
+  /** Mux asset. Takes precedence when both are supplied. */
   playbackId?: string;
+  /** YouTube video id, used until the Mux asset exists. */
+  youtubeId?: string;
   open: boolean;
   onClose: () => void;
   title?: string;
@@ -26,18 +82,20 @@ type VideoModalProps = {
  * Built on a native `<dialog>`, which gives focus trapping, Escape-to-close,
  * inertness of the page behind it and top-layer stacking without any of it
  * being reimplemented in JS.
+ *
+ * Opens by expanding a ruled grid out to the player's box, then cross-fading
+ * the video in over it. The grid is revealed with `clip-path` rather than a
+ * transform so the rules stay 1px and evenly spaced the whole way out — a
+ * scale would smear them.
  */
 export function VideoModal({
   playbackId,
+  youtubeId,
   open,
   onClose,
   title = "KOMBA Fight Club",
 }: VideoModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-
-  // Only ever mount the player once the modal has actually been opened, so a
-  // page that is never interacted with pays nothing for it.
-  const [hasOpened, setHasOpened] = useState(false);
 
   // Kept in a ref so the listener below can subscribe once and still call the
   // latest handler.
@@ -67,26 +125,56 @@ export function VideoModal({
     if (!dialog) return;
 
     if (open && !dialog.open) {
-      setHasOpened(true);
       dialog.showModal();
     } else if (!open && dialog.open) {
       dialog.close();
     }
   }, [open]);
 
-  // showModal() does not stop the page behind from scrolling. Tying the lock
-  // to `open` with a cleanup means it is always released, however the dialog
-  // was dismissed.
+  /**
+   * Scroll lock.
+   *
+   * It has to go on the *scrolling element*, which here is <html>: this
+   * document has `height: 100%` on html, so body is not the scroller and
+   * `body { overflow: hidden }` does nothing at all. Setting both is the
+   * portable form. Tied to `open` with a cleanup, so the lock is always
+   * released however the dialog was dismissed.
+   */
   useEffect(() => {
     if (!open) return;
 
-    const previous = document.body.style.overflow;
+    const root = document.documentElement;
+    const previousRoot = root.style.overflow;
+    const previousBody = document.body.style.overflow;
+
+    root.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
 
     return () => {
-      document.body.style.overflow = previous;
+      root.style.overflow = previousRoot;
+      document.body.style.overflow = previousBody;
     };
   }, [open]);
+
+  const player = playbackId ? (
+    <MuxPlayer
+      playbackId={playbackId}
+      streamType="on-demand"
+      autoPlay
+      accentColor="#7a1fff"
+      metadata={{ video_title: title }}
+      className="size-full"
+    />
+  ) : youtubeId ? (
+    <iframe
+      // nocookie so YouTube sets nothing until playback actually starts.
+      src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`}
+      title={title}
+      allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+      allowFullScreen
+      className="size-full border-0"
+    />
+  ) : null;
 
   return (
     <dialog
@@ -107,20 +195,11 @@ export function VideoModal({
         <Icon name="close" className="size-5" />
       </button>
 
-      {hasOpened && playbackId ? (
-        <div className="aspect-video w-full max-w-6xl">
-          <MuxPlayer
-            playbackId={playbackId}
-            streamType="on-demand"
-            autoPlay={open}
-            accentColor="#7a1fff"
-            metadata={{ video_title: title }}
-            className="size-full"
-          />
-        </div>
+      {!open ? null : player ? (
+        <ExpandingPlayer>{player}</ExpandingPlayer>
       ) : (
         <p className="text-ink-200 text-sm">
-          No video configured yet — set NEXT_PUBLIC_MUX_HERO_PLAYBACK_ID.
+          No video configured — set a Mux playback ID or a YouTube id.
         </p>
       )}
     </dialog>
