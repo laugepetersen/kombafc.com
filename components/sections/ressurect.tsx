@@ -29,7 +29,7 @@ export function Ressurect() {
               rather than texture across it. */}
           <div
             aria-hidden="true"
-            className="from-void to-void/30 absolute inset-0 -z-10 bg-gradient-to-bl"
+            className="from-panel absolute inset-0 -z-10 bg-gradient-to-bl to-transparent"
           />
 
           <Kicker>The Ressurect</Kicker>
