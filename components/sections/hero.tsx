@@ -51,13 +51,13 @@ export function Hero() {
             explicitly here. In em, so it scales with each line rather than
             being a fixed gap that only looks right at one breakpoint. */}
         <h1 className="font-heading text-chrome space-y-[0.14em] px-4 leading-[0.9] font-black uppercase italic">
-          <span className="text-trim block text-lg sm:text-2xl md:text-3xl lg:text-4xl">
+          <span className="text-trim block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
             The best strikers.
           </span>
-          <span className="text-trim block text-2xl sm:text-4xl md:text-5xl lg:text-6xl">
+          <span className="text-trim block text-2xl tracking-[-0.02em] sm:text-4xl md:text-5xl lg:text-6xl">
             A new fight format.
           </span>
-          <span className="text-trim block text-lg sm:text-2xl md:text-3xl lg:text-4xl">
+          <span className="text-trim block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
             In Scandinavia.
           </span>
         </h1>

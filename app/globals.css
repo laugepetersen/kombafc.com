@@ -312,6 +312,11 @@
   h5,
   h6 {
     @apply font-heading;
+
+    /* -2%. Note em resolves against the element's *own* font-size and then
+       inherits as a fixed px value, so a heading that sets its size on child
+       elements has to repeat this on those children or they silently get the
+       parent's 16px-derived value instead. */
     letter-spacing: -0.02em;
 
     /* Eurostile's ascent (667/1000) is exactly its cap height, but it still
