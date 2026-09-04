@@ -202,7 +202,10 @@
 @property --chrome-angle {
   syntax: "<angle>";
   initial-value: 125deg;
-  inherits: false;
+  /* Inherits so the debug overlay, which is a pseudo-element and therefore a
+     child for inheritance, sees the animated value rather than the initial
+     one. With inherits:false the red rule sits frozen at 125deg. */
+  inherits: true;
 }
 
 /* 180deg +/- 55. A CSS gradient angle points along the gradient *line*, and
@@ -271,9 +274,6 @@
 /**
  * DEV ONLY. Draws a red rule along the gradient's wavefront, perpendicular to
  * --chrome-angle, so the sweep can actually be seen while tuning it.
- *
- * Has to sit on the same element as the animation: --chrome-angle is
- * registered with inherits:false, so a child could not read it.
  */
 @utility chrome-debug {
   position: relative;
