@@ -20,10 +20,10 @@ function initialsOf(name: string) {
 }
 
 /**
- * Name-and-role chip. Glass over whatever it sits on: the fill is the same
- * pale violet as `--color-rule`, at twice the strength, so it reads as part of
- * that family rather than as a new surface. Sized by its content — the avatar
- * sets the height and the name sets the width.
+ * Name-and-role chip. Glass over whatever it sits on, on `--color-glass` —
+ * near-neutral, so it does not read as a violet patch over video, and low
+ * enough in alpha that the blur frosts the panel rather than lighting it up.
+ * Sized by its content: the avatar sets the height, the name sets the width.
  */
 export function PersonCard({
   person,
@@ -35,7 +35,7 @@ export function PersonCard({
   return (
     <div
       className={cn(
-        "border-rule flex items-center gap-3 rounded-lg border bg-violet-200/10 p-1 pr-4 backdrop-blur-lg",
+        "border-rule bg-glass/8 flex items-center gap-3 rounded-lg border p-1 pr-4 backdrop-blur-lg",
         className,
       )}
     >

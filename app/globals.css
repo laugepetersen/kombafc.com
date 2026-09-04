@@ -36,6 +36,19 @@
      Excludes the navbar and the CTAs, which carry their own treatments. */
   --color-rule: rgb(221 204 255 / 0.05);
 
+  /* Glass panels that sit over media — the team chips. Mostly neutral, turned
+     a quarter of the way toward the pale violet so they stay in the same
+     family as --color-rule without reading as a purple patch once there is
+     video behind them rather than flat page colour. Kept at a low alpha in
+     use: backdrop-blur already flattens the backdrop, so most of a panel's
+     brightness comes from this fill, and pushing it lights the panel up
+     instead of frosting it. */
+  --color-glass: color-mix(
+    in srgb,
+    var(--color-violet-200) 25%,
+    var(--color-ink-100)
+  );
+
   /* Panel ground: the page colour carrying 10% of the pale violet. Barely a
      tint on its own, but enough to keep a panel from reading as flat black
      next to the surrounding void. */
