@@ -14,8 +14,18 @@ const MuxPlayer = dynamic(() => import("@mux/mux-player-react"), {
   ssr: false,
 });
 
-/** How long the grid takes to expand before the video is faded in over it. */
-const EXPAND_MS = 550;
+/**
+ * Open sequence, in order. The square is held still first — without that beat
+ * it never registers as a square, it just reads as the frame appearing from
+ * nothing. The video is then held back until the frame has fully settled,
+ * rather than fading up underneath a frame that is still moving.
+ */
+const HOLD_MS = 260;
+const EXPAND_MS = 900;
+const SETTLE_MS = 140;
+const FADE_MS = 500;
+
+const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";
 
 /**
  * Expands a ruled grid out to the player's box, then cross-fades the video in
@@ -29,19 +39,26 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
   const [videoIn, setVideoIn] = useState(false);
 
   useEffect(() => {
-    // Next frame, so the closed clip-path is committed and the change
-    // animates rather than collapsing into the initial paint.
-    const raf = requestAnimationFrame(() => setExpanded(true));
-    const timer = setTimeout(() => setVideoIn(true), EXPAND_MS);
+    const hold = setTimeout(() => setExpanded(true), HOLD_MS);
+    const fade = setTimeout(
+      () => setVideoIn(true),
+      HOLD_MS + EXPAND_MS + SETTLE_MS,
+    );
 
     return () => {
-      cancelAnimationFrame(raf);
-      clearTimeout(timer);
+      clearTimeout(hold);
+      clearTimeout(fade);
     };
   }, []);
 
-  const rule =
-    "absolute bg-rule transition-all duration-[550ms] ease-[cubic-bezier(0.16,1,0.3,1)]";
+  // Duration and easing come from the constants above rather than utility
+  // classes, so the timing the effect schedules cannot drift from the timing
+  // the transition actually runs at.
+  const motion = {
+    transitionDuration: `${EXPAND_MS}ms`,
+    transitionTimingFunction: EASE,
+  };
+  const rule = "absolute bg-rule transition-all";
 
   // Closed, the four rules sit on the edges of a 60px square in the middle.
   const closed = "calc(50% - 30px)";
@@ -62,11 +79,12 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
           // Blend the two layers instead of stacking them, so crossings stay
           // the same value as a single line rather than doubling up.
           "[background-blend-mode:lighten]",
-          "transition-[clip-path] duration-[550ms] ease-[cubic-bezier(0.16,1,0.3,1)]",
+          "transition-[clip-path]",
           expanded
             ? "[clip-path:inset(0)]"
             : "[clip-path:inset(calc(50%_-_30px))]",
         )}
+        style={motion}
       />
 
       {/* Four rules running edge to edge of the viewport, opening from that
@@ -75,27 +93,28 @@ function ExpandingPlayer({ children }: { children: ReactNode }) {
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
         <span
           className={cn(rule, "-right-[100vw] -left-[100vw] h-px")}
-          style={{ top: expanded ? open : closed }}
+          style={{ ...motion, top: expanded ? open : closed }}
         />
         <span
           className={cn(rule, "-right-[100vw] -left-[100vw] h-px")}
-          style={{ bottom: expanded ? open : closed }}
+          style={{ ...motion, bottom: expanded ? open : closed }}
         />
         <span
           className={cn(rule, "-top-[100vh] -bottom-[100vh] w-px")}
-          style={{ left: expanded ? open : closed }}
+          style={{ ...motion, left: expanded ? open : closed }}
         />
         <span
           className={cn(rule, "-top-[100vh] -bottom-[100vh] w-px")}
-          style={{ right: expanded ? open : closed }}
+          style={{ ...motion, right: expanded ? open : closed }}
         />
       </div>
 
       <div
         className={cn(
-          "absolute inset-0 transition-opacity duration-500 ease-out",
+          "absolute inset-0 transition-opacity ease-out",
           videoIn ? "opacity-100" : "opacity-0",
         )}
+        style={{ transitionDuration: `${FADE_MS}ms` }}
       >
         {children}
       </div>
@@ -219,7 +238,7 @@ export function VideoModal({
         // Clicks land on the dialog itself only when they miss its contents.
         if (event.target === dialogRef.current) onClose();
       }}
-      className="bg-void/90 m-0 h-full max-h-none w-full max-w-none place-items-center overflow-hidden p-4 text-white backdrop:bg-transparent open:grid md:p-10"
+      className="bg-void/94 m-0 h-full max-h-none w-full max-w-none place-items-center overflow-hidden p-4 text-white backdrop:bg-transparent open:grid md:p-10"
       aria-label={title}
     >
       <button
