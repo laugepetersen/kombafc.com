@@ -1,7 +1,6 @@
 import Image from "next/image";
 import type { ReactNode } from "react";
 
-import { NoiseButton } from "@/components/effects/noise-button";
 import { PixelNoise } from "@/components/effects/pixel-noise";
 import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
@@ -169,12 +168,12 @@ export default function StyleguidePage() {
           <Button href="#" variant="secondary">
             About Us
           </Button>
-          <NoiseButton href="#">Hover for noise</NoiseButton>
         </div>
         <Note>
           Primary is filled, secondary holds its fill back for hover so it reads
-          as an outline beside it. The third carries a dot field that only runs
-          while pointed at.
+          as an outline beside it. Both follow the cursor slightly and light a
+          dot field inside themselves while pointed at — the field only runs
+          during the hover, and the pull is skipped under reduced motion.
         </Note>
       </Block>
 
