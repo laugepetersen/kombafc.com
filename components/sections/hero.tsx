@@ -1,0 +1,76 @@
+"use client";
+
+import { useState } from "react";
+
+import { Container } from "@/components/layout/container";
+import { BackgroundVideo } from "@/components/media/background-video";
+import { VideoModal } from "@/components/media/video-modal";
+import { Icon } from "@/components/ui/icon";
+
+/**
+ * Inlined at build time. The short looping backdrop and the full-length film
+ * are separate Mux assets: the backdrop is capped at 720p and silent, the
+ * feature is only fetched once someone presses play.
+ */
+const BACKGROUND_PLAYBACK_ID =
+  process.env.NEXT_PUBLIC_MUX_BACKGROUND_PLAYBACK_ID;
+const FEATURE_PLAYBACK_ID = process.env.NEXT_PUBLIC_MUX_HERO_PLAYBACK_ID;
+
+/**
+ * Mux renders a poster straight off the asset, which avoids shipping a
+ * separate full-size image. Falls back to a still while the asset is pending.
+ */
+const poster = BACKGROUND_PLAYBACK_ID
+  ? `https://image.mux.com/${BACKGROUND_PLAYBACK_ID}/thumbnail.webp?width=1920&time=0`
+  : "/komba-fight-club-1.jpg";
+
+export function Hero() {
+  const [playerOpen, setPlayerOpen] = useState(false);
+
+  return (
+    <section className="relative flex min-h-[85svh] items-center justify-center overflow-hidden md:min-h-[850px]">
+      <BackgroundVideo playbackId={BACKGROUND_PLAYBACK_ID} poster={poster} />
+
+      {/* Legibility scrim. Bottom lands on --color-void so the hero dissolves
+          into the next section rather than ending on a hard edge. */}
+      <div
+        className="from-void/50 via-void/30 to-void absolute inset-0 bg-gradient-to-b"
+        aria-hidden="true"
+      />
+
+      <Container className="relative flex flex-col items-center text-center">
+        <h1 className="font-heading text-chrome leading-[0.9] font-black uppercase italic">
+          <span className="block text-lg sm:text-2xl md:text-3xl lg:text-4xl">
+            The best strikers.
+          </span>
+          <span className="block text-2xl sm:text-4xl md:text-5xl lg:text-6xl">
+            A new fight format.
+          </span>
+          <span className="block text-lg sm:text-2xl md:text-3xl lg:text-4xl">
+            In Scandinavia.
+          </span>
+        </h1>
+
+        <button
+          type="button"
+          onClick={() => setPlayerOpen(true)}
+          className="group mt-10 inline-flex items-center gap-4 rounded-full border border-white/15 bg-white/5 py-2 pr-6 pl-2 backdrop-blur-[12px] transition-colors hover:bg-white/10"
+        >
+          <span className="flex size-11 items-center justify-center rounded-full bg-white/10 transition-colors group-hover:bg-violet-500">
+            <Icon name="play_arrow" className="size-5" />
+          </span>
+          <span className="font-body text-sm tracking-[0.06em] text-white/80 uppercase transition-colors group-hover:text-white">
+            Watch the film
+          </span>
+        </button>
+      </Container>
+
+      <VideoModal
+        playbackId={FEATURE_PLAYBACK_ID}
+        open={playerOpen}
+        onClose={() => setPlayerOpen(false)}
+        title="KOMBA Fight Club — The Ressurect"
+      />
+    </section>
+  );
+}

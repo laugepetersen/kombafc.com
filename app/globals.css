@@ -179,6 +179,36 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Effects
+--------------------------------------------------------------------------- */
+
+/**
+ * Display headings: a near-white gradient fill with a soft bloom, as if lit
+ * by the arena rigging. Used by the hero and the section headings.
+ *
+ * The glow is a text-shadow rather than a filter so it stays crisp, and it
+ * still paints even though the glyph fill itself is transparent.
+ */
+@utility text-chrome {
+  background-image: linear-gradient(
+    160.19deg,
+    #ffffff 29.727%,
+    rgb(236 236 236 / 0.9) 70.273%
+  );
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 8px rgb(255 255 255 / 0.4);
+
+  /* A transparent fill leaves nothing to paint once the gradient is dropped,
+     so high-contrast mode gets a solid colour back. */
+  @media (forced-colors: active) {
+    background-image: none;
+    color: CanvasText;
+    text-shadow: none;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Base
 --------------------------------------------------------------------------- */
 @layer base {
