@@ -1,3 +1,4 @@
+import { EncryptedText } from "@/components/ui/encrypted-text";
 import { cn } from "@/lib/utils";
 
 /**
@@ -23,9 +24,10 @@ export function Kicker({
         aria-hidden="true"
         className="h-[22px] w-2 -scale-x-100"
       />
-      <span className="text-chrome-violet font-body text-[0.8125rem] leading-none font-medium tracking-[0.06em] uppercase">
-        {children}
-      </span>
+      <EncryptedText
+        text={children}
+        className="text-chrome-violet font-body text-[0.8125rem] leading-none font-medium tracking-[0.06em] uppercase"
+      />
       {/* eslint-disable-next-line @next/next/no-img-element -- see above */}
       <img
         src="/brand/bracket.svg"
