@@ -11,6 +11,12 @@ type BackgroundVideoProps = {
    * section still looks right before the asset exists.
    */
   playbackId?: string;
+  /**
+   * Plain file fallback, used when no Mux asset is configured yet. Single
+   * bitrate, so keep it short and small — it is a stopgap, not the shipping
+   * path.
+   */
+  src?: string;
   /** Painted immediately and used as the fallback whenever video is suppressed. */
   poster: string;
   /** Caps the rendition Mux serves. 720p is plenty for a backdrop. */
@@ -83,6 +89,7 @@ function useShouldLoadVideo(enabled: boolean) {
  */
 export function BackgroundVideo({
   playbackId,
+  src,
   poster,
   maxResolution = "720p",
   className,
@@ -93,7 +100,7 @@ export function BackgroundVideo({
   const [inView, setInView] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const shouldLoad = useShouldLoadVideo(Boolean(playbackId)) && inView;
+  const shouldLoad = useShouldLoadVideo(Boolean(playbackId || src)) && inView;
 
   // Start loading slightly before the section scrolls into view.
   useEffect(() => {
@@ -136,6 +143,20 @@ export function BackgroundVideo({
       document.removeEventListener("visibilitychange", onVisibilityChange);
   }, [shouldLoad]);
 
+  // Shared by both paths so the Mux and plain-file players cannot drift.
+  const videoAttrs = {
+    autoPlay: true,
+    muted: true,
+    loop: true,
+    playsInline: true,
+    preload: "none" as const,
+    onPlaying: () => setIsPlaying(true),
+    className: cn(
+      "absolute inset-0 size-full object-cover transition-opacity duration-700",
+      isPlaying ? "opacity-100" : "opacity-0",
+    ),
+  };
+
   return (
     <div
       ref={containerRef}
@@ -157,17 +178,10 @@ export function BackgroundVideo({
           src={`https://stream.mux.com/${playbackId}.m3u8`}
           poster={poster}
           maxResolution={maxResolution}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="none"
-          onPlaying={() => setIsPlaying(true)}
-          className={cn(
-            "absolute inset-0 size-full object-cover transition-opacity duration-700",
-            isPlaying ? "opacity-100" : "opacity-0",
-          )}
+          {...videoAttrs}
         />
+      ) : shouldLoad && src ? (
+        <video ref={videoRef} src={src} poster={poster} {...videoAttrs} />
       ) : null}
     </div>
   );

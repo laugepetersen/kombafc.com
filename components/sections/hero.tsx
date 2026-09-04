@@ -29,7 +29,12 @@ export function Hero() {
 
   return (
     <section className="relative flex min-h-[85svh] items-center justify-center overflow-hidden md:min-h-[850px]">
-      <BackgroundVideo playbackId={BACKGROUND_PLAYBACK_ID} poster={poster} />
+      <BackgroundVideo
+        playbackId={BACKGROUND_PLAYBACK_ID}
+        // Interim 6s loop. Drops out the moment a Mux playback ID is set.
+        src={BACKGROUND_PLAYBACK_ID ? undefined : "/hero-loop.mp4"}
+        poster={poster}
+      />
 
       {/* Legibility scrim. Bottom lands on --color-void so the hero dissolves
           into the next section rather than ending on a hard edge. */}
