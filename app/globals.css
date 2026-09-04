@@ -29,6 +29,11 @@
   --color-ink-200: #a3a3ac;
   --color-ink-100: #d2d2d7;
 
+  /* Hairline rules. Solid rather than a translucent white: two crossing
+     translucent lines compound at the intersection and read brighter than
+     the rest. This is violet-200 at 10% over void, flattened. */
+  --color-rule: #1f1d27;
+
   /* Violet — sampled from arena rigging, extended to an electric 500.
      Clears Tailwind's stock violet first so no off-brand steps survive. */
   --color-violet-*: initial;
@@ -254,6 +259,17 @@
   h6 {
     @apply font-heading;
     letter-spacing: -0.02em;
+
+    /* Eurostile's ascent (667/1000) is exactly its cap height, but it still
+       carries a 333/1000 descent. All-caps headings therefore sit with about
+       0.28em of dead space underneath and none above — the lopsided gap that
+       makes headings look bottom-padded.
+
+       Trimming the block box to cap height and the alphabetic baseline fixes
+       it at the layout level, without patching the font's own metrics (which
+       would clip descenders the moment anything lowercase is set in it).
+       Browsers without support simply ignore this and keep the old spacing. */
+    text-box: trim-both cap alphabetic;
   }
 
   p {
