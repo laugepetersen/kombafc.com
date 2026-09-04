@@ -1,0 +1,75 @@
+/* ---------------------------------------------------------------------------
+   Fonts
+
+   Eurostile (headings) and Aeonik (body) are both licensed commercial faces,
+   so the files are not in the repo. Drop the webfont files into
+   `public/fonts/` using the filenames below and they light up automatically —
+   until then the fallback stacks render and nothing breaks.
+
+   Once the real files are in place we should move this to `next/font/local`,
+   which adds automatic preloading and size-adjust fallback metrics to kill
+   the layout shift on swap. Plain @font-face is used here only so that a
+   missing file degrades instead of failing the build.
+--------------------------------------------------------------------------- */
+
+@font-face {
+  font-family: "Eurostile";
+  src: url("/fonts/eurostile-bold-extended.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Eurostile";
+  src: url("/fonts/eurostile-bold-extended-italic.woff2") format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Eurostile";
+  src: url("/fonts/eurostile-black-extended.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Eurostile";
+  src: url("/fonts/eurostile-black-extended-italic.woff2") format("woff2");
+  font-weight: 900;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Aeonik";
+  src: url("/fonts/aeonik-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Aeonik";
+  src: url("/fonts/aeonik-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Aeonik";
+  src: url("/fonts/aeonik-bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --font-eurostile:
+    "Eurostile", "Eurostile Extended", ui-sans-serif, system-ui, sans-serif;
+  --font-aeonik: "Aeonik", ui-sans-serif, system-ui, -apple-system, sans-serif;
+}

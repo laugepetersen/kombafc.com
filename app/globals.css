@@ -1,0 +1,209 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "./fonts.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+   KOMBA design tokens
+--------------------------------------------------------------------------- */
+@theme {
+  /* -- Brand ------------------------------------------------------------- */
+  --color-komba-purple: #7b1fcc;
+  --color-komba-yellow: #f7f43e;
+
+  /* -- Surfaces (dark-first) --------------------------------------------- */
+  --color-ink-950: #07040c;
+  --color-ink-900: #0d0715;
+  --color-ink-800: #150d21;
+  --color-ink-700: #1e1430;
+  --color-ink-600: #2a1c42;
+
+  /* -- Type -------------------------------------------------------------- *
+     Modular scale. Every step is derived from --text-base and --text-ratio,
+     so swapping the ratio below rescales the whole site in one edit:
+       1.200  Minor Third
+       1.250  Major Third   (current)
+       1.333  Perfect Fourth                                                */
+  --text-ratio: 1.25;
+  --text-base: 1rem; /* 16px */
+
+  --text-sm: calc(var(--text-base) / var(--text-ratio));
+  --text-xs: calc(var(--text-sm) / var(--text-ratio));
+  --text-lg: calc(var(--text-base) * var(--text-ratio));
+  --text-xl: calc(var(--text-lg) * var(--text-ratio));
+  --text-2xl: calc(var(--text-xl) * var(--text-ratio));
+  --text-3xl: calc(var(--text-2xl) * var(--text-ratio));
+  --text-4xl: calc(var(--text-3xl) * var(--text-ratio));
+  --text-5xl: calc(var(--text-4xl) * var(--text-ratio));
+  --text-6xl: calc(var(--text-5xl) * var(--text-ratio));
+  --text-7xl: calc(var(--text-6xl) * var(--text-ratio));
+  --text-8xl: calc(var(--text-7xl) * var(--text-ratio));
+  --text-9xl: calc(var(--text-8xl) * var(--text-ratio));
+
+  /* Leading tightens as type grows — display copy should not sit on 1.5. */
+  --text-xs--line-height: 1.5;
+  --text-sm--line-height: 1.5;
+  --text-base--line-height: 1.55;
+  --text-lg--line-height: 1.5;
+  --text-xl--line-height: 1.4;
+  --text-2xl--line-height: 1.25;
+  --text-3xl--line-height: 1.15;
+  --text-4xl--line-height: 1.08;
+  --text-5xl--line-height: 1.02;
+  --text-6xl--line-height: 1;
+  --text-7xl--line-height: 0.98;
+  --text-8xl--line-height: 0.95;
+  --text-9xl--line-height: 0.92;
+
+  /* -- Layout ------------------------------------------------------------ *
+     Content width is 1280px. The gutter is the *minimum* breathing room,
+     so the outer box maxes out at 1280 + 2 * gutter.                       */
+  --container-content: 1280px;
+  --gutter: 1rem; /* 16px, mobile */
+  --gutter-lg: 2rem; /* 32px, md and up */
+
+  /* -- Vertical rhythm between sections. Change here, changes everywhere. - */
+  --section-sm: 3rem;
+  --section-sm-lg: 4rem;
+  --section-md: 4rem;
+  --section-md-lg: 6rem;
+  --section-lg: 5rem;
+  --section-lg-lg: 8rem;
+}
+
+@theme inline {
+  --font-heading: var(--font-eurostile);
+  --font-body: var(--font-aeonik);
+  --font-sans: var(--font-aeonik);
+
+  /* shadcn / Aceternity semantic tokens, mapped onto the KOMBA palette below
+     so anything installed from those registries lands on-brand by default. */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+/* The site is dark-first, so the dark values are the defaults on :root
+   rather than living behind a .dark class. */
+:root {
+  --background: var(--color-ink-950);
+  --foreground: #ffffff;
+  --card: var(--color-ink-900);
+  --card-foreground: #ffffff;
+  --popover: var(--color-ink-900);
+  --popover-foreground: #ffffff;
+  --primary: var(--color-komba-purple);
+  --primary-foreground: #ffffff;
+  --secondary: var(--color-ink-800);
+  --secondary-foreground: #ffffff;
+  --muted: var(--color-ink-800);
+  --muted-foreground: rgb(255 255 255 / 60%);
+  --accent: var(--color-ink-700);
+  --accent-foreground: #ffffff;
+  --destructive: #ef4444;
+  --border: rgb(255 255 255 / 10%);
+  --input: rgb(255 255 255 / 15%);
+  --ring: var(--color-komba-purple);
+  --radius: 0.5rem;
+}
+
+/* ---------------------------------------------------------------------------
+   Container
+   Horizontal constraint only. Never sets vertical spacing — that is Section's
+   job, so the two never fight over the same axis.
+--------------------------------------------------------------------------- */
+@utility container-content {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+  max-width: calc(var(--container-content) + var(--gutter) * 2);
+
+  @variant md {
+    padding-inline: var(--gutter-lg);
+    max-width: calc(var(--container-content) + var(--gutter-lg) * 2);
+  }
+}
+
+/* Width modifiers — set the custom property, the utility above does the rest. */
+@utility container-narrow {
+  --container-content: 800px;
+}
+
+@utility container-wide {
+  --container-content: 1600px;
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    color-scheme: dark;
+    -webkit-font-smoothing: antialiased;
+    hanging-punctuation: first last;
+  }
+
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  body {
+    @apply bg-ink-950 font-body text-white;
+  }
+
+  img,
+  picture,
+  svg,
+  video {
+    display: block;
+    max-width: 100%;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading;
+    letter-spacing: -0.02em;
+  }
+
+  p {
+    letter-spacing: -0.01em;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :has(:target) {
+      scroll-behavior: smooth;
+      scroll-padding-top: 3rem;
+    }
+  }
+}
