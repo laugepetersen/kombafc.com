@@ -188,39 +188,42 @@
 --------------------------------------------------------------------------- */
 
 /**
- * Display headings: a metallic fill lit by a highlight that sweeps across the
- * type, as if caught by the arena rigging.
+ * Display headings: the Figma gradient fill, with its angle rocking rather
+ * than sitting still, so the type reads as catching moving light.
  *
- * The gradient is wider than the text and its position is animated, so the
- * bright band travels through the letters rather than the letters moving. Both
- * ends of the ramp are the same dark tone, so the loop reads as continuous.
+ * `background-image` is not an interpolable property, so the angle is held in
+ * a registered custom property instead — @property gives it a type, which is
+ * what lets the browser animate it. Without the registration this is just a
+ * string swap and nothing tweens.
+ *
+ * `alternate` rocks it back rather than jumping to the start each cycle, so
+ * there is no flick at the loop point.
  */
+@property --chrome-angle {
+  syntax: "<angle>";
+  initial-value: -35deg;
+  inherits: false;
+}
+
 @keyframes text-chrome {
   from {
-    background-position: 100% 0;
+    --chrome-angle: -35deg;
   }
   to {
-    background-position: 0% 0;
+    --chrome-angle: 35deg;
   }
 }
 
 @utility text-chrome {
   background-image: linear-gradient(
-    105deg,
-    var(--color-ink-300) 0%,
-    var(--color-ink-200) 16%,
-    var(--color-ink-100) 30%,
-    #ffffff 42%,
-    #ffffff 47%,
-    var(--color-ink-100) 60%,
-    var(--color-ink-200) 78%,
-    var(--color-ink-300) 100%
+    var(--chrome-angle),
+    #ffffff 0%,
+    rgb(223 223 223 / 0.9) 100%
   );
-  background-size: 300% 100%;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 8px rgb(255 255 255 / 0.25);
-  animation: text-chrome 7s ease-in-out infinite;
+  text-shadow: 0 0 8px rgb(255 255 255 / 0.4);
+  animation: text-chrome 5s ease-in-out infinite alternate;
 
   /* A transparent fill leaves nothing to paint once the gradient is dropped,
      so high-contrast mode gets a solid colour back. */
@@ -231,29 +234,11 @@
     animation: none;
   }
 
-  /* Hold the highlight mid-sweep rather than looping it. */
   @media (prefers-reduced-motion: reduce) {
     animation: none;
-    background-position: 50% 0;
   }
 }
 
-/**
- * Trims a text box to cap height and the alphabetic baseline.
- *
- * The base rule does this for h1-h6, but that only trims the *outer* edges of
- * the block — the first line's top and the last line's bottom. Stacked lines
- * inside a heading each carry their own descent, so they need it individually.
- */
-@utility text-trim {
-  text-box: trim-both cap alphabetic;
-}
-
-/**
- * Loading sheen for placeholder surfaces — a slow highlight travelling across
- * a dark panel, so a box that is waiting on content reads as busy rather than
- * as an empty black hole.
- */
 @keyframes sheen {
   from {
     background-position: 200% 0;
