@@ -349,7 +349,11 @@ export function VideoModal({
         type="button"
         onClick={requestClose}
         aria-label="Close video"
-        className="absolute top-4 right-4 z-10 flex size-11 items-center justify-center rounded-full border border-white/15 bg-white/5 backdrop-blur-md transition-colors hover:bg-white/15 md:top-8 md:right-8"
+        className={cn(
+          "absolute top-4 right-4 z-10 flex size-11 items-center justify-center rounded-full border border-white/15 bg-white/5 backdrop-blur-md transition-[background-color,opacity] ease-out hover:bg-white/15 md:top-8 md:right-8",
+          exiting && "opacity-0",
+        )}
+        style={{ transitionDuration: `${EXIT_MS}ms` }}
       >
         <Icon name="close" className="size-5" />
       </button>
