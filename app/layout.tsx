@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 
+import { isCanonicalProduction } from "@/lib/site";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
+  // robots.txt alone only asks crawlers not to *fetch* a URL — it does not
+  // keep an already-discovered URL out of the index. The meta tag does, so
+  // staging carries both.
+  robots: isCanonicalProduction ? undefined : { index: false, follow: false },
   title: {
     template: "%s — KOMBA FC",
     default: "KOMBA Fight Club",
