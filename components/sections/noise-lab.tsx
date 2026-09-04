@@ -1,8 +1,7 @@
 import Image from "next/image";
 
-import { NoiseCtaOnHover } from "@/components/effects/noise-cta";
+import { NoiseButton } from "@/components/effects/noise-button";
 import { PixelNoise } from "@/components/effects/pixel-noise";
-import { Button } from "@/components/ui/button";
 import { SectionFrame } from "@/components/layout/section-frame";
 import { Kicker } from "@/components/ui/kicker";
 
@@ -58,25 +57,11 @@ export function NoiseLab() {
           </Swatch>
 
           <Swatch
-            label="C — Behind a CTA"
-            note="Sparse and slow, so it never competes with the label."
+            label="C — Inside a primary CTA"
+            note="Field clipped to the button, over the fill and under the label."
           >
-            <div className="bg-ink-900 relative flex h-64 items-center justify-center overflow-clip">
-              <div className="absolute inset-0">
-                <PixelNoise
-                  pitch={8}
-                  churn={0.03}
-                  fps={12}
-                  opacities={[0, 0, 0, 0, 0.05, 0.1, 0.2, 0.35]}
-                  fadeUpwards={false}
-                />
-              </div>
-              <div className="relative flex flex-col items-center gap-6">
-                <p className="font-heading text-2xl font-black uppercase italic">
-                  Become a partner
-                </p>
-                <Button href="/partners">Get in touch</Button>
-              </div>
+            <div className="bg-void flex h-64 items-center justify-center">
+              <NoiseButton href="/partners">Become Partner</NoiseButton>
             </div>
           </Swatch>
 
@@ -94,27 +79,28 @@ export function NoiseLab() {
           </Swatch>
 
           <Swatch
-            label="E — CTA, full bleed"
-            note="Denser and violet, carrying the whole panel rather than sitting under it."
+            label="E — Inside a secondary CTA"
+            note="Violet dots on the transparent variant, no blend needed."
           >
-            <div className="bg-void relative flex h-64 items-center justify-center overflow-clip">
-              <div className="absolute inset-0">
-                <PixelNoise pitch={5} churn={0.1} fps={18} />
-              </div>
-              <div className="relative flex flex-col items-center gap-6">
-                <p className="font-heading text-2xl font-black uppercase italic">
-                  Fight night
-                </p>
-                <Button href="/events">Get tickets</Button>
-              </div>
+            <div className="bg-void flex h-64 items-center justify-center">
+              <NoiseButton href="/about" variant="secondary">
+                About Us
+              </NoiseButton>
             </div>
           </Swatch>
 
           <Swatch
-            label="F — CTA, on hover only"
-            note="Idle panel wakes on pointer or focus. Loop stops when idle, not just hidden."
+            label="F — Inside a CTA, on hover only"
+            note="Both variants. Loop stops when idle, not just fades out."
           >
-            <NoiseCtaOnHover />
+            <div className="bg-void flex h-64 items-center justify-center gap-4">
+              <NoiseButton href="/partners" onHoverOnly>
+                Become Partner
+              </NoiseButton>
+              <NoiseButton href="/about" variant="secondary" onHoverOnly>
+                About Us
+              </NoiseButton>
+            </div>
           </Swatch>
 
           <Swatch
