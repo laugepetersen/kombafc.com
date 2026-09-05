@@ -5,10 +5,10 @@ import { useRef, useState } from "react";
 
 import { Container } from "@/components/layout/container";
 import { VideoModal } from "@/components/media/video-modal";
-import { Button } from "@/components/ui/button";
 import { GalleryFlythrough } from "@/components/ui/gallery-flythrough";
 import { LineRise } from "@/components/ui/line-rise";
 import { Kicker } from "@/components/ui/kicker";
+import { type ShowFact, ShowBar } from "@/components/ui/show-bar";
 
 /**
  * The night itself, shot by Sebastian Stigsby. show-13 is held out of the
@@ -32,6 +32,13 @@ const finale = {
 
 /** The full recording, which both this and the hero open. */
 const RECORDING_YOUTUBE_ID = "VKWcRp_3Mgc";
+
+/** The night in three lines, lit one at a time along the foot of the screen. */
+const FACTS: ShowFact[] = [
+  { label: "Copenhagen", detail: "Venue K.B. Hallen" },
+  { label: "1500 Spectators", detail: "and more broadcasting" },
+  { label: "KUNDO x G-SHOCK", detail: "Halftime show" },
+];
 
 /**
  * Where the camera comes to rest on the last photograph — the very end of the
@@ -155,14 +162,20 @@ export function PreviousShow() {
               text="Rewatch the grand opening in K.B. Hallen."
               className="text-relief mt-6 max-w-[16ch] text-3xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-4xl xl:text-5xl"
             />
-
-            <div className="pointer-events-auto mt-8 md:mt-12">
-              <Button variant="secondary" onClick={() => setPlayerOpen(true)}>
-                Rewatch
-              </Button>
-            </div>
           </div>
         </Container>
+
+        {/* The ask, moved out of the middle and onto the bottom edge, where it
+            can stay put over the whole flight instead of sitting under the
+            heading on one screen. Outside the Container: that one is
+            pointer-transparent so the drift answers across it, and this has a
+            button in it. */}
+        <ShowBar
+          action="Rewatch KOMBA 1.0"
+          onAction={() => setPlayerOpen(true)}
+          facts={FACTS}
+          className="absolute inset-x-0 bottom-0"
+        />
       </div>
 
       <VideoModal
