@@ -1,3 +1,7 @@
+"use client";
+
+import { type MotionValue, motion } from "motion/react";
+
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
 
@@ -11,9 +15,12 @@ import { cn } from "@/lib/utils";
  * than a Button — it is full-bleed and full-height, which is a different
  * object from the site's inline CTAs, bevel and all.
  *
- * Nothing moves. The facts held the light in turn on a timer for a while;
- * standing over a section that is already flying past, a second thing keeping
- * its own time was one too many.
+ * Nothing here keeps its own time. The facts held the light in turn on a timer
+ * for a while; standing over a section that is already flying past, a second
+ * thing on its own clock was one too many. The only thing that moves is the
+ * rule along the top, and that is the section's own progress rather than an
+ * animation — it is where you are in the flight, drawn on the line that was
+ * already there.
  */
 
 export type ShowFact = {
@@ -27,12 +34,19 @@ export function ShowBar({
   action,
   onAction,
   facts,
+  progress,
   className,
 }: {
   /** The label on the white block. */
   action: string;
   onAction: () => void;
   facts: ShowFact[];
+  /**
+   * Nought to one across whatever scroll the bar is sitting over. Given one,
+   * the rule along the top fills white to say how far in you are. Left off,
+   * it is a plain hairline.
+   */
+  progress?: MotionValue<number>;
   className?: string;
 }) {
   return (
@@ -70,7 +84,22 @@ export function ShowBar({
         {/* items-center rather than items-start: every fact is a label over a
             detail, so they are the same height and their tops line up either
             way — this also centres the run in the bar. */}
-        <ul className="border-rule flex min-w-0 flex-1 items-center overflow-hidden border-t">
+        <ul className="relative flex min-w-0 flex-1 items-center overflow-hidden">
+          {/* The hairline, and the flight drawn along it. Two absolute rules
+              rather than a border and a child: a border is painted inside the
+              box and cannot be filled part-way, and the fill has to sit on
+              exactly the line the rule is on, not a pixel under it. */}
+          <span
+            aria-hidden="true"
+            className="bg-rule absolute inset-x-0 top-0 h-px"
+          />
+          {progress ? (
+            <motion.span
+              aria-hidden="true"
+              className="absolute inset-x-0 top-0 h-px origin-left bg-white"
+              style={{ scaleX: progress }}
+            />
+          ) : null}
           {facts.map((fact, index) => (
             <li
               key={fact.label}

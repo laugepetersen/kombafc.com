@@ -174,6 +174,9 @@ export function PreviousShow() {
           action="Rewatch KOMBA 1.0"
           onAction={() => setPlayerOpen(true)}
           facts={FACTS}
+          // The same value that drives the camera, so the rule along the top
+          // of the bar is exactly how far down the corridor you are.
+          progress={flight}
           className="absolute inset-x-0 bottom-0"
         />
       </div>
