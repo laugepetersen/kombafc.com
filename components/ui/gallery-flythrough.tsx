@@ -175,13 +175,14 @@ const TAIL_MAX_W = 290;
 const CLIP_W = 460;
 
 /**
- * And held well off the centre line. Pulling it towards the middle to make it
- * prominent put it directly behind the copy instead: at 460px it came up to
- * sixty per cent of the heading's box on the way past. Prominent means large
- * and unobstructed, which is beside the copy, not under it.
+ * And held off the centre line, though far less than it once was. It used to
+ * be pushed right out to three quarters, back when the copy was in the middle
+ * of the frame and a 460px card coming up to the lens landed across it. The
+ * copy is in the bottom-left corner now, so the middle is free — this is
+ * enough to stop the three of them queueing up on the same line, and no more.
  */
 const CLIP_SPREAD = 0.16;
-const CLIP_KEEP_OUT = 0.75;
+const CLIP_KEEP_OUT = 0.3;
 
 /**
  * The tail is scattered far *tighter* than the field, not wider. It only ever
@@ -203,11 +204,14 @@ const TAIL_SPREAD = 0.45;
 const TAIL_KEEP_OUT = 0.4;
 
 /**
- * Cards at least this wide are held off the centre line too, wherever they are
- * in the corridor. Perspective takes a 400px card to nearly 600 as it comes up
- * to the lens, and in the middle of the frame that is a slab across the copy —
- * which is the one thing on this screen that has to stay readable. Smaller
- * ones are free to drift through the middle.
+ * What counts as a big card when the roster is dealt out, so that no
+ * photograph ends up having only ever drawn small ones.
+ *
+ * It used to hold cards this wide off the centre line as well, wherever they
+ * were in the corridor — a slab across the middle of the frame was a slab
+ * across the copy. With the copy in the bottom-left corner that rule was
+ * emptying the middle for nothing: every card worth looking at was being sent
+ * to the edges, which is exactly where the field looked cluttered.
  */
 const BIG_FROM = 300;
 
@@ -217,9 +221,6 @@ const BIG_FROM = 300;
  * together — at the window itself they still overlapped at the edges.
  */
 const MIN_APART = 3600;
-
-/** Gentler than the tail's: these are already out in the field's wide spread. */
-const FIELD_KEEP_OUT = 0.22;
 
 /** Where a photograph hangs, and how big it is drawn. */
 function placeAt(index: number, isClip = false) {
@@ -264,25 +265,34 @@ function placeAt(index: number, isClip = false) {
   // The tail is pushed off the centre on one axis only, alternating. Pushed
   // out on both it piles into the four corners, which is exactly where the
   // clumps were — this sends half of it to the sides and half to the top and
-  // bottom, so it sweeps the edges instead of stacking in the corners.
+  // bottom, so it sweeps the edges instead of stacking in the corners. It
+  // still earns that: the last photograph grows down the middle, and the tail
+  // has to leave it room.
   //
-  // Big cards are pushed sideways wherever they are, so the ones that grow
-  // large enough to cover the copy pass down one side of it instead of
-  // through it. Sideways only: over or under the copy is fine, across it is
-  // not, and the frame is wider than it is tall.
-  const isBig = isClip || width >= BIG_FROM;
-  const pushX = (isTail && index % 2 === 0) || isBig;
+  // The field itself is pushed nowhere. Everything wide enough to notice used
+  // to be sent sideways to clear the copy in the centre of the frame; the copy
+  // is in a corner now, and that rule was leaving the middle empty while the
+  // edges did all the work.
+  const pushX = (isTail && index % 2 === 0) || isClip;
   const pushY = isTail && index % 2 === 1;
-  const keepOut = isClip
-    ? CLIP_KEEP_OUT
-    : isTail
-      ? TAIL_KEEP_OUT
-      : FIELD_KEEP_OUT;
+  const keepOut = isClip ? CLIP_KEEP_OUT : TAIL_KEEP_OUT;
   const scale = isClip ? CLIP_SPREAD : 1;
 
+  const px = pushX ? outward(nx, keepOut) : nx;
+  const py = pushY ? outward(ny, keepOut) : ny;
+
+  /* One quadrant kept clear of slabs rather than the whole centre line.
+     The copy sits low and to the left, so a card wide enough to matter that
+     is heading for that corner is mirrored across to the other side. It is a
+     swap, not a push: a card near the middle stays near the middle, because
+     its own coordinate barely changes sign — which is the difference between
+     protecting the copy and emptying the frame around it. */
+  const slab = isClip || width >= BIG_FROM;
+  const mirrored = slab && px < 0 && py > 0 ? -px : px;
+
   return {
-    x: Math.round((pushX ? outward(nx, keepOut) : nx) * spreadX * scale),
-    y: Math.round((pushY ? outward(ny, keepOut) : ny) * spreadY * scale),
+    x: Math.round(mirrored * spreadX * scale),
+    y: Math.round(py * spreadY * scale),
     // Almost two steps of depth jitter, so neighbours trade places rather than
     // filing past at a fixed interval.
     z: Math.round(-(index + noise(index * 11.3) * 1.8) * DEPTH_STEP),
