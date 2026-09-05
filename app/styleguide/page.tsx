@@ -183,11 +183,20 @@ export default function StyleguidePage() {
             About Us
           </Button>
         </div>
+        <div className="mt-4 flex flex-wrap items-center gap-4">
+          <Button href="#" size="sm">
+            Become Partner
+          </Button>
+          <Button href="#" variant="secondary" size="sm">
+            About Us
+          </Button>
+        </div>
         <Note>
-          Primary is filled, secondary is an outline and carries no fill at any
-          state. Both follow the cursor slightly and brighten on hover; the
-          primary also lights a dot field inside itself, which runs only for as
-          long as the hover lasts. The pull is skipped under reduced motion.
+          Primary is filled violet; secondary is a white outline carrying no
+          fill at any state, its label on text-chrome for the sheen. Both press
+          on tap and wear a chamfered top-right corner, cut with corner-shape
+          so the border and the glow follow it rather than being clipped off.
+          Two sizes: 44px with base type, 36px with the step below it.
         </Note>
       </Block>
 

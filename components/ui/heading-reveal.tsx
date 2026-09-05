@@ -74,15 +74,15 @@ export function LineReveal({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  // Once, and not until it is properly on screen: started at the bottom edge
-  // the reveal is over before the heading is anywhere anyone is looking, and
-  // a heading that re-runs every time it is scrolled back past is asking for
-  // attention it has already had.
-  const inView = useInView(ref, {
-    amount: 0.8,
-    margin: "0px 0px -18% 0px",
-    once: true,
-  });
+  /* Replayed on every entry.
+     Triggered on an edge crossing a line, not on a fraction of the box. An
+     amount is a share of the element, so a three-line heading has to travel
+     three times as far into the frame as a one-line one before it reaches the
+     same share — the same reveal going off at a different height for every
+     length of text. Nought with the root inset top and bottom instead:
+     whichever edge arrives first has to be the same distance in, whatever the
+     element is. */
+  const inView = useInView(ref, { amount: 0, margin: "-12% 0px -12% 0px" });
   const reduce = useReducedMotion();
   const shown = inView || reduce;
 

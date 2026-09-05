@@ -678,9 +678,11 @@
  */
 @utility corner-cut {
   @supports (corner-shape: bevel) {
-    /* Three grid steps. A quarter of the 48px control height — enough to read
-       as deliberate at a glance, short of eating the label's padding. */
-    border-top-right-radius: calc(var(--spacing) * 3);
+    /* Three grid steps, which is roughly a quarter of the control height —
+       enough to read as deliberate at a glance, short of eating into the
+       label's padding. A shorter control overrides it to keep that ratio;
+       held fixed, the same 12px reads as a much deeper bite out of 36px. */
+    border-top-right-radius: var(--corner-cut, calc(var(--spacing) * 3));
     corner-shape: bevel;
   }
 }

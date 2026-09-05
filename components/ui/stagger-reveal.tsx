@@ -139,14 +139,15 @@ function Item({
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  // Once, and not until the piece is properly on screen. Enough of it to be
-  // worth animating, but not so much that a tall paragraph has to be nearly
-  // read before it starts.
-  const inView = useInView(ref, {
-    amount: 0.55,
-    margin: "0px 0px -12% 0px",
-    once: true,
-  });
+  /* Replayed on every entry.
+     Triggered on an edge crossing a line, not on a fraction of the box. An
+     amount is a share of the element, so a three-line heading has to travel
+     three times as far into the frame as a one-line one before it reaches the
+     same share — the same reveal going off at a different height for every
+     length of text. Nought with the root inset top and bottom instead:
+     whichever edge arrives first has to be the same distance in, whatever the
+     element is. */
+  const inView = useInView(ref, { amount: 0, margin: "-10% 0px -10% 0px" });
   const reduce = useReducedMotion();
   const scrollingDownNow = useScrollingDown();
   const shown = inView || reduce;

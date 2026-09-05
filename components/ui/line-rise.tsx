@@ -18,8 +18,18 @@ import { type ElementType, type ReactNode, useEffect, useRef } from "react";
  * as a custom property. This only splits, watches, and sets one attribute.
  */
 
-/** How far the clip reaches past each line box, for descenders and accents. */
-const MASK_REACH = "0.3em";
+/**
+ * How far each line's clip reaches past its box.
+ *
+ * Down the page for descenders and accents, which a leading set to the caps
+ * leaves outside the line box. Across it for the italic: a slanted face hangs
+ * past the inline box at both ends, and kugiri's own reach is across the line
+ * only — by design, since a horizontal clip does nothing for a reveal that
+ * travels vertically. Left at nought it shaved the lean off the first and last
+ * glyph of every line.
+ */
+const MASK_REACH_Y = "0.3em";
+const MASK_REACH_X = "0.4em";
 
 export function LineRise({
   text,
@@ -62,12 +72,16 @@ export function LineRise({
 
     const cut = () => {
       split?.revert();
-      split = splitText(target, {
-        type: ["lines"],
-        // A tight leading leaves descenders outside the line box, and a clip
-        // at the box edge would shave them off at rest as well as in flight.
-        mask: { lines: MASK_REACH },
-      });
+      split = splitText(target, { type: ["lines"], mask: "lines" });
+
+      // kugiri writes the clip inline and leaves it to us to change or clear,
+      // so the reach is set here rather than through its own option, which
+      // only opens the cross axis.
+      for (const mask of split.masks) {
+        // Negative: inset() reaches inward, so a positive reach clips the ink
+        // rather than making room for it.
+        mask.style.clipPath = `inset(-${MASK_REACH_Y} -${MASK_REACH_X})`;
+      }
       width = target.clientWidth;
       apply();
     };
@@ -77,21 +91,22 @@ export function LineRise({
        meant that if anything about that wait went differently the heading was
        left with no way of ever being told it had been scrolled to.
 
-       Once only: it stops watching the moment it has fired. A heading that
-       re-runs every time it is scrolled back past draws attention to itself a
-       second and third time for nothing, and it is one less observer alive.
+       Replays on every entry: the lines park again on the way out, so
+       coming back to a heading plays it rather than finding it already up.
 
-       The bottom of the root is pulled up, so the heading has to be properly
-       on screen rather than clipping the bottom edge — start it there and the
-       reveal is over by the time it is somewhere anyone is looking. */
+       Triggered on an edge crossing a line, not on a fraction of the heading.
+       An amount is a share of the box, so a three-line heading has to travel
+       three times as far into the frame as a one-line one before it reaches
+       the same share — the same reveal going off at a different height for
+       every length of text. Nought with the root inset top and bottom
+       instead: whichever edge arrives first has to be the same distance in,
+       whatever the heading is. */
     const inView = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) return;
-        onScreen = true;
+        onScreen = entry.isIntersecting;
         apply();
-        inView.disconnect();
       },
-      { threshold: 0.8, rootMargin: "0px 0px -18% 0px" },
+      { threshold: 0, rootMargin: "-12% 0px -12% 0px" },
     );
     inView.observe(target);
 

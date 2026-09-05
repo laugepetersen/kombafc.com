@@ -9,7 +9,20 @@ import { cn } from "@/lib/utils";
    its 200ms default — a CTA lighting up wants to read slower than a nav item
    dimming. */
 const base =
-  "tap corner-cut relative inline-flex h-12 items-center justify-center px-6 font-body text-base font-medium tracking-[0.02em] [--tap-fade:300ms]";
+  "tap corner-cut relative inline-flex items-center justify-center font-body font-medium tracking-[0.02em] [--tap-fade:300ms]";
+
+/* Height, padding and type in one place: a button's size is a single
+   decision, and splitting it invites a 36px box wearing 16px type.
+
+   Both heights are grid steps. Neither label is a hand-picked pixel value —
+   text-base and text-sm are consecutive steps on the modular scale, so sm is
+   base divided by --text-ratio and follows it if the ratio is ever retuned. */
+const sizes = {
+  default: "h-11 px-6 text-base",
+  sm: "h-9 px-4 text-sm [--corner-cut:calc(var(--spacing)*2)]",
+} as const;
+
+export type ButtonSize = keyof typeof sizes;
 
 /* Shared by both variants, so the light behaves the same whichever button it
    is coming off. Two layers rather than one: a tight core and a wide, dim
@@ -25,10 +38,6 @@ const glow =
 const glowHover =
   "hover:shadow-[0_0_10px_-3px_rgb(var(--cta-glow)/0.14),0_0_26px_0_rgb(var(--cta-glow)/0.10)]";
 
-/* The same values without the hover: prefix, written out rather than derived
-   from the line above. Tailwind scans source text for whole class names, so a
-   string built at runtime is never generated and the shadow silently does
-   nothing. */
 /* The outline CTA's label. text-chrome supplies the ramp and the bloom; a
    button wants both quieter than a heading does — white held across two
    thirds of the glyphs with only the tail going grey, no travelling angle
@@ -37,6 +46,10 @@ const glowHover =
 const chromeLabel =
   "text-chrome animate-none [--chrome-hold:65%] [--chrome-to:#d4d4d4] [--chrome-glow:0.18]";
 
+/* The same values as glowHover without the hover: prefix, written out rather
+   than derived from it. Tailwind scans source text for whole class names, so
+   a string built at runtime is never generated and the shadow silently does
+   nothing. */
 const glowLit =
   "shadow-[0_0_10px_-3px_rgb(var(--cta-glow)/0.14),0_0_26px_0_rgb(var(--cta-glow)/0.10)]";
 
@@ -83,6 +96,7 @@ export type ButtonVariant = keyof typeof variants;
  */
 type ButtonProps = {
   variant?: ButtonVariant;
+  size?: ButtonSize;
   children: ReactNode;
   className?: string;
 } & (
@@ -98,11 +112,12 @@ type ButtonProps = {
 
 export function Button({
   variant = "primary",
+  size = "default",
   children,
   className,
   ...rest
 }: ButtonProps) {
-  const classes = cn(base, variants[variant], className);
+  const classes = cn(base, sizes[size], variants[variant], className);
 
   // One custom text-* utility through cn, which is the only count that is
   // safe — see the note in CLAUDE.md.
