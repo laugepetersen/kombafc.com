@@ -69,6 +69,21 @@ already wired in `components.json`. Its semantic tokens (`bg-background`,
 `border-border`, `bg-primary`…) are mapped onto the KOMBA palette in
 `app/globals.css`, so installs land on-brand without editing.
 
+## Reporting back
+
+Answer in two labelled bullet lists and nothing else:
+
+- **What I did** — what changed, and the measurement that shows it worked.
+- **What you should do** — only when something is genuinely waiting on Lauge.
+  Leave the heading out entirely when there is nothing.
+
+Short bullets. No preamble, no recap of the request, no narration of the
+route taken. A number that was measured beats an adjective every time: "fires
+at 87%, holds to 97%" says more than "the timing feels better now".
+
+When something was got wrong along the way, say so plainly in the first list
+rather than quietly correcting it — a bullet, not a paragraph.
+
 ## Class merging
 
 `cn` runs tailwind-merge, which files every `text-*` class it does not

@@ -28,6 +28,9 @@ import { type ElementType, type ReactNode, useEffect, useRef } from "react";
  * travels vertically. Left at nought it shaved the lean off the first and last
  * glyph of every line.
  */
+/** How far inside the frame an edge has to be before the reveal starts. */
+const ENTER_INSET = "-12% 0px -12% 0px";
+
 const MASK_REACH_Y = "0.3em";
 const MASK_REACH_X = "0.4em";
 
@@ -101,14 +104,27 @@ export function LineRise({
        every length of text. Nought with the root inset top and bottom
        instead: whichever edge arrives first has to be the same distance in,
        whatever the heading is. */
-    const inView = new IntersectionObserver(
+    const enter = new IntersectionObserver(
       ([entry]) => {
-        onScreen = entry.isIntersecting;
+        if (!entry.isIntersecting) return;
+        onScreen = true;
         apply();
       },
-      { threshold: 0, rootMargin: "-12% 0px -12% 0px" },
+      { threshold: 0, rootMargin: ENTER_INSET },
     );
-    inView.observe(target);
+    enter.observe(target);
+
+    // Against the frame itself, so this only fires once nothing of the
+    // heading is left on screen.
+    const leave = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) return;
+        onScreen = false;
+        apply();
+      },
+      { threshold: 0 },
+    );
+    leave.observe(target);
 
     /* A split is a snapshot of one layout. When the box changes width the
        lines it was cut into are no longer the lines the browser would paint,
@@ -134,7 +150,8 @@ export function LineRise({
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
-      inView.disconnect();
+      enter.disconnect();
+      leave.disconnect();
       onResize.disconnect();
       split?.revert();
     };
