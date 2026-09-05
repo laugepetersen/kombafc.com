@@ -64,15 +64,27 @@ export function Hero() {
       <Container className="hero-parallax-content relative flex flex-col items-center text-center">
         {/* Each line is trimmed to its caps, so the leading between them is set
             explicitly here. In em, so it scales with each line rather than
-            being a fixed gap that only looks right at one breakpoint. */}
-        <h1 className="font-heading text-chrome text-paint-room space-y-(--heading-line-gap) font-black uppercase italic">
+            being a fixed gap that only looks right at one breakpoint.
+
+            text-chrome with both ends of its ramp at white: the gradient goes
+            flat and the sweep has nothing left to move, so it is switched off
+            rather than left recalculating every frame for no visible result.
+            The bloom and the inner shadow are the rest of the utility and are
+            untouched — this drops the colour travel, not the relief.
+
+            Plain string, not cn: text-chrome and text-paint-room are two
+            custom text-* utilities and tailwind-merge would keep only the
+            last. See CLAUDE.md. */}
+        <h1 className="font-heading text-chrome text-paint-room [--chrome-to:#ffffff] space-y-(--heading-line-gap) animate-none font-black uppercase italic">
           <span className="text-trim block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
             The best strikers.
           </span>
           <span className="text-trim block text-2xl tracking-[-0.02em] sm:text-4xl md:text-5xl lg:text-6xl">
             A new fight format.
           </span>
-          <span className="text-trim block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
+          {/* Set a third the size of the line above it, which leaves the
+              standard gap reading loose underneath it. */}
+          <span className="text-trim line-gap-tight block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
             In Scandinavia.
           </span>
         </h1>

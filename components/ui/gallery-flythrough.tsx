@@ -211,6 +211,13 @@ const TAIL_KEEP_OUT = 0.4;
  */
 const BIG_FROM = 300;
 
+/**
+ * How far apart down the corridor the same photograph may be used twice.
+ * Comfortably past the fog window, so its two turns are never in the frame
+ * together — at the window itself they still overlapped at the edges.
+ */
+const MIN_APART = 3600;
+
 /** Gentler than the tail's: these are already out in the field's wide spread. */
 const FIELD_KEEP_OUT = 0.22;
 
@@ -430,24 +437,87 @@ export function GalleryFlythrough({
       ]),
     );
 
-    /* The stills are dealt down the remaining slots in order of size rather
-       than by index % count. The obvious modulo distributes evenly by number
-       but not by prominence: it lines up with the size noise, so a handful of
-       photographs only ever came up in small cards and never once in a large
-       one. Sorting by size and dealing round-robin gives every photograph one
-       card from each band — its turn up close and its turn as a speck — and
-       still keeps the counts within one of each other. */
-    const slots: { index: number; width: number }[] = [];
+    const slots: { index: number; z: number; width: number }[] = [];
     for (let index = 0; index < CARDS; index++) {
       if (clipSlots.has(index)) continue;
-      slots.push({ index, width: placeAt(index).width });
+      const { z, width } = placeAt(index);
+      slots.push({ index, z, width });
     }
-    slots.sort((a, b) => b.width - a.width);
+
+    /* Dealt in depth order, nearest first. The same photograph then comes back
+       exactly one full pass of the roster later — around four thousand pixels
+       further down the corridor — so its two turns are never in the frame
+       together. Dealing by size instead read better on paper, one card from
+       each size band per photograph, but said nothing about where the cards
+       were: two turns could land a few hundred pixels apart and come past side
+       by side, which is the same picture twice in one eyeful. */
+    const source = new Map<number, number>();
+    [...slots]
+      .sort((a, b) => b.z - a.z)
+      .forEach((slot, n) => source.set(slot.index, n % photos.length));
+
+    /* That deal takes no view on prominence, and a few photographs come out of
+       it having only ever drawn small cards. This hands each of those one big
+       card from a photograph that has more than one, and takes the swap only
+       if every photograph still repeats at least MIN_APART down the corridor.
+       Guarding at more than the fog window is what keeps this from undoing the
+       deal: at the window itself the repair buys prominence back and puts the
+       duplicates on screen again. */
+    const grouped = () => {
+      const groups = new Map<number, typeof slots>();
+      for (const slot of slots) {
+        const key = source.get(slot.index)!;
+        groups.set(key, [...(groups.get(key) ?? []), slot]);
+      }
+      return groups;
+    };
+
+    const stillApart = (groups: Map<number, typeof slots>) => {
+      for (const list of groups.values()) {
+        for (let a = 0; a < list.length; a++) {
+          for (let b = a + 1; b < list.length; b++) {
+            if (Math.abs(list[a].z - list[b].z) < MIN_APART) return false;
+          }
+        }
+      }
+      return true;
+    };
+
+    for (let pass = 0; pass < 8; pass++) {
+      const groups = grouped();
+      const poor = [...groups.entries()].filter(
+        ([, list]) => Math.max(...list.map((s) => s.width)) < BIG_FROM,
+      );
+      if (poor.length === 0) break;
+
+      let swapped = false;
+      for (const [thin, thinList] of poor) {
+        const spare = [...groups.entries()].filter(
+          ([, list]) => list.filter((s) => s.width >= BIG_FROM).length > 1,
+        );
+
+        for (const [rich, richList] of spare) {
+          const give = richList.find((s) => s.width >= BIG_FROM)!;
+          const take = [...thinList].sort((a, b) => b.width - a.width)[0];
+
+          source.set(give.index, thin);
+          source.set(take.index, rich);
+          if (stillApart(grouped())) {
+            swapped = true;
+            break;
+          }
+          source.set(give.index, rich);
+          source.set(take.index, thin);
+        }
+        if (swapped) break;
+      }
+      if (!swapped) break;
+    }
 
     const stills = new Map<number, string>();
-    slots.forEach((slot, n) =>
-      stills.set(slot.index, photos[n % photos.length]),
-    );
+    for (const slot of slots) {
+      stills.set(slot.index, photos[source.get(slot.index)!]);
+    }
 
     return (index: number) => clipSlots.get(index) ?? stills.get(index)!;
   }, [photos, clips]);

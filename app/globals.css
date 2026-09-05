@@ -660,6 +660,22 @@
 }
 
 /**
+ * Pulls a stacked heading line closer to the one above it.
+ *
+ * The gap between trimmed lines is an em, so it already resolves against the
+ * line's own type — a 4xl line under a 6xl one gets a smaller gap for free.
+ * That is not enough on its own: the big line's box is trimmed to its cap
+ * height and ends at the baseline, so the space beneath it reads looser than
+ * the metric says. Seven tenths of the derived gap puts it back where the eye
+ * expects, and stays derived, so retuning the leading still carries through.
+ */
+@utility line-gap-tight {
+  --heading-line-gap: calc(
+    (var(--heading-leading) - var(--heading-cap-height)) * 0.7em
+  );
+}
+
+/**
  * The chamfered top-right corner the CTAs wear — a corner cut off rather than
  * rounded.
  *
