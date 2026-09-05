@@ -396,9 +396,11 @@
 @keyframes line-rise-up {
   from {
     transform: translateY(100%);
+    opacity: 0;
   }
   to {
     transform: none;
+    opacity: 1;
   }
 }
 
@@ -416,20 +418,22 @@
    split, and other things may want it without this reveal. */
 [data-line-rise] [data-line] {
   transform: translateY(100%);
+  opacity: 0;
   color: #4a4a4a;
 }
 
 [data-line-rise="running"] [data-line] {
   animation:
-    line-rise-up 1300ms cubic-bezier(0.19, 1, 0.22, 1) both,
-    line-rise-fill 1500ms cubic-bezier(0.4, 0, 0.5, 1) both;
-  animation-delay: calc(var(--line) * 150ms), calc(var(--line) * 150ms);
+    line-rise-up 1000ms cubic-bezier(0.23, 1, 0.32, 1) both,
+    line-rise-fill 1200ms cubic-bezier(0.4, 0, 0.5, 1) both;
+  animation-delay: calc(var(--line) * 100ms), calc(var(--line) * 100ms);
 }
 
 @media (prefers-reduced-motion: reduce) {
   /* Split, but never moved: the lines simply are where they end up. */
   [data-line-rise] [data-line] {
     transform: none;
+    opacity: 1;
     color: #ffffff;
   }
 

@@ -30,10 +30,14 @@ import {
  */
 
 /**
- * Decelerating with a very long tail — most of the distance is covered early
- * and the last of it takes its time, so the line arrives rather than stops.
+ * Kugiri's own demo curve, and its timing with it: a quintic ease-out over a
+ * second, a tenth of a second between lines. Softer off the mark than the
+ * exponential it replaces, which left too much of the travel in the first few
+ * frames and read as a snap however long the duration was.
  */
-const EASE = [0.19, 1, 0.22, 1] as const;
+const EASE = [0.23, 1, 0.32, 1] as const;
+const DURATION = 1;
+const STAGGER = 0.1;
 
 /**
  * The two ends of the fill, shared by every reveal here. Neutral greys, not
@@ -106,20 +110,25 @@ export function LineReveal({
               // ScrollFill uses — and because text-relief blooms off
               // currentcolor, the glow comes up with it rather than sitting
               // white around grey type.
+              // Fading as it rises, not only clipped by the mask. The mask
+              // alone gives a hard edge travelling up the line; the demo this
+              // is taken from fades too, and that is most of why it reads as
+              // smooth rather than as a wipe.
               animate={{
                 y: shown ? "0%" : "125%",
+                opacity: shown ? 1 : 0,
                 color: shown ? FILL_TO : FILL_FROM,
               }}
               transition={{
-                duration: 1.3,
-                delay: shown ? index * 0.15 : 0,
+                duration: DURATION,
+                delay: shown ? index * STAGGER : 0,
                 ease: EASE,
-                // The fill gets its own, gentler curve. On the same expo-out
-                // as the travel it is all but white a third of the way up,
-                // and the grey it is supposed to come from never reads.
+                // The fill gets its own, gentler curve. On the travel's curve
+                // it is all but white a third of the way up and the grey it is
+                // supposed to come from never reads.
                 color: {
-                  duration: 1.5,
-                  delay: shown ? index * 0.15 : 0,
+                  duration: DURATION * 1.2,
+                  delay: shown ? index * STAGGER : 0,
                   ease: FILL_EASE,
                 },
               }}

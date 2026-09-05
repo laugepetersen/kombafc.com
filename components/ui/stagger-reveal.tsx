@@ -39,9 +39,9 @@ import {
  * heading arriving on the same screen read as one movement rather than two
  * that happen to overlap.
  */
-const EASE = [0.19, 1, 0.22, 1] as const;
-const DURATION = 1.3;
-const STEP = 0.15;
+const EASE = [0.23, 1, 0.32, 1] as const;
+const DURATION = 1;
+const STEP = 0.1;
 
 /** Enough travel to have a direction, not enough to read as motion. */
 const TRAVEL = 12;
