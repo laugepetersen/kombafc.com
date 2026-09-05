@@ -1,8 +1,8 @@
 "use client";
 
-import { useInView } from "motion/react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
+import { useReplayInView } from "@/lib/in-view";
 import { cn } from "@/lib/utils";
 
 /**
@@ -57,8 +57,14 @@ export function EncryptedText({
   charset = DEFAULT_CHARSET,
 }: EncryptedTextProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  // Not `once`: the run repeats every time the label comes back into view.
-  const inView = useInView(ref, { amount: 0.6 });
+  /* Not `once`: the run repeats every time the label comes back into view.
+
+     On the site's one viewport rule, same as every other entrance — in when
+     an edge is far enough inside the frame, out only once none of it is left
+     on screen. It used to go on three fifths of the label being visible,
+     which put both boundaries on the same line: park and re-scramble were
+     one scroll wheel notch apart, in full view. */
+  const inView = useReplayInView(ref);
 
   const reduceMotion = useSyncExternalStore(
     subscribeMotion,

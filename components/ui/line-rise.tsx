@@ -3,6 +3,8 @@
 import { type TextSplit, splitText } from "kugiri";
 import { type ElementType, type ReactNode, useEffect, useRef } from "react";
 
+import { ENTER_MARGIN } from "@/lib/in-view";
+
 /**
  * A heading that rises into place a line at a time, warming from grey to white
  * as it goes. Nothing else changes about it — the bloom and the inner shadow
@@ -28,9 +30,6 @@ import { type ElementType, type ReactNode, useEffect, useRef } from "react";
  * travels vertically. Left at nought it shaved the lean off the first and last
  * glyph of every line.
  */
-/** How far inside the frame an edge has to be before the reveal starts. */
-const ENTER_INSET = "-12% 0px -12% 0px";
-
 const MASK_REACH_Y = "0.3em";
 const MASK_REACH_X = "0.4em";
 
@@ -94,23 +93,19 @@ export function LineRise({
        meant that if anything about that wait went differently the heading was
        left with no way of ever being told it had been scrolled to.
 
-       Replays on every entry: the lines park again on the way out, so
-       coming back to a heading plays it rather than finding it already up.
-
-       Triggered on an edge crossing a line, not on a fraction of the heading.
-       An amount is a share of the box, so a three-line heading has to travel
-       three times as far into the frame as a one-line one before it reaches
-       the same share — the same reveal going off at a different height for
-       every length of text. Nought with the root inset top and bottom
-       instead: whichever edge arrives first has to be the same distance in,
-       whatever the heading is. */
+       The site's one viewport rule, spelt out here rather than taken from
+       the shared hook: this component drives an attribute rather than React
+       state, so it wants the observers themselves. Enters on an edge far
+       enough inside the frame, parks only once none of it is on screen —
+       replayed, so coming back to a heading plays it rather than finding it
+       already up. The reasoning is in lib/in-view.ts. */
     const enter = new IntersectionObserver(
       ([entry]) => {
         if (!entry.isIntersecting) return;
         onScreen = true;
         apply();
       },
-      { threshold: 0, rootMargin: ENTER_INSET },
+      { threshold: 0, rootMargin: ENTER_MARGIN },
     );
     enter.observe(target);
 

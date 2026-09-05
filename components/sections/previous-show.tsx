@@ -70,6 +70,22 @@ export function PreviousShow() {
     ramp(v, ARRIVE_AT - 0.35, ARRIVE_AT),
   );
 
+  /* A second tracker, for the section's arrival rather than the flight
+     through it. The one above is pinned to the pin — it reads nought for the
+     whole of the approach and only starts counting once the sticky child has
+     taken hold, which is exactly the stretch this needs. Start at the bottom
+     of the frame to start at the top of it: nought the moment any of the
+     section is on screen, one the moment it covers the screen. */
+  const { scrollYProgress: arrival } = useScroll({
+    target: ref,
+    offset: ["start end", "start start"],
+  });
+
+  // The corridor comes up out of the page's own background rather than
+  // arriving lit — a full scrim of void over it, cleared exactly as the
+  // section finishes taking the screen.
+  const openingDark = useTransform(arrival, (v) => 1 - v);
+
   return (
     // No frame and no rules: the pinned screen belongs to the photographs.
     <section ref={ref} className={`relative ${SCROLL_LENGTH}`}>
@@ -81,6 +97,16 @@ export function PreviousShow() {
           label="Photographs from the grand opening at K.B. Hallen, drifting past"
           progress={flight}
           className="absolute inset-0"
+        />
+
+        {/* The dark the photographs fade up out of. Over the corridor and
+            under the copy, so the title and the button are legible against it
+            from the moment the section appears, while what is behind them is
+            still coming up. */}
+        <motion.div
+          aria-hidden="true"
+          className="bg-void pointer-events-none absolute inset-0"
+          style={{ opacity: openingDark }}
         />
 
         {/* Vignette. The field runs edge to edge and the copy sits on top of

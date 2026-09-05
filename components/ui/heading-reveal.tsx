@@ -3,7 +3,6 @@
 import {
   type MotionValue,
   motion,
-  useInView,
   useScroll,
   useTransform,
 } from "motion/react";
@@ -12,9 +11,10 @@ import {
   Fragment,
   type ReactNode,
   useRef,
-  useState,
   useSyncExternalStore,
 } from "react";
+
+import { useReplayInView } from "@/lib/in-view";
 
 /**
  * Three ways a heading arrives.
@@ -75,28 +75,9 @@ export function LineReveal({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  /* Replayed on every entry.
-
-     Two observers, not one, and deliberately not the same boundary. It starts
-     when an edge is a little inside the frame, but it only parks again once
-     the element is entirely off screen. One boundary for both means the line
-     that starts it is the line that resets it, and a scroll that rests on
-     that line — or a rubber-band, or a trackpad easing across it — flips it
-     back and forth. The gap between the two is what stops that.
-     Triggered on an edge crossing a line, not on a fraction of the box. An
-     amount is a share of the element, so a three-line heading has to travel
-     three times as far into the frame as a one-line one before it reaches the
-     same share — the same reveal going off at a different height for every
-     length of text. Nought with the root inset top and bottom instead:
-     whichever edge arrives first has to be the same distance in, whatever the
-     element is. */
-  const entered = useInView(ref, { amount: 0, margin: "-12% 0px -12% 0px" });
-  // Against the frame itself: true while any part of the heading is on screen.
-  const anyPartOnScreen = useInView(ref, { amount: 0 });
-
-  const [inView, setInView] = useState(false);
-  if (entered && !inView) setInView(true);
-  if (!anyPartOnScreen && inView) setInView(false);
+  // The site's one viewport rule: in when an edge is far enough inside the
+  // frame, out only once none of the heading is left on screen.
+  const inView = useReplayInView(ref);
   const reduce = useReducedMotion();
   const shown = inView || reduce;
 

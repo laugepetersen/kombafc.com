@@ -69,6 +69,26 @@ already wired in `components.json`. Its semantic tokens (`bg-background`,
 `border-border`, `bg-primary`…) are mapped onto the KOMBA palette in
 `app/globals.css`, so installs land on-brand without editing.
 
+## In-view motion
+
+Every entrance on the site shares one viewport rule, in `lib/in-view.ts`:
+
+- **In** when an edge of the element is `ENTER_MARGIN` (12%) inside the frame.
+  An edge crossing a line, never a share of the box — `amount: 0.5` makes a
+  three-line heading travel three times as far as a one-line one before it
+  fires, so the same reveal goes off at a different height for every length of
+  text.
+- **Out** only once none of it is left on screen.
+
+The two boundaries must not be the same one. Share them and the line that
+starts a run is the line that resets it, so a scroll resting there — or a
+rubber-band, or a trackpad easing across — flips it back and forth.
+
+`useReplayInView(ref)` returns the held boolean. `LineRise` wires its own pair
+of observers because it drives an attribute rather than React state, but off
+the same `ENTER_MARGIN`. Anything new that plays on entry goes through one of
+those two, not its own threshold.
+
 ## Reporting back
 
 Answer in two labelled bullet lists and nothing else:
