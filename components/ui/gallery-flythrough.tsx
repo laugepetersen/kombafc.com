@@ -60,18 +60,31 @@ const SPREAD_Y = 2500;
 const COLS = 7;
 const ROWS = 5;
 
-/** Pixels the scene slides at the far edge of the pointer's travel. */
-const DRIFT = 70;
+/**
+ * Pixels the scene slides at the far edge of the pointer's travel.
+ *
+ * A slide is the whole of it, and it is already depth-correct: the field moves
+ * by this much in world space, and perspective then divides that by each
+ * photograph's own distance, so what is near the lens travels far across the
+ * screen and what is deep in the corridor barely stirs.
+ *
+ * It was briefly given a turn as well, on the theory that a slide alone reads
+ * flat. That was wrong twice over — a turn is a pan, which moves everything by
+ * roughly the same amount on screen and so carries no parallax at all, and it
+ * pivots on the field's own origin rather than the lens. The last photograph
+ * sits eleven and a half thousand pixels from that origin, so three degrees
+ * swung it about six hundred across the screen at the very moment it was meant
+ * to have arrived and settled.
+ */
+const DRIFT = 34;
 
 /**
- * Degrees the scene also turns with the pointer. A slide alone moves the whole
- * field as one sheet — near and far shift by the same amount on screen, which
- * is what makes it feel like a picture being dragged rather than a space being
- * looked around. A turn is what puts depth into it: swinging the field about
- * its own centre moves what is close to the lens far more than what is deep in
- * the corridor, because that is simply what perspective does to it.
+ * Where the drift starts easing off, as a fraction of the flight. By the end
+ * the last photograph fills the screen and is the thing being looked at rather
+ * than part of the field — and being closest to the lens, it is exactly what
+ * the drift would throw around hardest if it were left on.
  */
-const TILT = 3.2;
+const SETTLE_FROM = 0.72;
 
 /** Where a photograph fades up out of the distance, and where it passes. */
 const FOG_IN_START = -3600;
@@ -83,10 +96,12 @@ const PASS_END = 620;
 const LENS = 1200;
 
 /**
- * Steps of empty corridor between the last of the field and the photograph at
- * the end of it, so that one arrives on its own rather than in the crowd.
+ * Steps of corridor between the deepest of the field and the photograph at the
+ * end of it. Wide enough that every other card is past PASS_END by the time
+ * the camera stops — at three steps the deepest few were still inside their
+ * fade-out when it arrived, and hung there over the top of it.
  */
-const FINALE_GAP = 3;
+const FINALE_GAP = 8;
 
 /** Where the last photograph hangs, and where the camera comes to rest. */
 const FINALE_Z = -(PLACEMENTS + FINALE_GAP) * DEPTH_STEP;
@@ -149,7 +164,7 @@ function placeAt(index: number) {
   const spreadX = isTail ? SPREAD_X * 1.35 : SPREAD_X;
   const spreadY = isTail ? SPREAD_Y * 1.35 : SPREAD_Y;
   const z = isTail
-    ? FINALE_Z + 300 + Math.round(noise(index * 13.7) * TAIL_DEPTH)
+    ? FINALE_Z + 700 + Math.round(noise(index * 13.7) * TAIL_DEPTH)
     : Math.round(-(index + noise(index * 11.3) * 1.8) * DEPTH_STEP);
 
   return {
@@ -274,10 +289,14 @@ export function GalleryFlythrough({
   // Firm rather than floaty: light enough to arrive with the pointer instead
   // of catching up with it a beat later, damped just short of overshooting.
   const spring = { stiffness: 190, damping: 26, mass: 0.22 };
-  const driftX = useSpring(pointerX, spring);
-  const driftY = useSpring(pointerY, spring);
-  const tiltY = useTransform(driftX, (v) => (-v / DRIFT) * TILT);
-  const tiltX = useTransform(driftY, (v) => (v / DRIFT) * TILT);
+  const easedX = useSpring(pointerX, spring);
+  const easedY = useSpring(pointerY, spring);
+
+  // Falls away to nothing over the last of the flight, so the photograph you
+  // arrive at holds still instead of swinging under the pointer.
+  const settle = useTransform(progress, (p) => 1 - ramp(p, SETTLE_FROM, 1));
+  const driftX = useTransform([easedX, settle], ([v, s]: number[]) => v * s);
+  const driftY = useTransform([easedY, settle], ([v, s]: number[]) => v * s);
 
   const handlePointer = (event: React.PointerEvent<HTMLDivElement>) => {
     if (reduce) return;
@@ -308,8 +327,6 @@ export function GalleryFlythrough({
           x: driftX,
           y: driftY,
           z: camera,
-          rotateX: tiltX,
-          rotateY: tiltY,
           transformStyle: "preserve-3d",
         }}
       >
