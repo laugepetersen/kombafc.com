@@ -23,6 +23,15 @@ import { cn } from "@/lib/utils";
 /** How long each fact holds the light. */
 const DWELL_MS = 3200;
 
+/**
+ * Between one fact's move and the next one's. Small — the run should read as
+ * the row settling in order rather than as three separate animations.
+ */
+const STAGGER_MS = 70;
+
+/** Kugiri's curve, the site's easing for anything that arrives. */
+const EASE = "cubic-bezier(0.23,1,0.32,1)";
+
 export type ShowFact = {
   /** The fact — a place, a count, a name. */
   label: string;
@@ -88,25 +97,45 @@ export function ShowBar({
   return (
     <div
       ref={ref}
-      className={cn(
-        // Dark enough to read white type against a lit photograph, blurred so
-        // what passes behind it stays a suggestion. Same treatment as the
-        // header, which is the site's other bar over moving media.
-        "border-rule bg-void/70 border-t backdrop-blur-[12px]",
-        "pb-[env(safe-area-inset-bottom)]",
-        className,
-      )}
+      className={cn("pb-[env(safe-area-inset-bottom)]", className)}
     >
+      {/* The ground, and the header's treatment upside down: a scrim rising
+          out of the bottom edge rather than a panel with a blur behind it. A
+          backdrop-filter over near-black photographs has almost nothing to
+          blur and reads as a flat grey patch. This holds its strength across
+          the bar and falls off above it, so the corridor dissolves into the
+          page edge instead of meeting a lit box.
+
+          The scrim is the bar's own height plus the fade, so the stop lands
+          on the bar's top edge at either breakpoint — the bar is twice as
+          tall stacked as it is in a row, and a percentage stop put the fade
+          inside it. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-[calc(100%+7rem)]"
+        style={{
+          background: `linear-gradient(to top,
+            rgb(5 5 8 / 0.92) 0px,
+            rgb(5 5 8 / 0.86) calc(100% - 7rem),
+            transparent 100%)`,
+        }}
+      />
+
       {/* Reversed on small screens: the ask goes to the bottom edge, where a
-          thumb is, and the fact sits above it. Side by side from md. */}
-      <div className="flex flex-col-reverse md:flex-row md:items-stretch">
+          thumb is, and the fact sits above it. Side by side from md, where the
+          row owns the height and both halves take all of it. */}
+      <div className="relative flex flex-col-reverse md:h-18 md:flex-row">
         <button
           type="button"
           onClick={onAction}
-          // No corner-cut: the block runs to the edge of the screen, and a
-          // bevel on a full-bleed edge reads as a rendering fault rather than
-          // as the site's mark. tap still gives it the press.
-          className="tap text-void font-body flex h-14 shrink-0 items-center justify-center gap-2 bg-white px-6 text-sm font-medium tracking-[0.02em] hover:brightness-90 md:h-24 md:px-8 md:text-base lg:px-10"
+          /* No border of its own, and none above it: the rule belongs to the
+             facts, so the block runs the full height of the bar and its top
+             edge is the same line the rule is drawn on.
+
+             No corner-cut either — the block runs to the edge of the screen,
+             and a bevel on a full-bleed edge reads as a rendering fault
+             rather than as the site's mark. tap still gives it the press. */
+          className="tap text-void font-body flex h-14 shrink-0 items-center justify-center gap-2 bg-white px-6 text-base font-medium tracking-[0.02em] hover:brightness-90 md:h-full md:px-8 lg:px-10"
         >
           <Icon name="play_arrow" className="size-5" />
           {action}
@@ -115,19 +144,13 @@ export function ShowBar({
         {/* items-center rather than items-start: every fact is a label over a
             detail, so they are the same height and their tops line up either
             way — this also centres the run in the bar. */}
-        <ul className="divide-rule flex min-w-0 flex-1 items-center overflow-hidden md:divide-x">
+        <ul className="border-rule flex min-w-0 flex-1 items-center overflow-hidden border-t">
           {facts.map((fact, index) => {
             const lit = index === active || reduce;
 
             return (
               <li
                 key={fact.label}
-                // One at a time on small screens. Three two-line facts side by
-                // side at 375px is three cramped columns; stacked, the bar
-                // eats a quarter of the screen. The cycle already picks one.
-                // shrink-0 and nowrap: a fact is a fixed phrase, and left
-                // to shrink they all took an equal share of the bar and
-                // ellipsised in the middle of a word.
                 className={cn(
                   // grow/basis-0 rather than sized to content: left to hug
                   // their own text the three of them bunched up against the
@@ -135,34 +158,38 @@ export function ShowBar({
                   // Even shares put the rules at even thirds and the bar
                   // reads as one object. shrink-0 stays, so a long fact
                   // overruns into the ul's clip rather than ellipsising.
-                  "shrink-0 px-6 py-4 md:grow md:basis-0 md:px-5 lg:px-8",
+                  "relative shrink-0 px-6 md:grow md:basis-0 md:px-5 lg:px-8",
+                  // One at a time on small screens. Three two-line facts side
+                  // by side at 375px is three cramped columns; stacked, the
+                  // bar eats a quarter of the screen. The cycle already picks
+                  // one.
                   index !== active && "hidden md:block",
+                  // The divider, the header's: a short centred rule rather
+                  // than a full-height border, which cuts the bar into boxes
+                  // instead of dividing one.
+                  index > 0 &&
+                    "md:before:bg-rule md:before:absolute md:before:top-1/2 md:before:left-0 md:before:h-6 md:before:w-px md:before:-translate-y-1/2 md:before:content-['']",
                 )}
               >
-                {/* origin-top-left, so the ones that are down a size stay
-                    pinned to the same top and the same left as the lit one.
-                    Scaling about the centre would float them all inwards and
-                    the row would look like it was breathing. */}
+                {/* Opacity and a nudge down the page, offset one fact from
+                    the next, so the row resettles in order. The one with the
+                    light is the one at the top. */}
                 <div
                   className={cn(
-                    "origin-top-left transition-transform duration-500 ease-out",
-                    lit ? "scale-100" : "scale-90",
+                    "py-3 transition-[translate,opacity] duration-500 md:py-0",
+                    lit
+                      ? "translate-y-0 opacity-100"
+                      : "translate-y-1.5 opacity-45",
                   )}
+                  style={{
+                    transitionDelay: `${index * STAGGER_MS}ms`,
+                    transitionTimingFunction: EASE,
+                  }}
                 >
-                  <p
-                    className={cn(
-                      "font-body font-medium whitespace-nowrap transition-colors duration-500 ease-out lg:text-lg",
-                      lit ? "text-white" : "text-ink-300",
-                    )}
-                  >
+                  <p className="font-body text-base font-medium whitespace-nowrap text-white">
                     {fact.label}
                   </p>
-                  <p
-                    className={cn(
-                      "font-body text-xs whitespace-nowrap transition-colors duration-500 ease-out lg:text-sm",
-                      lit ? "text-ink-200" : "text-ink-400",
-                    )}
-                  >
+                  <p className="font-body text-ink-200 text-xs whitespace-nowrap lg:text-sm">
                     {fact.detail}
                   </p>
                 </div>
