@@ -103,9 +103,9 @@ const SPARSE = [0, 0, 0, 0, 0, 0.08, 0.16, 0.3];
 function Block({ title, children }: { title: string; children: ReactNode }) {
   return (
     <Section spacing="md" className="border-rule border-b">
-      <h2 className="text-ink-300 mb-8 font-mono text-xs tracking-[0.2em] uppercase">
+      <Kicker as="h2" className="mb-8">
         {title}
-      </h2>
+      </Kicker>
       {children}
     </Section>
   );
@@ -142,8 +142,7 @@ export default function StyleguidePage() {
   return (
     <main className="pt-32">
       <Section spacing="md">
-        <Kicker>Styleguide</Kicker>
-        <h1 className="text-chrome text-paint-room mt-6 text-4xl font-black uppercase italic md:text-6xl">
+        <h1 className="text-chrome text-paint-room text-4xl font-black uppercase italic md:text-6xl">
           KOMBA foundation
         </h1>
       </Section>
@@ -444,9 +443,9 @@ export default function StyleguidePage() {
 
       <Section spacing="md" container={false}>
         <Container>
-          <h2 className="text-ink-300 mb-8 font-mono text-xs tracking-[0.2em] uppercase">
+          <Kicker as="h2" className="mb-8">
             Container widths
-          </h2>
+          </Kicker>
         </Container>
         <div className="flex flex-col gap-3">
           {(["narrow", "default", "wide"] as const).map((width) => (

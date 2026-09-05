@@ -1,5 +1,6 @@
 import { SectionFrame } from "@/components/layout/section-frame";
 import { Marquee } from "@/components/ui/marquee";
+import { StaggerReveal } from "@/components/ui/stagger-reveal";
 
 /**
  * Placeholder roster carried over from the comp. Each logo keeps its own
@@ -28,8 +29,11 @@ const sponsors = [
 export function Sponsors() {
   return (
     <SectionFrame>
-      <div className="flex flex-col items-center gap-10 py-16 md:py-20">
-        <p className="text-ink-200 max-w-72 px-6 text-center text-base leading-[1.4] tracking-[0.01em]">
+      {/* Items stretch rather than centre: the marquee has to run the full
+          width, and each staggered child sits in a wrapper of its own. The
+          copy centres itself instead. */}
+      <StaggerReveal className="flex flex-col gap-10 py-16 md:py-20">
+        <p className="text-ink-200 mx-auto max-w-72 px-6 text-center text-base leading-[1.4] tracking-[0.01em]">
           <span className="text-white">Proudly sponsored by partners</span>
           <br />
           who believe in what we do
@@ -62,7 +66,7 @@ export function Sponsors() {
             />
           ))}
         </Marquee>
-      </div>
+      </StaggerReveal>
     </SectionFrame>
   );
 }
