@@ -12,6 +12,7 @@ import {
   ScrollFill,
 } from "@/components/ui/heading-reveal";
 import { Kicker } from "@/components/ui/kicker";
+import { LineRise } from "@/components/ui/line-rise";
 import { PersonCard } from "@/components/ui/person-card";
 import {
   StaggerReveal,
@@ -143,7 +144,7 @@ export default function StyleguidePage() {
     <main className="pt-32">
       <Section spacing="md">
         <h1 className="text-chrome text-paint-room text-4xl font-black uppercase italic md:text-6xl">
-          KOMBA foundation
+          KOMBA styleguide
         </h1>
       </Section>
 
@@ -362,6 +363,29 @@ export default function StyleguidePage() {
               <code className="text-violet-300"> .text-relief</code> is mixed
               off the fill, so it greys out with the type instead of leaving
               grey words inside a white halo.
+            </Note>
+          </div>
+          <div>
+            <code className="text-ink-400 font-mono text-xs">
+              &lt;LineRise&gt;
+            </code>
+            <div className="mt-3">
+              <LineRise
+                text={REVEAL_TEXT}
+                className={`${revealHeading} text-relief`}
+              />
+            </div>
+            <Note>
+              The heading exactly as it sits at rest — the bloom, the inner
+              shadow, all of it — rising a line at a time and warming from grey
+              to white as it goes. The split is
+              <code className="text-violet-300"> kugiri</code>&apos;s, cut at
+              the line boxes the browser actually painted, so the heading wraps
+              how it likes at any width and the reveal follows; the lines are
+              re-cut when the box changes width. Because the bloom in
+              <code className="text-violet-300"> .text-relief</code> is mixed
+              off the fill, it greys out and warms back with the type instead of
+              sitting white around grey letters.
             </Note>
           </div>
           <div>

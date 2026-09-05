@@ -175,6 +175,15 @@ const TAIL_MAX_W = 290;
 const CLIP_W = 460;
 
 /**
+ * And held well off the centre line. Pulling it towards the middle to make it
+ * prominent put it directly behind the copy instead: at 460px it came up to
+ * sixty per cent of the heading's box on the way past. Prominent means large
+ * and unobstructed, which is beside the copy, not under it.
+ */
+const CLIP_SPREAD = 0.16;
+const CLIP_KEEP_OUT = 0.75;
+
+/**
  * The tail is scattered far *tighter* than the field, not wider. It only ever
  * shows in the last stretch, where it is close to the lens and perspective is
  * multiplying every offset — thrown as wide as the field it lands entirely off
@@ -192,6 +201,18 @@ const TAIL_SPREAD = 0.45;
  * both there.
  */
 const TAIL_KEEP_OUT = 0.4;
+
+/**
+ * Cards at least this wide are held off the centre line too, wherever they are
+ * in the corridor. Perspective takes a 400px card to nearly 600 as it comes up
+ * to the lens, and in the middle of the frame that is a slab across the copy —
+ * which is the one thing on this screen that has to stay readable. Smaller
+ * ones are free to drift through the middle.
+ */
+const BIG_FROM = 300;
+
+/** Gentler than the tail's: these are already out in the field's wide spread. */
+const FIELD_KEEP_OUT = 0.22;
 
 /** Where a photograph hangs, and how big it is drawn. */
 function placeAt(index: number, isClip = false) {
@@ -230,19 +251,31 @@ function placeAt(index: number, isClip = false) {
   // the outer band rather than clamped, which would pile it on one radius.
   const nx = (col + 0.5 + jitterX) / COLS - 0.5;
   const ny = (row + 0.5 + jitterY) / ROWS - 0.5;
-  const outward = (v: number) =>
-    (v < 0 ? -1 : 1) * (TAIL_KEEP_OUT + Math.abs(v) * (1 - TAIL_KEEP_OUT));
+  const outward = (v: number, keepOut: number) =>
+    (v < 0 ? -1 : 1) * (keepOut + Math.abs(v) * (1 - keepOut));
 
   // The tail is pushed off the centre on one axis only, alternating. Pushed
   // out on both it piles into the four corners, which is exactly where the
   // clumps were — this sends half of it to the sides and half to the top and
   // bottom, so it sweeps the edges instead of stacking in the corners.
-  const pushX = isTail && index % 2 === 0;
+  //
+  // Big cards are pushed sideways wherever they are, so the ones that grow
+  // large enough to cover the copy pass down one side of it instead of
+  // through it. Sideways only: over or under the copy is fine, across it is
+  // not, and the frame is wider than it is tall.
+  const isBig = isClip || width >= BIG_FROM;
+  const pushX = (isTail && index % 2 === 0) || isBig;
   const pushY = isTail && index % 2 === 1;
+  const keepOut = isClip
+    ? CLIP_KEEP_OUT
+    : isTail
+      ? TAIL_KEEP_OUT
+      : FIELD_KEEP_OUT;
+  const scale = isClip ? CLIP_SPREAD : 1;
 
   return {
-    x: Math.round((pushX ? outward(nx) : nx) * spreadX * (isClip ? 0.5 : 1)),
-    y: Math.round((pushY ? outward(ny) : ny) * spreadY * (isClip ? 0.5 : 1)),
+    x: Math.round((pushX ? outward(nx, keepOut) : nx) * spreadX * scale),
+    y: Math.round((pushY ? outward(ny, keepOut) : ny) * spreadY * scale),
     // Almost two steps of depth jitter, so neighbours trade places rather than
     // filing past at a fixed interval.
     z: Math.round(-(index + noise(index * 11.3) * 1.8) * DEPTH_STEP),
