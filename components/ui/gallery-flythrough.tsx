@@ -38,7 +38,7 @@ const PLACEMENTS = 76;
  * last photograph is arriving and it turns up on an empty screen — these are
  * still streaming past the edges while it comes in.
  */
-const TAIL = 30;
+const TAIL = 42;
 
 /** Widest and narrowest a card is drawn, before perspective has its say. */
 const CARD_MIN_W = 170;
@@ -144,8 +144,13 @@ function useReducedMotion() {
   );
 }
 
-/** How much of the corridor the tail is packed into, in pixels. */
-const TAIL_DEPTH = 3400;
+/**
+ * How much of the corridor the tail is packed into, in pixels. Tighter than it
+ * looks: only about a fifth of this is inside the fade window at any moment,
+ * so spreading the tail thinly leaves two or three on screen where a dozen
+ * were wanted.
+ */
+const TAIL_DEPTH = 2200;
 
 /**
  * The tail is drawn small and thrown wide. Perspective magnifies whatever is
@@ -154,7 +159,16 @@ const TAIL_DEPTH = 3400;
  * copy both are. Small and far out, they sweep the edges instead.
  */
 const TAIL_MAX_W = 230;
-const TAIL_SPREAD = 2;
+
+/**
+ * The tail is scattered far *tighter* than the field, not wider. It only ever
+ * shows in the last stretch, where it is close to the lens and perspective is
+ * multiplying every offset — thrown as wide as the field it lands entirely off
+ * the screen, which is exactly what happened at twice the field's spread.
+ * Around this, a card drifts in from near the middle while it is still deep,
+ * sweeps out to the edge as it comes up, and leaves.
+ */
+const TAIL_SPREAD = 0.45;
 
 /**
  * How far the tail is held off the centre line, as a fraction of its spread.
@@ -163,7 +177,7 @@ const TAIL_SPREAD = 2;
  * frame that has to stay clear, since the copy and the arriving photograph are
  * both there.
  */
-const TAIL_KEEP_OUT = 0.3;
+const TAIL_KEEP_OUT = 0.4;
 
 /** Where a photograph hangs, and how big it is drawn. */
 function placeAt(index: number) {
