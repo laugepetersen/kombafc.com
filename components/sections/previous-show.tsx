@@ -35,7 +35,7 @@ const RECORDING_YOUTUBE_ID = "VKWcRp_3Mgc";
 
 /** The night in three lines, lit one at a time along the foot of the screen. */
 const FACTS: ShowFact[] = [
-  { label: "Copenhagen", detail: "Venue K.B. Hallen" },
+  { label: "A World Champion", detail: "and two European at stake." },
   { label: "1500 Spectators", detail: "and more broadcasting" },
   { label: "KUNDO x G-SHOCK", detail: "Halftime show" },
 ];

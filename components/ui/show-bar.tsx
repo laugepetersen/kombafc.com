@@ -152,13 +152,15 @@ export function ShowBar({
               <li
                 key={fact.label}
                 className={cn(
-                  // grow/basis-0 rather than sized to content: left to hug
-                  // their own text the three of them bunched up against the
-                  // white block with a third of the bar empty after them.
-                  // Even shares put the rules at even thirds and the bar
-                  // reads as one object. shrink-0 stays, so a long fact
-                  // overruns into the ul's clip rather than ellipsising.
-                  "relative shrink-0 px-6 md:grow md:basis-0 md:px-5 lg:px-8",
+                  // grow, so the three of them spread across the bar
+                  // rather than bunching against the white block with a third
+                  // of it empty after them. Grown from their content width
+                  // rather than from nothing: even thirds are narrower than
+                  // the longest fact between md and lg, and shrink-0 means a
+                  // fact that does not fit runs into the ul's clip rather
+                  // than ellipsising. This way the slack is shared and
+                  // nothing is ever cut.
+                  "relative shrink-0 px-6 md:grow md:px-5 lg:px-8",
                   // One at a time on small screens. Three two-line facts side
                   // by side at 375px is three cramped columns; stacked, the
                   // bar eats a quarter of the screen. The cycle already picks
