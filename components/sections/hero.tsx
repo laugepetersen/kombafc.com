@@ -69,18 +69,14 @@ export function Hero() {
             explicitly here. In em, so it scales with each line rather than
             being a fixed gap that only looks right at one breakpoint.
 
-            text-chrome with both ends of its ramp at white: the gradient goes
-            flat and the sweep has nothing left to move, so it is switched off
-            rather than left recalculating every frame for no visible result.
-            The bloom and the inner shadow are the rest of the utility and are
-            untouched — this drops the colour travel, not the relief.
-
-            Plain string, not cn: text-chrome and text-paint-room are two
-            custom text-* utilities and tailwind-merge would keep only the
-            last. See CLAUDE.md. */}
+            text-relief, the same as every other heading: a bloom and an inner
+            shadow over a solid fill. It wore text-chrome, which paints a
+            gradient clipped to the glyphs on top of that — two passes over the
+            same type, and with both ends of the ramp already set to white
+            there was no gradient left for the second one to show. */}
         <LineRise
           as="h1"
-          className="font-heading text-chrome text-paint-room animate-none space-y-(--heading-line-gap) font-black uppercase italic [--chrome-to:#ffffff]"
+          className="font-heading text-relief space-y-(--heading-line-gap) font-black uppercase italic"
         >
           <span className="text-trim block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
             The best strikers.
