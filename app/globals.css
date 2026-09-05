@@ -32,9 +32,13 @@
   /* Hairline rules — every section border and divider, and the modal frame.
      Translucent rather than a flattened solid: these sit over backdrops of
      varying opacity, so a fixed dark value would read as a patch against
-     whatever shows through rather than as a hairline. violet-200 at 5%.
-     Excludes the navbar and the CTAs, which carry their own treatments. */
-  --color-rule: rgb(221 204 255 / 0.05);
+     whatever shows through rather than as a hairline. violet-200 at 10%.
+     Excludes the navbar and the CTAs, which carry their own treatments.
+
+     Was 5%, which held up against the hero video but disappeared against flat
+     page colour in every section below it — a rule that only reads over one
+     backdrop is not a rule. */
+  --color-rule: rgb(221 204 255 / 0.1);
 
   /* Glass panels that sit over media — the team chips. Mostly neutral, turned
      a quarter of the way toward the pale violet so they stay in the same
