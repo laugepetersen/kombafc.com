@@ -68,10 +68,23 @@ function useReducedMotion() {
 
 export function LineReveal({
   lines,
+  lineClassNames,
+  play,
   className,
 }: {
   /** Where the breaks go. This reveal needs to know its own lines. */
   lines: string[];
+  /**
+   * Per-line classes, positional, for when the lines are not alike — a label
+   * over a caption rather than one run of heading.
+   */
+  lineClassNames?: string[];
+  /**
+   * Drive the reveal from outside rather than from the viewport, for a run
+   * that loops on a timer instead of playing when it is scrolled to. Left
+   * off, it watches for itself as everything else here does.
+   */
+  play?: boolean;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -79,7 +92,11 @@ export function LineReveal({
   // frame, out only once none of the heading is left on screen.
   const inView = useReplayInView(ref);
   const reduce = useReducedMotion();
-  const shown = inView || reduce;
+  /* Given a `play`, that is the whole story — including under reduced motion,
+     where holding every line up would stack a looping run's states on top of
+     one another. Whoever drives it is responsible for not moving; the
+     duration below goes to nought either way. */
+  const shown = play ?? (inView || reduce);
 
   return (
     <div ref={ref} className={className}>
@@ -101,7 +118,11 @@ export function LineReveal({
               // translated by its own box height is already fully in view for
               // most of the travel — it looks like type sliding up rather than
               // type being uncovered. Trimmed, the box is the ink.
-              className="text-trim block"
+              /* A template literal, not cn: tailwind-merge files every
+                 text-* class it does not recognise under text-colour, so
+                 text-trim next to a caller's text-white would be dropped in
+                 silence. See CLAUDE.md. */
+              className={`text-trim block ${lineClassNames?.[index] ?? ""}`}
               // No mount animation: it starts parked below and only moves once
               // it has actually been scrolled to.
               initial={false}
@@ -121,7 +142,7 @@ export function LineReveal({
                 opacity: shown ? 1 : 0,
               }}
               transition={{
-                duration: DURATION,
+                duration: reduce ? 0 : DURATION,
                 delay: shown ? index * STAGGER : 0,
                 ease: EASE,
               }}
