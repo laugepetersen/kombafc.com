@@ -61,7 +61,9 @@ export function Hero() {
         aria-hidden="true"
       />
 
-      <Container className="hero-parallax-content relative flex flex-col items-center text-center">
+      {/* No parallax on the copy — only the backdrop moves as the hero
+          leaves. */}
+      <Container className="relative flex flex-col items-center text-center">
         {/* Each line is trimmed to its caps, so the leading between them is set
             explicitly here. In em, so it scales with each line rather than
             being a fixed gap that only looks right at one breakpoint.
@@ -79,12 +81,14 @@ export function Hero() {
           <span className="text-trim block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
             The best strikers.
           </span>
-          <span className="text-trim block text-2xl tracking-[-0.02em] sm:text-4xl md:text-5xl lg:text-6xl">
+          {/* The tightening goes here, not on the line below it: space-y puts
+              the margin on the upper sibling, so this line owns the gap
+              underneath itself — and being the largest of the three, its em
+              makes that gap the widest on the stack. */}
+          <span className="text-trim line-gap-tight block text-2xl tracking-[-0.02em] sm:text-4xl md:text-5xl lg:text-6xl">
             A new fight format.
           </span>
-          {/* Set a third the size of the line above it, which leaves the
-              standard gap reading loose underneath it. */}
-          <span className="text-trim line-gap-tight block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
+          <span className="text-trim block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
             In Scandinavia.
           </span>
         </h1>
@@ -107,13 +111,11 @@ export function Hero() {
           page grid rather than floating against the viewport. The stack is
           only as wide as its widest card, so the row is what gets stretched
           across the container and the cards sit at its right end.
-          
-          Deliberately NOT on hero-parallax-content: that utility runs a
-          scroll-driven animation, and an animated ancestor becomes the
-          backdrop root for everything under it — the cards' backdrop-filter
-          would then have only the container to sample, not the video, and the
-          frosting would silently do nothing. The stack scrolls away with the
-          hero regardless; it just does not take part in the exit. */}
+
+          Keep it clear of any scroll-driven animation: an animated ancestor
+          becomes the backdrop root for everything under it, and the cards'
+          backdrop-filter would then have only the container to sample rather
+          than the video, so the frosting would silently do nothing. */}
       <Container className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-end md:bottom-12">
         <CardStack
           className="pointer-events-auto"

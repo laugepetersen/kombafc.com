@@ -517,10 +517,14 @@
  * fall back to the document timeline and simply play the animation once on
  * load, which is worse than not having it.
  *
- * All three layers read one named timeline declared on the hero itself. Left
- * to `view()` each element would time against its *own* box, so the centred
- * copy — a few hundred pixels tall — would race ahead of the full-height
- * backdrop, and its rate would quietly change whenever the copy did.
+ * The backdrop only. The copy sits still while it scrolls away, so what the
+ * reader is reading is never also moving under them.
+ *
+ * Both layers read one named timeline declared on the hero itself rather than
+ * their own `view()`. They happen to share the hero's box today, so the two
+ * would resolve alike — but a named timeline says what is actually meant,
+ * which is that these move with the hero, and it does not quietly change rate
+ * the day one of them stops being full-bleed.
  *
  * Range is `exit`: for a viewport-height hero that runs from the moment the
  * page starts scrolling to the moment the hero clears the top, so the effect
@@ -530,13 +534,6 @@
  * `hidden` makes an element a scroll container, and the timeline then resolves
  * against the hero — which never scrolls — leaving every layer frozen at 0%.
  */
-@keyframes hero-content-exit {
-  to {
-    transform: translateY(12%) scale(1.06);
-    opacity: 0;
-  }
-}
-
 @keyframes hero-media-exit {
   to {
     transform: scale(1);
@@ -552,18 +549,6 @@
 @utility hero-parallax-root {
   @supports (animation-timeline: view()) {
     view-timeline-name: --hero;
-  }
-}
-
-@utility hero-parallax-content {
-  @supports (animation-timeline: view()) {
-    @media (prefers-reduced-motion: no-preference) {
-      animation: hero-content-exit linear both;
-      animation-timeline: --hero;
-      /* Gone before the hero clears, so it is not still fading against the
-         section below. */
-      animation-range: exit 0% exit 65%;
-    }
   }
 }
 
@@ -660,14 +645,18 @@
 }
 
 /**
- * Pulls a stacked heading line closer to the one above it.
+ * Tightens the gap a stacked heading line opens *below* itself.
  *
- * The gap between trimmed lines is an em, so it already resolves against the
- * line's own type — a 4xl line under a 6xl one gets a smaller gap for free.
- * That is not enough on its own: the big line's box is trimmed to its cap
- * height and ends at the baseline, so the space beneath it reads looser than
- * the metric says. Seven tenths of the derived gap puts it back where the eye
- * expects, and stays derived, so retuning the leading still carries through.
+ * Goes on the upper line, not the lower one: Tailwind's space-y puts its
+ * margin on every child but the last, so each line owns the gap under it.
+ *
+ * That is also why the gap needs tightening at all. The gap is an em, and it
+ * resolves against the type of the line that owns it — so a large line over a
+ * small one opens a wider gap than the small line opened above it, and a
+ * stack that steps up and back down comes out visibly lopsided. Seven tenths
+ * brings the two gaps level while leaving the lower one a shade wider, which
+ * is where the eye wants it under the bigger line. Stays derived, so retuning
+ * the leading still carries through.
  */
 @utility line-gap-tight {
   --heading-line-gap: calc(

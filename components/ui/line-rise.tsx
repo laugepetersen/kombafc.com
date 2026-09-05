@@ -39,10 +39,18 @@ export function LineRise({
     if (!target) return;
 
     let split: TextSplit | null = null;
-    let cleanup: (() => void) | undefined;
     let width = 0;
     let frame = 0;
     let cancelled = false;
+    let onScreen = false;
+
+    // Held here and re-applied after every cut. A cut replaces the line
+    // elements, and the new ones come out of the stylesheet parked — so a
+    // re-cut while the heading is on screen would leave it stuck below its
+    // own baseline with nothing left to trigger it.
+    const apply = () => {
+      target.dataset.lineRise = onScreen ? "running" : "";
+    };
 
     const cut = () => {
       split?.revert();
@@ -53,49 +61,48 @@ export function LineRise({
         mask: { lines: MASK_REACH },
       });
       width = target.clientWidth;
+      apply();
     };
+
+    /* Both observers are set up now rather than inside the wait for the fonts.
+       They do not need the split to exist — and hanging them off a promise
+       meant that if anything about that wait went differently the heading was
+       left with no way of ever being told it had been scrolled to. */
+    const inView = new IntersectionObserver(
+      ([entry]) => {
+        onScreen = entry.isIntersecting;
+        apply();
+      },
+      { threshold: 0.55 },
+    );
+    inView.observe(target);
+
+    /* A split is a snapshot of one layout. When the box changes width the
+       lines it was cut into are no longer the lines the browser would paint,
+       so it has to be cut again — folded into a frame, because a drag emits a
+       stream of these, and ignoring height, which moves no wrap. */
+    const onResize = new ResizeObserver(() => {
+      if (!split || target.clientWidth === width) return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (cancelled) return;
+        cut();
+      });
+    });
+    onResize.observe(target);
 
     // Fonts first. Split before they land and the lines are cut where the
     // fallback wrapped, which is not where the real face will.
     document.fonts.ready.then(() => {
       if (cancelled) return;
       cut();
-
-      // Replays on every entry, like the other reveals. Removing the attribute
-      // on the way out parks the lines again, so coming back is a fresh run
-      // rather than a heading that is already up.
-      const inView = new IntersectionObserver(
-        ([entry]) => {
-          target.dataset.lineRise = entry.isIntersecting ? "running" : "";
-        },
-        { threshold: 0.55 },
-      );
-      inView.observe(target);
-
-      // A split is a snapshot of one layout. When the box changes width the
-      // lines it was cut into are no longer the lines the browser would paint,
-      // so it has to be cut again — folded into a frame, because a drag emits
-      // a stream of these, and ignoring height, which moves no wrap.
-      const onResize = new ResizeObserver(() => {
-        if (target.clientWidth === width) return;
-        cancelAnimationFrame(frame);
-        frame = requestAnimationFrame(() => {
-          if (cancelled) return;
-          cut();
-        });
-      });
-      onResize.observe(target);
-
-      cleanup = () => {
-        inView.disconnect();
-        onResize.disconnect();
-      };
     });
 
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
-      cleanup?.();
+      inView.disconnect();
+      onResize.disconnect();
       split?.revert();
     };
   }, [text]);
