@@ -6,11 +6,9 @@ import {
   type ComponentPropsWithoutRef,
   type ReactNode,
   useRef,
-  useState,
   useSyncExternalStore,
 } from "react";
 
-import { PixelNoise } from "@/components/effects/pixel-noise";
 import { cn } from "@/lib/utils";
 
 const MotionLink = motion.create(Link);
@@ -29,7 +27,7 @@ const SPRING = { stiffness: 150, damping: 15, mass: 0.1 };
    only properties in flight are the filter and the glow. Slow enough to read
    as a fade rather than a state flip. */
 const base =
-  "relative inline-flex h-12 items-center justify-center overflow-clip px-6 font-body text-base font-medium tracking-[0.02em] transition-[filter,box-shadow,border-color] duration-300 ease-out";
+  "relative inline-flex h-12 items-center justify-center px-6 font-body text-base font-medium tracking-[0.02em] transition-[filter,box-shadow,border-color] duration-300 ease-out";
 
 /* Shared by both variants, so the light behaves the same whichever button it
    is coming off. Two layers rather than one: a tight core and a wide, dim
@@ -67,11 +65,6 @@ const variants = {
 
 export type ButtonVariant = keyof typeof variants;
 
-/** Module scope: inline these would be new arrays every render, and PixelNoise
- *  would rebuild its grid on each one. */
-const FIELD_COLORS = ["#ffffff", "#d2d2d7", "#a3a3ac"];
-const FIELD_OPACITIES = [0, 0, 0, 0.08, 0.15, 0.28, 0.45, 0.7];
-
 const motionQuery = "(prefers-reduced-motion: reduce)";
 
 function subscribeMotion(onChange: () => void) {
@@ -108,7 +101,6 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const ref = useRef<HTMLAnchorElement>(null);
-  const [hovered, setHovered] = useState(false);
 
   const reduceMotion = useSyncExternalStore(
     subscribeMotion,
@@ -129,7 +121,6 @@ export function Button({
   };
 
   const release = () => {
-    setHovered(false);
     x.set(0);
     y.set(0);
   };
@@ -139,37 +130,12 @@ export function Button({
       ref={ref}
       href={href}
       style={{ x, y }}
-      onMouseEnter={() => setHovered(true)}
       onMouseMove={follow}
       onMouseLeave={release}
-      onFocus={() => setHovered(true)}
       onBlur={release}
       className={cn(base, variants[variant], className)}
       {...rest}
     >
-      {/* Filled variant only. The outline has nothing solid to hold a texture,
-          so dots inside it read as loose specks rather than as a surface. */}
-      {variant === "primary" && (
-        <span
-          aria-hidden="true"
-          className="absolute inset-px transition-opacity duration-300 ease-out"
-          style={{ opacity: hovered ? 1 : 0 }}
-        >
-          <PixelNoise
-            enabled={hovered}
-            // Tight pitch and single-pixel dots: at 48px tall anything coarser
-            // reads as a pattern rather than as texture in the surface.
-            pitch={4}
-            dotSize={1}
-            churn={0.2}
-            fps={20}
-            fadeUpwards={false}
-            colors={FIELD_COLORS}
-            opacities={FIELD_OPACITIES}
-          />
-        </span>
-      )}
-
       <span
         className={cn(
           "relative",

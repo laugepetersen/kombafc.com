@@ -69,6 +69,19 @@ already wired in `components.json`. Its semantic tokens (`bg-background`,
 `border-border`, `bg-primary`…) are mapped onto the KOMBA palette in
 `app/globals.css`, so installs land on-brand without editing.
 
+## Class merging
+
+`cn` runs tailwind-merge, which files every `text-*` class it does not
+recognise under text-colour and keeps only the last. Our custom type
+utilities all start with `text-`, so `cn("text-chrome text-paint-room")`
+resolves to `text-paint-room` alone — the chrome is dropped in silence, with
+no error and no warning.
+
+Never pass two of `text-chrome`, `text-chrome-violet`, `text-relief`,
+`text-trim` or `text-paint-room` through `cn`, in one argument or several.
+Compose those with a template literal, or set them in a plain `className`
+string. `cn` is fine for everything else.
+
 ## Content
 
 `content/legacy-data.ts` is the v1 fighter/sponsor/copy data, carried over

@@ -341,6 +341,28 @@
  * The violet counterpart to text-chrome, for kickers and outline buttons.
  * Static — it labels rather than performs, so it does not need to move.
  */
+/**
+ * Heading relief without the chrome. Same inner shadow and white bloom
+ * `text-chrome` carries, on a solid fill instead of a gradient — the gradient
+ * belongs to the h1 alone, so this is what everything below it wears. Leaving
+ * `color` alone is the point: it stays animatable, which is what lets a
+ * heading fill from grey to white.
+ */
+@utility text-relief {
+  /* Bloom mixed off the fill rather than pinned to white. text-shadow is
+     inherited and `currentcolor` resolves per element, so a heading whose
+     words are animating from grey to white carries a glow that travels with
+     them — a fixed white one leaves grey type sitting in a white halo. At
+     full white the result is identical to the 40% it replaces. */
+  text-shadow: 0 0 8px color-mix(in srgb, currentcolor 40%, transparent);
+  filter: url(#text-inner-shadow);
+
+  @media (forced-colors: active) {
+    text-shadow: none;
+    filter: none;
+  }
+}
+
 @utility text-chrome-violet {
   background-image: linear-gradient(
     174deg,

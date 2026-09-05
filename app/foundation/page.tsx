@@ -6,6 +6,11 @@ import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
 import { CardStack } from "@/components/ui/card-stack";
+import {
+  BlurRise,
+  LineReveal,
+  ScrollFill,
+} from "@/components/ui/heading-reveal";
 import { Kicker } from "@/components/ui/kicker";
 import { PersonCard } from "@/components/ui/person-card";
 import { team } from "@/content/team";
@@ -56,6 +61,15 @@ const violetRamp = [
 
 /** Module scope: passed inline these would be new arrays on every render, and
  *  PixelNoise would rebuild its grid on each one. */
+const REVEAL_TEXT = "We're aiming to set our mark Q1, 2027.";
+const REVEAL_LINES = ["We're aiming to set", "our mark Q1, 2027."];
+
+/* Composed with a template literal, not `cn`. tailwind-merge files every
+   unrecognised `text-*` class under text-colour, so `cn(..., "text-relief")`
+   beside `text-paint-room` drops one of the two without a word. */
+const revealHeading =
+  "font-heading text-2xl font-black uppercase italic md:text-3xl";
+
 const VIOLET = ["#7a1fff", "#9d5cff", "#c0a0ff", "#5311c4"];
 const WHITE = ["#ffffff", "#d2d2d7", "#a3a3ac"];
 const SPARSE = [0, 0, 0, 0, 0, 0.08, 0.16, 0.3];
@@ -275,6 +289,71 @@ export default function StyleguidePage() {
                 />
               </div>
             </div>
+          </div>
+        </div>
+      </Block>
+
+      <Block title="Heading motion">
+        <Note>
+          Three arrivals, all on the same string and the same type treatment so
+          the only difference is the motion. Each one replays whenever it comes
+          back into view, so scrolling up and down compares them. All hold still
+          under prefers-reduced-motion. The animation components carry no type
+          styling of their own — the size and treatment come from the class you
+          pass them.
+        </Note>
+        <div className="flex flex-col gap-12">
+          <div>
+            <code className="text-ink-400 font-mono text-xs">
+              &lt;LineReveal&gt;
+            </code>
+            <div className="mt-3">
+              <LineReveal
+                lines={REVEAL_LINES}
+                className={`${revealHeading} text-relief`}
+              />
+            </div>
+            <Note>
+              Each line rides up out of its own mask, the second a beat behind
+              the first. Nothing moves but the type, and it travels only just
+              past its own height, so it reads as being uncovered rather than
+              flying in.
+            </Note>
+          </div>
+          <div>
+            <code className="text-ink-400 font-mono text-xs">
+              &lt;ScrollFill&gt;
+            </code>
+            <div className="mt-3">
+              <ScrollFill
+                text={REVEAL_TEXT}
+                className={`${revealHeading} text-relief text-paint-room`}
+              />
+            </div>
+            <Note>
+              Tied to scroll position rather than played on entry, so it runs at
+              whatever pace you scroll and reverses on the way back up. The
+              bloom in
+              <code className="text-violet-300"> .text-relief</code> is mixed
+              off the fill, so it greys out with the type instead of leaving
+              grey words inside a white halo.
+            </Note>
+          </div>
+          <div>
+            <code className="text-ink-400 font-mono text-xs">
+              &lt;BlurRise&gt;
+            </code>
+            <div className="mt-3">
+              <BlurRise
+                text={REVEAL_TEXT}
+                className={`${revealHeading} text-relief text-paint-room`}
+              />
+            </div>
+            <Note>
+              Per word rather than per line, so it suits a heading that wraps
+              unpredictably. The blur is the expensive part — a heading is fine,
+              a paragraph would not be.
+            </Note>
           </div>
         </div>
       </Block>
