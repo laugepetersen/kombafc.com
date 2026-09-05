@@ -150,7 +150,7 @@ function Item({
 
   // The clip on the masked variant is dropped once the piece has landed. Left
   // on, it would keep cutting whatever paints outside the box, which on a row
-  // of CTAs means their glow and the travel of the magnetic hover.
+  // of CTAs means their glow.
   const [landed, setLanded] = useState(false);
   const [wasShown, setWasShown] = useState(shown);
   if (wasShown !== shown) {

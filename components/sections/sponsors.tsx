@@ -28,7 +28,11 @@ const sponsors = [
 
 export function Sponsors() {
   return (
-    <SectionFrame>
+    // Closes the run of frames explicitly. SectionFrame leaves its bottom rule
+    // to the next frame's top and only closes itself when it is the last child
+    // — which this stopped being once an unframed section was added below it,
+    // leaving the verticals running into nothing.
+    <SectionFrame outerClassName="border-b">
       {/* Items stretch rather than centre: the marquee has to run the full
           width, and each staggered child sits in a wrapper of its own. The
           copy centres itself instead. */}

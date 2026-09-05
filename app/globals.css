@@ -596,6 +596,65 @@
   }
 }
 
+/**
+ * Press feedback: the surface shrinks under the finger and springs back past
+ * its size on release, the way a native app control does.
+ *
+ * Goes on whatever should visibly depress, which is not necessarily the thing
+ * being clicked — put it on a bar and the whole bar presses when one of its
+ * items is hit. Nesting it inside itself would compound the two scales, so
+ * only one level of any given surface should carry it.
+ */
+@utility tap {
+  /* Safari paints its own grey flash over the tap, which muddies the scale.
+     manipulation drops the double-tap-zoom wait, so the press lands on
+     touchdown rather than 300ms behind the finger. Both reach the real tap
+     targets from here: the highlight colour inherits, and touch-action is
+     resolved up the ancestor chain. */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+
+  /* Down and up want different curves, so the timing sits in variables that
+     only :active overrides. A transition reads its timing from the state it
+     is moving *to*, which means the press picks up the :active values and the
+     release picks up these — one declaration, two personalities. */
+  --tap-duration: 300ms;
+  /* Back-out. Back to full size by 80ms, peaks 1% over at 140ms, then settles
+     for the rest — the overshoot is a third of a pixel on a nav link, so it
+     reads as spring in the timing rather than as a visible bounce. */
+  --tap-ease: cubic-bezier(0.34, 1.8, 0.52, 1);
+
+  transition:
+    transform var(--tap-duration) var(--tap-ease),
+    opacity 200ms ease-out,
+    color 200ms ease-out;
+
+  /* Fires when this element is the control being pressed, or when a control
+     inside it is. Both halves are restricted to links and buttons on purpose:
+     :active lands on whatever the pointer went down on, including plain
+     wrappers, so an unqualified selector would depress a bar from a press on
+     its own dead space. */
+  &:is(a, button):active,
+  &:has(:is(a, button):active) {
+    /* Going down has to feel instant — the finger is still moving, so any
+       ease-in on the way in reads as lag. */
+    --tap-duration: 90ms;
+    --tap-ease: cubic-bezier(0.3, 0, 0.2, 1);
+
+    /* Uniform scale means a wide surface travels further at the same depth,
+       so anything much bigger than a button wants --tap-scale set on it. */
+    transform: scale(var(--tap-scale, 0.94));
+  }
+
+  /* The travel is decoration; the dim is the actual affordance, so it stays. */
+  @media (prefers-reduced-motion: reduce) {
+    &:is(a, button):active,
+    &:has(:is(a, button):active) {
+      transform: none;
+    }
+  }
+}
+
 /* ---------------------------------------------------------------------------
    Base
 --------------------------------------------------------------------------- */

@@ -1,27 +1,7 @@
-"use client";
-
-import { motion, useSpring } from "motion/react";
 import Link from "next/link";
-import {
-  type ComponentPropsWithoutRef,
-  type ReactNode,
-  useRef,
-  useSyncExternalStore,
-} from "react";
+import { type ComponentPropsWithoutRef, type ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
-
-const MotionLink = motion.create(Link);
-
-/**
- * How far the button follows the cursor, as a fraction of the distance from
- * its own centre. Deliberately small — past about a quarter the label starts
- * to feel detached from the box it sits in.
- */
-const MAGNET_STRENGTH = 0.2;
-
-/** Soft and slightly underdamped, so it settles rather than snapping back. */
-const SPRING = { stiffness: 150, damping: 15, mass: 0.1 };
 
 /* Both variants hover by lighting up rather than by changing colour, so the
    only properties in flight are the filter and the glow. Slow enough to read
@@ -65,33 +45,12 @@ const variants = {
 
 export type ButtonVariant = keyof typeof variants;
 
-const motionQuery = "(prefers-reduced-motion: reduce)";
-
-function subscribeMotion(onChange: () => void) {
-  const mq = window.matchMedia(motionQuery);
-  mq.addEventListener("change", onChange);
-  return () => mq.removeEventListener("change", onChange);
-}
-
 type ButtonProps = {
   variant?: ButtonVariant;
   href: string;
   children: ReactNode;
   className?: string;
-  // motion redefines the drag and animation handlers with its own signatures,
-  // which collide with React's. They are not used here, so they are dropped
-  // from the passthrough rather than cast around.
-} & Omit<
-  ComponentPropsWithoutRef<typeof Link>,
-  | "href"
-  | "className"
-  | "onDrag"
-  | "onDragStart"
-  | "onDragEnd"
-  | "onAnimationStart"
-  | "onAnimationEnd"
-  | "onAnimationIteration"
->;
+} & Omit<ComponentPropsWithoutRef<typeof Link>, "href" | "className">;
 
 export function Button({
   variant = "primary",
@@ -100,39 +59,9 @@ export function Button({
   className,
   ...rest
 }: ButtonProps) {
-  const ref = useRef<HTMLAnchorElement>(null);
-
-  const reduceMotion = useSyncExternalStore(
-    subscribeMotion,
-    () => window.matchMedia(motionQuery).matches,
-    () => false,
-  );
-
-  const x = useSpring(0, SPRING);
-  const y = useSpring(0, SPRING);
-
-  const follow = (event: React.MouseEvent) => {
-    const el = ref.current;
-    if (!el || reduceMotion) return;
-
-    const rect = el.getBoundingClientRect();
-    x.set((event.clientX - (rect.left + rect.width / 2)) * MAGNET_STRENGTH);
-    y.set((event.clientY - (rect.top + rect.height / 2)) * MAGNET_STRENGTH);
-  };
-
-  const release = () => {
-    x.set(0);
-    y.set(0);
-  };
-
   return (
-    <MotionLink
-      ref={ref}
+    <Link
       href={href}
-      style={{ x, y }}
-      onMouseMove={follow}
-      onMouseLeave={release}
-      onBlur={release}
       className={cn(base, variants[variant], className)}
       {...rest}
     >
@@ -144,6 +73,6 @@ export function Button({
       >
         {children}
       </span>
-    </MotionLink>
+    </Link>
   );
 }

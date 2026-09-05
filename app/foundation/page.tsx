@@ -82,7 +82,7 @@ const blockVariants: {
   {
     variant: "crop",
     title: "crop",
-    note: "Each element rides up out of its own mask, so it reads as landing rather than arriving. The clip is dropped once a piece has settled — left on, it would cut the CTAs' glow and the travel of their magnetic hover.",
+    note: "Each element rides up out of its own mask, so it reads as landing rather than arriving. The clip is dropped once a piece has settled — left on, it would cut the CTAs' glow.",
   },
   {
     variant: "fade",

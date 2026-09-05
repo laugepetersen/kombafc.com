@@ -9,8 +9,8 @@ export default function HomePage() {
       <Hero />
       <FrameSpacer />
       <Ressurect />
-      <PreviousShow />
       <Sponsors />
+      <PreviousShow />
     </>
   );
 }

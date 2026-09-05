@@ -74,6 +74,11 @@ export function Header() {
           // element, so like the inset ring it replaced it adds no layout
           // height — the pill stays 56px, as in the comp.
           "shine-border flex flex-col bg-white/5 backdrop-blur-[12px]",
+          // Pressing any item depresses the whole pill rather than the item
+          // alone. At ~570px wide the default depth would throw the edges
+          // around, so it is dialled back to a 2% shrink — about 6px of travel
+          // at each end, which is the same read as a button at 0.94.
+          "tap [--tap-scale:0.98]",
           "max-md:w-full max-md:max-w-sm",
         )}
       >
