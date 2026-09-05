@@ -1,6 +1,12 @@
 "use client";
 
-import { type MotionValue, motion } from "motion/react";
+import {
+  type MotionValue,
+  motion,
+  useMotionValue,
+  useMotionValueEvent,
+  useTransform,
+} from "motion/react";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
 import { LineReveal } from "@/components/ui/heading-reveal";
@@ -36,6 +42,29 @@ const DWELL_MS = 2600;
  * would cross at half opacity in the middle of the strip.
  */
 const CLEAR_MS = 1100;
+
+/**
+ * Where the flight counts as over and the white line clears itself away, and
+ * where it comes back on the way up. Two numbers rather than one, the same
+ * reason every entrance on the site has two: on a single boundary a scroll
+ * resting on it — or a trackpad easing across — would pull the line in and
+ * out repeatedly.
+ */
+const CLEARED_AT = 0.999;
+const RESTORED_AT = 0.985;
+
+/**
+ * How much of the line's head is the fade, in pixels rather than a share of
+ * it. A ramp across the whole drawn length — which is what scaling a box with
+ * a gradient in it gives you — is a line that is barely there at ten per cent
+ * and half lit at the end. The head wants to be the same softness however far
+ * along it is, so the fill is sized by width and the stop is absolute.
+ */
+const HEAD_FADE = "24px";
+
+/** How long the line takes to retract, on the site's easing. */
+const CLEAR_S = 0.7;
+const CLEAR_EASE = [0.23, 1, 0.32, 1] as const;
 
 /** Below Tailwind's md, which is where the row becomes a single strip. */
 const STACKED = "(max-width: 47.999rem)";
@@ -88,6 +117,26 @@ export function ShowBar({
   progress?: MotionValue<number>;
   className?: string;
 }) {
+  /* Held here rather than derived in a transform, because it is a state with
+     a transition rather than a value that follows the scroll: the line
+     retracts on its own clock once the corridor is done, and comes back the
+     same way. A fallback value keeps the hook count fixed when no progress is
+     given at all. */
+  const idle = useMotionValue(0);
+  /* The head's position, as a slide rather than a length. Sizing the fill by
+     width would put the fade where it belongs in one line — but motion does
+     not drive `width` from a motion value the way it drives a transform, and
+     it silently stops writing the property at all. Confirmed side by side: a
+     derived value bound to scaleX tracked the scroll, the same value bound to
+     width sat at its mount reading. So the fill is the full width of the
+     track, slid left by however much is left to go, with the container
+     clipping what hangs off the end. */
+  const slide = useTransform(progress ?? idle, (v) => `${(v - 1) * 100}%`);
+  const [cleared, setCleared] = useState(false);
+  useMotionValueEvent(progress ?? idle, "change", (v) => {
+    setCleared((was) => (was ? v >= RESTORED_AT : v >= CLEARED_AT));
+  });
+
   const stacked = useMediaQuery(STACKED);
   const reduce = useMediaQuery(REDUCED);
   const cycling = stacked && !reduce && facts.length > 1;
@@ -158,11 +207,32 @@ export function ShowBar({
             className="bg-rule absolute inset-x-0 top-0 h-px"
           />
           {progress ? (
+            /* Two boxes, because the line is scaled twice about two different
+               points and one element has only one origin. The outer is the
+               exit — held at full width for the whole flight and taken to
+               nothing about its right edge once the corridor is done, so the
+               line runs off the end of itself rather than fading on the spot.
+               The inner is the flight, grown from the left. */
             <motion.span
               aria-hidden="true"
-              className="absolute inset-x-0 top-0 h-px origin-left bg-white"
-              style={{ scaleX: progress }}
-            />
+              className="absolute inset-x-0 top-0 h-px origin-right overflow-hidden"
+              initial={false}
+              animate={{ scaleX: cleared ? 0 : 1 }}
+              transition={{ duration: CLEAR_S, ease: CLEAR_EASE }}
+            >
+              {/* Fading out towards its own head, so the leading edge reads
+                  as light reaching along the rule rather than as a bar with
+                  an end on it. Full width and unscaled, so the stop stays the
+                  same 24px whatever has been drawn — a scaled box takes its
+                  gradient with it and the fade would stretch with the line. */}
+              <motion.span
+                className="absolute inset-0"
+                style={{
+                  x: slide,
+                  background: `linear-gradient(to right, #fff calc(100% - ${HEAD_FADE}), transparent)`,
+                }}
+              />
+            </motion.span>
           ) : null}
 
           {/* items-center rather than items-start: every fact is a label over
