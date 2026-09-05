@@ -277,14 +277,27 @@
   --chrome-from: #ffffff;
   --chrome-to: #b4b4b4;
 
+  /* How far the white runs before it starts giving out. At 0% this is the
+     plain two-stop ramp a heading wants — the extra stop lands on top of the
+     first and does nothing. Raise it to hold white across most of the glyphs
+     and push the grey into the tail, which is what a short label needs: the
+     same ramp that reads as metal on a 96px heading just reads as dirty at
+     16px, because the eye has no distance over which to follow it. */
+  --chrome-hold: 0%;
+
+  /* Strength of the bloom around the glyphs. Scales with the type: a heading
+     can carry the full 0.4, a label of a few words halos at it. */
+  --chrome-glow: 0.4;
+
   background-image: linear-gradient(
     var(--chrome-angle),
     var(--chrome-from) 0%,
+    var(--chrome-from) var(--chrome-hold),
     var(--chrome-to) 100%
   );
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 8px rgb(255 255 255 / 0.4);
+  text-shadow: 0 0 8px rgb(255 255 255 / var(--chrome-glow));
 
   /* True inner shadow: CSS text-shadow has no inset, so the glyph alpha is
      offset, blurred and punched out of itself in an SVG filter. Matches the

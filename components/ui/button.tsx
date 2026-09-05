@@ -29,6 +29,14 @@ const glowHover =
    from the line above. Tailwind scans source text for whole class names, so a
    string built at runtime is never generated and the shadow silently does
    nothing. */
+/* The outline CTA's label. text-chrome supplies the ramp and the bloom; a
+   button wants both quieter than a heading does — white held across two
+   thirds of the glyphs with only the tail going grey, no travelling angle
+   (animate-none parks it at the 135deg the ramp starts from), and the bloom
+   pulled well back so a two-word label does not halo. */
+const chromeLabel =
+  "text-chrome animate-none [--chrome-hold:65%] [--chrome-to:#d4d4d4] [--chrome-glow:0.18]";
+
 const glowLit =
   "shadow-[0_0_10px_-3px_rgb(var(--cta-glow)/0.14),0_0_26px_0_rgb(var(--cta-glow)/0.10)]";
 
@@ -56,7 +64,10 @@ const variants = {
    * instead, held back at rest and taken to full on hover.
    */
   secondary: cn(
-    "[--cta-glow:255_255_255]",
+    // Not pure white: the glow's alphas describe its falloff and are shared
+    // with the primary, so the way to take white's extra punch back out of
+    // it is to dim the light itself rather than to fork the shape.
+    "[--cta-glow:190_190_190]",
     "border-white/60 border hover:border-white",
     glowLit,
   ),
@@ -84,11 +95,9 @@ export function Button({
       className={cn(base, variants[variant], className)}
       {...rest}
     >
-      {/* text-chrome is both halves of the ask: the ramp is the gradient, and
-          its angle animates, so the glare travels across the label on its
-          own. Single custom text-* utility through cn, which is the only way
-          that is safe — see the note in CLAUDE.md. */}
-      <span className={cn("relative", variant === "secondary" && "text-chrome")}>
+      {/* One custom text-* utility through cn, which is the only count that
+          is safe — see the note in CLAUDE.md. */}
+      <span className={cn("relative", variant === "secondary" && chromeLabel)}>
         {children}
       </span>
     </Link>

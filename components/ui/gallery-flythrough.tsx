@@ -8,7 +8,7 @@ import {
   useTransform,
 } from "motion/react";
 import Image from "next/image";
-import { useSyncExternalStore } from "react";
+import { useMemo, useSyncExternalStore } from "react";
 
 /**
  * A corridor of photographs you fly through.
@@ -30,15 +30,19 @@ import { useSyncExternalStore } from "react";
  * the list is cycled — the field wants to be dense enough that there is always
  * something arriving and something going by, which a dozen is not.
  */
-const PLACEMENTS = 76;
+const CARDS = 98;
 
 /**
- * Extra photographs packed into the last stretch of corridor, wider of the
- * centre line than the rest. Without them the field thins out exactly as the
- * last photograph is arriving and it turns up on an empty screen — these are
- * still streaming past the edges while it comes in.
+ * From here on the cards are drawn small and pushed off the centre line, so
+ * the last stretch sweeps the edges of the frame and leaves the middle to the
+ * photograph arriving down it.
+ *
+ * They are not a separate run: they sit on the same depth progression as
+ * everything else. Packed into their own stretch of corridor they overlapped
+ * the field and doubled its density — forty-one photographs on screen where
+ * the rest of the flight held around twenty, and then nothing.
  */
-const TAIL = 42;
+const TAIL_FROM = 78;
 
 /** Widest and narrowest a card is drawn, before perspective has its say. */
 const CARD_MIN_W = 170;
@@ -126,7 +130,7 @@ const START_AT = 760;
 const FINALE_GAP = 8;
 
 /** Where the last photograph hangs, and where the camera comes to rest. */
-const FINALE_Z = -(PLACEMENTS + FINALE_GAP) * DEPTH_STEP;
+const FINALE_Z = -(CARDS + FINALE_GAP) * DEPTH_STEP;
 
 function ramp(v: number, from: number, to: number) {
   return Math.min(1, Math.max(0, (v - from) / (to - from)));
@@ -159,20 +163,13 @@ function useReducedMotion() {
 }
 
 /**
- * How much of the corridor the tail is packed into, in pixels. Tighter than it
- * looks: only about a fifth of this is inside the fade window at any moment,
- * so spreading the tail thinly leaves two or three on screen where a dozen
- * were wanted.
- */
-const TAIL_DEPTH = 2200;
-
-/**
  * The tail is drawn small and thrown wide. Perspective magnifies whatever is
  * near the lens, so a full-sized card in the last stretch arrives as a slab
  * across the middle of the frame — which is where the last photograph and the
  * copy both are. Small and far out, they sweep the edges instead.
  */
-const TAIL_MAX_W = 230;
+const TAIL_MIN_W = 150;
+const TAIL_MAX_W = 290;
 
 /** Footage is drawn at a fixed, generous size — it is there to be watched. */
 const CLIP_W = 460;
@@ -198,14 +195,15 @@ const TAIL_KEEP_OUT = 0.4;
 
 /** Where a photograph hangs, and how big it is drawn. */
 function placeAt(index: number, isClip = false) {
-  const isTail = index >= PLACEMENTS;
+  const isTail = index >= TAIL_FROM;
+  const narrowest = isTail ? TAIL_MIN_W : CARD_MIN_W;
   const widest = isTail ? TAIL_MAX_W : CARD_MAX_W;
   // Footage is drawn large and near enough the middle to actually be watched.
   // Left to the same lottery as the stills it lands in a 180px box off the
   // edge of the frame, which is a decoder running for nothing.
   const width = isClip
     ? CLIP_W
-    : CARD_MIN_W + noise(index * 3.1) * (widest - CARD_MIN_W);
+    : narrowest + noise(index * 3.1) * (widest - narrowest);
   // A mix of uprights and landscapes rather than one shape repeated — the
   // field reads as photographs pinned in space, not as a grid of tiles.
   const aspect = [0.75, 1.34, 1][Math.floor(noise(index * 5.7) * 3)];
@@ -227,10 +225,6 @@ function placeAt(index: number, isClip = false) {
   // the centre, so it sweeps the edges of the frame rather than the middle.
   const spreadX = isTail ? SPREAD_X * TAIL_SPREAD : SPREAD_X;
   const spreadY = isTail ? SPREAD_Y * TAIL_SPREAD : SPREAD_Y;
-  const z = isTail
-    ? FINALE_Z + 900 + Math.round(noise(index * 13.7) * TAIL_DEPTH)
-    : Math.round(-(index + noise(index * 11.3) * 1.8) * DEPTH_STEP);
-
   // -0.5 to 0.5 across the grid. The tail gets pushed out of the middle of
   // that range without losing its scatter: the whole span is remapped into
   // the outer band rather than clamped, which would pile it on one radius.
@@ -249,8 +243,9 @@ function placeAt(index: number, isClip = false) {
   return {
     x: Math.round((pushX ? outward(nx) : nx) * spreadX * (isClip ? 0.5 : 1)),
     y: Math.round((pushY ? outward(ny) : ny) * spreadY * (isClip ? 0.5 : 1)),
-    // Jittered off the step so they do not arrive on a beat.
-    z,
+    // Almost two steps of depth jitter, so neighbours trade places rather than
+    // filing past at a fixed interval.
+    z: Math.round(-(index + noise(index * 11.3) * 1.8) * DEPTH_STEP),
     width: Math.round(width),
     height: Math.round(width / aspect),
   };
@@ -393,16 +388,36 @@ export function GalleryFlythrough({
 }) {
   const reduce = useReducedMotion();
 
-  // Clips take a few evenly spaced slots in the field; every other card cycles
-  // the stills.
-  const clipSlots = new Map<number, string>(
-    clips.map((clip, k) => [
-      Math.round(((k + 1) / (clips.length + 1)) * PLACEMENTS),
-      clip,
-    ]),
-  );
-  const sourceFor = (index: number) =>
-    clipSlots.get(index) ?? photos[index % photos.length];
+  const sourceFor = useMemo(() => {
+    // Clips take a few evenly spaced slots in the field.
+    const clipSlots = new Map<number, string>(
+      clips.map((clip, k) => [
+        Math.round(((k + 1) / (clips.length + 1)) * TAIL_FROM),
+        clip,
+      ]),
+    );
+
+    /* The stills are dealt down the remaining slots in order of size rather
+       than by index % count. The obvious modulo distributes evenly by number
+       but not by prominence: it lines up with the size noise, so a handful of
+       photographs only ever came up in small cards and never once in a large
+       one. Sorting by size and dealing round-robin gives every photograph one
+       card from each band — its turn up close and its turn as a speck — and
+       still keeps the counts within one of each other. */
+    const slots: { index: number; width: number }[] = [];
+    for (let index = 0; index < CARDS; index++) {
+      if (clipSlots.has(index)) continue;
+      slots.push({ index, width: placeAt(index).width });
+    }
+    slots.sort((a, b) => b.width - a.width);
+
+    const stills = new Map<number, string>();
+    slots.forEach((slot, n) =>
+      stills.set(slot.index, photos[n % photos.length]),
+    );
+
+    return (index: number) => clipSlots.get(index) ?? stills.get(index)!;
+  }, [photos, clips]);
 
   // Opens already inside the corridor and stops exactly on the last card's
   // plane, which is what makes that one land at 1:1 and fill the screen rather
@@ -461,7 +476,7 @@ export function GalleryFlythrough({
           transformStyle: "preserve-3d",
         }}
       >
-        {Array.from({ length: PLACEMENTS + TAIL }, (_, index) => (
+        {Array.from({ length: CARDS }, (_, index) => (
           <GalleryCard
             key={index}
             src={sourceFor(index)}
