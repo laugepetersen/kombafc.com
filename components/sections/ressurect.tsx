@@ -61,12 +61,10 @@ export function Ressurect() {
               className="text-relief mt-6 text-2xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-3xl xl:text-4xl"
             />
 
-            <div className="text-ink-200 mt-8 flex max-w-96 flex-col gap-4 text-base leading-[1.4]">
-              <p>
-                We have been silent for almost a year, but not out of the game.
-              </p>
-              <p>Just needed some time to prepare, for the next big thing..</p>
-            </div>
+            <p className="text-ink-200 mt-8 max-w-96 text-base leading-[1.4]">
+              We have been silent for almost a year, but not out of the game.
+              Just needed some time to prepare, for the next big thing..
+            </p>
 
             <div className="mt-8 flex flex-wrap gap-4 md:mt-12">
               <Button href="/partners">Become Partner</Button>

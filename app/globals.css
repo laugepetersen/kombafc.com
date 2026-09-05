@@ -604,6 +604,11 @@
  * being clicked — put it on a bar and the whole bar presses when one of its
  * items is hit. Nesting it inside itself would compound the two scales, so
  * only one level of any given surface should carry it.
+ *
+ * It has to be the only transition on the element, so it carries the whole
+ * repertoire of a control — the press, and every property a control tends to
+ * change on hover. Two `transition` shorthands on one element resolve by
+ * stylesheet order rather than class order, and one is silently dropped.
  */
 @utility tap {
   /* Safari paints its own grey flash over the tap, which muddies the scale.
@@ -624,10 +629,18 @@
      reads as spring in the timing rather than as a visible bounce. */
   --tap-ease: cubic-bezier(0.34, 1.8, 0.52, 1);
 
+  /* The element's own hover states, which move on their own clock — slow
+     enough to read as a fade rather than a state flip. Listing properties
+     that never change on a given element costs nothing. */
+  --tap-fade: 200ms;
+
   transition:
     transform var(--tap-duration) var(--tap-ease),
-    opacity 200ms ease-out,
-    color 200ms ease-out;
+    opacity var(--tap-fade) ease-out,
+    color var(--tap-fade) ease-out,
+    filter var(--tap-fade) ease-out,
+    box-shadow var(--tap-fade) ease-out,
+    border-color var(--tap-fade) ease-out;
 
   /* Fires when this element is the control being pressed, or when a control
      inside it is. Both halves are restricted to links and buttons on purpose:

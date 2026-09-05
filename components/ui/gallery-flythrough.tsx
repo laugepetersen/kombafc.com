@@ -30,18 +30,26 @@ import { useSyncExternalStore } from "react";
  * the list is cycled — the field wants to be dense enough that there is always
  * something arriving and something going by, which a dozen is not.
  */
-const PLACEMENTS = 48;
+const PLACEMENTS = 76;
+
+/**
+ * Extra photographs packed into the last stretch of corridor, wider of the
+ * centre line than the rest. Without them the field thins out exactly as the
+ * last photograph is arriving and it turns up on an empty screen — these are
+ * still streaming past the edges while it comes in.
+ */
+const TAIL = 18;
 
 /** Widest and narrowest a card is drawn, before perspective has its say. */
 const CARD_MIN_W = 170;
 const CARD_MAX_W = 430;
 
 /** How far apart along the corridor consecutive photographs sit. */
-const DEPTH_STEP = 175;
+const DEPTH_STEP = 145;
 
 /** How far across and up the field is scattered, in pixels at the lens plane. */
-const SPREAD_X = 2800;
-const SPREAD_Y = 1700;
+const SPREAD_X = 3800;
+const SPREAD_Y = 2500;
 
 /**
  * The field is laid on a coarse grid and then jittered inside each cell,
@@ -49,15 +57,25 @@ const SPREAD_Y = 1700;
  * screen ends up crowded while the other half is empty, and no amount of
  * reseeding fixes it because the clumping is the point of noise.
  */
-const COLS = 6;
-const ROWS = 4;
+const COLS = 7;
+const ROWS = 5;
 
-/** Pixels the scene drifts at the far edge of the pointer's travel. */
-const DRIFT = 46;
+/** Pixels the scene slides at the far edge of the pointer's travel. */
+const DRIFT = 70;
+
+/**
+ * Degrees the scene also turns with the pointer. A slide alone moves the whole
+ * field as one sheet — near and far shift by the same amount on screen, which
+ * is what makes it feel like a picture being dragged rather than a space being
+ * looked around. A turn is what puts depth into it: swinging the field about
+ * its own centre moves what is close to the lens far more than what is deep in
+ * the corridor, because that is simply what perspective does to it.
+ */
+const TILT = 3.2;
 
 /** Where a photograph fades up out of the distance, and where it passes. */
-const FOG_IN_START = -2600;
-const FOG_IN_END = -1500;
+const FOG_IN_START = -3600;
+const FOG_IN_END = -2100;
 const PASS_START = 220;
 const PASS_END = 620;
 
@@ -103,6 +121,9 @@ function useReducedMotion() {
   );
 }
 
+/** How much of the corridor the tail is packed into, in pixels. */
+const TAIL_DEPTH = 2600;
+
 /** Where a photograph hangs, and how big it is drawn. */
 function placeAt(index: number) {
   const width = CARD_MIN_W + noise(index * 3.1) * (CARD_MAX_W - CARD_MIN_W);
@@ -113,19 +134,29 @@ function placeAt(index: number) {
   const cell = index % (COLS * ROWS);
   const col = cell % COLS;
   const row = Math.floor(cell / COLS);
-  // Nearly a whole cell of jitter, so the grid underneath never shows.
-  const jitterX = (noise(index * 2.3) - 0.5) * 0.9;
-  const jitterY = (noise(index * 7.9) - 0.5) * 0.9;
+  // More than a cell of jitter, so neighbours overlap and the grid
+  // underneath never shows even to someone looking for it.
+  const jitterX = (noise(index * 2.3) - 0.5) * 1.25;
+  const jitterY = (noise(index * 7.9) - 0.5) * 1.25;
 
   // Rounded, and not for tidiness: these go straight into inline styles, and
   // the DOM serialises a sub-pixel float to three decimals on the way back
   // out. React then compares its own full-precision number against that
   // rounded string during hydration and calls every card a mismatch.
+  // The tail sits in the last stretch of corridor and further out from the
+  // centre, so it sweeps the edges of the frame rather than the middle.
+  const isTail = index >= PLACEMENTS;
+  const spreadX = isTail ? SPREAD_X * 1.35 : SPREAD_X;
+  const spreadY = isTail ? SPREAD_Y * 1.35 : SPREAD_Y;
+  const z = isTail
+    ? FINALE_Z + 300 + Math.round(noise(index * 13.7) * TAIL_DEPTH)
+    : Math.round(-(index + noise(index * 11.3) * 1.8) * DEPTH_STEP);
+
   return {
-    x: Math.round(((col + 0.5 + jitterX) / COLS - 0.5) * SPREAD_X),
-    y: Math.round(((row + 0.5 + jitterY) / ROWS - 0.5) * SPREAD_Y),
+    x: Math.round(((col + 0.5 + jitterX) / COLS - 0.5) * spreadX),
+    y: Math.round(((row + 0.5 + jitterY) / ROWS - 0.5) * spreadY),
     // Jittered off the step so they do not arrive on a beat.
-    z: Math.round(-(index + noise(index * 11.3) * 0.7) * DEPTH_STEP),
+    z,
     width: Math.round(width),
     height: Math.round(width / aspect),
   };
@@ -240,8 +271,13 @@ export function GalleryFlythrough({
   // when the pointer does is exactly what is being asked about.
   const pointerX = useMotionValue(0);
   const pointerY = useMotionValue(0);
-  const driftX = useSpring(pointerX, { stiffness: 60, damping: 18, mass: 0.6 });
-  const driftY = useSpring(pointerY, { stiffness: 60, damping: 18, mass: 0.6 });
+  // Firm rather than floaty: light enough to arrive with the pointer instead
+  // of catching up with it a beat later, damped just short of overshooting.
+  const spring = { stiffness: 190, damping: 26, mass: 0.22 };
+  const driftX = useSpring(pointerX, spring);
+  const driftY = useSpring(pointerY, spring);
+  const tiltY = useTransform(driftX, (v) => (-v / DRIFT) * TILT);
+  const tiltX = useTransform(driftY, (v) => (v / DRIFT) * TILT);
 
   const handlePointer = (event: React.PointerEvent<HTMLDivElement>) => {
     if (reduce) return;
@@ -272,10 +308,12 @@ export function GalleryFlythrough({
           x: driftX,
           y: driftY,
           z: camera,
+          rotateX: tiltX,
+          rotateY: tiltY,
           transformStyle: "preserve-3d",
         }}
       >
-        {Array.from({ length: PLACEMENTS }, (_, index) => (
+        {Array.from({ length: PLACEMENTS + TAIL }, (_, index) => (
           <GalleryImage
             key={index}
             src={photos[index % photos.length]}

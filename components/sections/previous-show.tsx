@@ -11,25 +11,26 @@ import { Kicker } from "@/components/ui/kicker";
 import { StaggerReveal } from "@/components/ui/stagger-reveal";
 
 /**
- * The night itself, shot by Sebastian Stigsby. show-01 is held back from the
+ * The night itself, shot by Sebastian Stigsby. show-13 is held out of the
  * field — it is the one you end up inside.
  */
-const photos = Array.from(
-  { length: 23 },
-  (_, i) => `/show/show-${String(i + 2).padStart(2, "0")}.webp`,
-);
+const FINALE_INDEX = 13;
+
+const photos = Array.from({ length: 24 }, (_, i) => i + 1)
+  .filter((n) => n !== FINALE_INDEX)
+  .map((n) => `/show/show-${String(n).padStart(2, "0")}.webp`);
 
 const finale = {
-  src: "/show/show-01.webp",
-  alt: "K.B. Hallen from above: the ring lit blue, the screens showing the two fighters, Swedish and Danish flags in the corners and the hall dark around it",
+  src: `/show/show-${FINALE_INDEX}.webp`,
+  alt: "Two fighters mid-exchange in the ring at K.B. Hallen, one covering on the ropes as the other lands, the referee close by",
 };
 
 /**
- * Where the camera comes to rest on the last photograph. The remainder of the
- * pin is that photograph held full screen before the section lets go, so it
- * lands rather than being scrolled straight off.
+ * Where the camera comes to rest on the last photograph — the very end of the
+ * pin. Stopping short of it leaves a stretch of scroll at the end where
+ * nothing moves, which reads as the page having snagged.
  */
-const ARRIVE_AT = 0.9;
+const ARRIVE_AT = 1;
 
 /** Long enough that the corridor is flown through rather than endured. */
 const SCROLL_LENGTH = "h-[500vh]";
@@ -84,20 +85,19 @@ export function PreviousShow() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 78% 68% at 50% 50%, transparent 0%, rgb(5 5 8 / 0.5) 58%, rgb(5 5 8 / 0.94) 100%)",
+              "radial-gradient(ellipse 62% 58% at 50% 50%, rgb(5 5 8 / 0.88) 0%, rgb(5 5 8 / 0.55) 52%, transparent 88%)",
           }}
         />
 
-        {/* The same vignette again, brought up on the approach. A second layer
-            rather than an animated one: the base holds the frame legible the
-            whole way through, and this only has to arrive. */}
+        {/* The same vignette again, brought up on the approach, so the middle
+            closes down as the last photograph fills it and the copy holds. */}
         <motion.div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0"
           style={{
             opacity: closingDark,
             background:
-              "radial-gradient(ellipse 70% 60% at 50% 50%, transparent 0%, rgb(5 5 8 / 0.55) 55%, rgb(5 5 8 / 0.95) 100%)",
+              "radial-gradient(ellipse 58% 54% at 50% 50%, rgb(5 5 8 / 0.8) 0%, rgb(5 5 8 / 0.45) 55%, transparent 90%)",
           }}
         />
 
@@ -105,8 +105,9 @@ export function PreviousShow() {
             other section's copy does. Never fades: it is the section's title
             and it stays over the photograph you arrive at. Pointer-transparent
             apart from the button, so the drift answers across the screen. */}
-        <Container className="pointer-events-none relative flex h-full flex-col justify-start pt-28 md:pt-32">
-          <StaggerReveal className="flex flex-col items-start">
+        {/* Dead centre of the frame, and centred in itself. */}
+        <Container className="pointer-events-none relative flex h-full flex-col items-center justify-center text-center">
+          <StaggerReveal className="flex flex-col items-center">
             <Kicker>Previous show</Kicker>
 
             {/* text-relief, not text-chrome: the gradient is the h1's. The
@@ -116,7 +117,7 @@ export function PreviousShow() {
             <ScrollFill
               as="h2"
               text="Rewatch the grand opening in K.B. Hallen."
-              className="text-relief mt-6 max-w-[14ch] text-3xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-4xl xl:text-5xl"
+              className="text-relief mt-6 max-w-[16ch] text-3xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-4xl xl:text-5xl"
             />
 
             <div className="pointer-events-auto mt-8 md:mt-12">

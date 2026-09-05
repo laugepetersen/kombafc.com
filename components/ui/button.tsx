@@ -4,10 +4,12 @@ import { type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /* Both variants hover by lighting up rather than by changing colour, so the
-   only properties in flight are the filter and the glow. Slow enough to read
-   as a fade rather than a state flip. */
+   only properties in flight are the filter and the glow. tap owns the
+   transition for all of them alongside the press, on a 300ms fade rather than
+   its 200ms default — a CTA lighting up wants to read slower than a nav item
+   dimming. */
 const base =
-  "relative inline-flex h-12 items-center justify-center px-6 font-body text-base font-medium tracking-[0.02em] transition-[filter,box-shadow,border-color] duration-300 ease-out";
+  "tap relative inline-flex h-12 items-center justify-center px-6 font-body text-base font-medium tracking-[0.02em] [--tap-fade:300ms]";
 
 /* Shared by both variants, so the light behaves the same whichever button it
    is coming off. Two layers rather than one: a tight core and a wide, dim
