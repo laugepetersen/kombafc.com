@@ -116,19 +116,29 @@ export function PreviousShow() {
           style={{ opacity: openingDark }}
         />
 
-        {/* Vignette. The field runs edge to edge and the copy sits on top of
-              whatever happens to be passing, so the frame is darkened from the
-              middle outwards: the corners go far enough down to read type
-              against, and the photographs at the edges fall back instead of
-              competing with whatever is arriving down the centre. Radial
-              rather than a one-sided scrim — the copy is in a corner, and so
-              is everything else that has to stay legible. */}
+        {/* The veil the copy is read against, and it goes where the copy
+            goes. Stacked, the copy is dead centre, so the frame is darkened
+            from the middle outwards — the photographs at the edges fall back
+            instead of competing with whatever is arriving down the centre. */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0"
+          className="pointer-events-none absolute inset-0 md:hidden"
           style={{
             background:
               "radial-gradient(ellipse 68% 62% at 50% 50%, rgb(5 5 8 / 0.6) 0%, transparent 100%)",
+          }}
+        />
+
+        {/* Side by side, the copy is in the bottom-left corner, so the veil
+            runs the diagonal instead: weighted on that corner and gone by two
+            thirds of the way to the opposite one, which leaves the top-right
+            of the corridor at full strength. */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 max-md:hidden"
+          style={{
+            background:
+              "linear-gradient(to top right, rgb(5 5 8 / 0.6) 0%, transparent 62%)",
           }}
         />
 
@@ -144,13 +154,14 @@ export function PreviousShow() {
           }}
         />
 
-        {/* Top left, on the container's own line so it starts where every
-            other section's copy does. Never fades: it is the section's title
+        {/* Centred in the frame while it is the only thing on it, and into
+            the bottom-left corner once there is room — on the container's own
+            line, so it starts where every other section's copy does, and
+            clear of the bar below it. Never fades: it is the section's title
             and it stays over the photograph you arrive at. Pointer-transparent
-            apart from the button, so the drift answers across the screen. */}
-        {/* Dead centre of the frame, and centred in itself. */}
-        <Container className="pointer-events-none relative flex h-full flex-col items-center justify-center text-center">
-          <div className="flex flex-col items-center">
+            throughout, so the drift answers across the whole screen. */}
+        <Container className="pointer-events-none relative flex h-full flex-col items-center justify-center text-center md:items-start md:justify-end md:pb-32 md:text-left">
+          <div className="flex flex-col items-center md:items-start">
             <Kicker>Previous show</Kicker>
 
             {/* text-relief, not text-chrome: the gradient is the h1's. The
