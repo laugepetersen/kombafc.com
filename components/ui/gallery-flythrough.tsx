@@ -104,6 +104,20 @@ const PASS_END = 340;
 const LENS = 1200;
 
 /**
+ * How far into the corridor the camera already is when the section opens.
+ *
+ * Starting at the mouth of it looks empty, and not for want of photographs: at
+ * zero depth their offsets project almost one to one, so a field scattered
+ * wide enough to fly through has most of itself outside the frame, and the
+ * first few cards are level with the lens where they are fading out anyway.
+ * A couple of hundred pixels along, everything has receded far enough to fit
+ * and the screen is full — which is why the first flick of scroll used to fill
+ * it, and why the frame you landed on had less on it than the one a moment
+ * later. This just starts where that already is.
+ */
+const START_AT = 760;
+
+/**
  * Steps of corridor between the deepest of the field and the photograph at the
  * end of it. Wide enough that every other card is past PASS_END by the time
  * the camera stops — at three steps the deepest few were still inside their
@@ -160,6 +174,9 @@ const TAIL_DEPTH = 2200;
  */
 const TAIL_MAX_W = 230;
 
+/** Footage is drawn at a fixed, generous size — it is there to be watched. */
+const CLIP_W = 460;
+
 /**
  * The tail is scattered far *tighter* than the field, not wider. It only ever
  * shows in the last stretch, where it is close to the lens and perspective is
@@ -180,10 +197,15 @@ const TAIL_SPREAD = 0.45;
 const TAIL_KEEP_OUT = 0.4;
 
 /** Where a photograph hangs, and how big it is drawn. */
-function placeAt(index: number) {
+function placeAt(index: number, isClip = false) {
   const isTail = index >= PLACEMENTS;
   const widest = isTail ? TAIL_MAX_W : CARD_MAX_W;
-  const width = CARD_MIN_W + noise(index * 3.1) * (widest - CARD_MIN_W);
+  // Footage is drawn large and near enough the middle to actually be watched.
+  // Left to the same lottery as the stills it lands in a 180px box off the
+  // edge of the frame, which is a decoder running for nothing.
+  const width = isClip
+    ? CLIP_W
+    : CARD_MIN_W + noise(index * 3.1) * (widest - CARD_MIN_W);
   // A mix of uprights and landscapes rather than one shape repeated — the
   // field reads as photographs pinned in space, not as a grid of tiles.
   const aspect = [0.75, 1.34, 1][Math.floor(noise(index * 5.7) * 3)];
@@ -191,10 +213,11 @@ function placeAt(index: number) {
   const cell = index % (COLS * ROWS);
   const col = cell % COLS;
   const row = Math.floor(cell / COLS);
-  // More than a cell of jitter, so neighbours overlap and the grid
-  // underneath never shows even to someone looking for it.
-  const jitterX = (noise(index * 2.3) - 0.5) * 1.25;
-  const jitterY = (noise(index * 7.9) - 0.5) * 1.25;
+  // Just under a cell of jitter. Past a full cell, neighbours start landing on
+  // top of one another — a clump of cards drawing over each other where one is
+  // visible, which costs a composited layer each and shows nothing for them.
+  const jitterX = (noise(index * 2.3) - 0.5) * 0.9;
+  const jitterY = (noise(index * 7.9) - 0.5) * 0.9;
 
   // Rounded, and not for tidiness: these go straight into inline styles, and
   // the DOM serialises a sub-pixel float to three decimals on the way back
@@ -216,9 +239,16 @@ function placeAt(index: number) {
   const outward = (v: number) =>
     (v < 0 ? -1 : 1) * (TAIL_KEEP_OUT + Math.abs(v) * (1 - TAIL_KEEP_OUT));
 
+  // The tail is pushed off the centre on one axis only, alternating. Pushed
+  // out on both it piles into the four corners, which is exactly where the
+  // clumps were — this sends half of it to the sides and half to the top and
+  // bottom, so it sweeps the edges instead of stacking in the corners.
+  const pushX = isTail && index % 2 === 0;
+  const pushY = isTail && index % 2 === 1;
+
   return {
-    x: Math.round((isTail ? outward(nx) : nx) * spreadX),
-    y: Math.round((isTail ? outward(ny) : ny) * spreadY),
+    x: Math.round((pushX ? outward(nx) : nx) * spreadX * (isClip ? 0.5 : 1)),
+    y: Math.round((pushY ? outward(ny) : ny) * spreadY * (isClip ? 0.5 : 1)),
     // Jittered off the step so they do not arrive on a beat.
     z,
     width: Math.round(width),
@@ -226,7 +256,7 @@ function placeAt(index: number) {
   };
 }
 
-function GalleryImage({
+function GalleryCard({
   src,
   index,
   camera,
@@ -235,7 +265,8 @@ function GalleryImage({
   index: number;
   camera: MotionValue<number>;
 }) {
-  const { x, y, z, width, height } = placeAt(index);
+  const isClip = src.endsWith(".mp4");
+  const { x, y, z, width, height } = placeAt(index, isClip);
 
   // Written out rather than handed to useTransform as an input range: a range
   // that stops short of the end of its input reverses past that point instead
@@ -252,7 +283,11 @@ function GalleryImage({
 
   return (
     <motion.div
-      className="bg-ink-900 absolute overflow-hidden"
+      // No placeholder fill behind the picture. It reads as a slightly violet
+      // box against the page while the source is still coming, and with a
+      // hundred-odd of these the frame fills with empty boxes on first paint.
+      // Nothing there is better than something wrong.
+      className="absolute overflow-hidden"
       style={{
         width,
         height,
@@ -264,10 +299,34 @@ function GalleryImage({
         opacity,
       }}
     >
-      {/* Empty alt on purpose. Individually these are ambience, not content —
-          the field as a whole is labelled on the container instead, so a
-          screen reader hears one thing rather than forty-eight. */}
-      <Image src={src} alt="" fill sizes="430px" className="object-cover" />
+      {isClip ? (
+        <video
+          src={src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="size-full object-cover"
+        />
+      ) : (
+        // Empty alt on purpose. Individually these are ambience, not content —
+        // the field as a whole is labelled on the container instead, so a
+        // screen reader hears one thing rather than a hundred.
+        //
+        // Eager, against the usual advice: they are all inside one pinned
+        // screen rather than down the page, so lazy loading holds back the
+        // ones that are only a scroll-tick away and the field arrives half
+        // empty. There are only a couple of dozen distinct sources behind the
+        // hundred-odd cards, so this is a couple of dozen requests.
+        <Image
+          src={src}
+          alt=""
+          fill
+          sizes="430px"
+          loading="eager"
+          className="object-cover"
+        />
+      )}
     </motion.div>
   );
 }
@@ -310,12 +369,20 @@ function FinaleCard({
 
 export function GalleryFlythrough({
   photos,
+  clips = [],
   finale,
   label,
   progress,
   className,
 }: {
   photos: string[];
+  /**
+   * Footage, dropped into a handful of slots rather than cycled like the
+   * stills. Every card holding one is a live decoder, and browsers give out
+   * only a few of those — cycle three clips through a hundred cards and it is
+   * a dozen at once, which stalls or silently refuses to play.
+   */
+  clips?: string[];
   /** The photograph at the end, the one you arrive at. */
   finale: { src: string; alt: string };
   /** What the field as a whole is, for anyone who cannot see it. */
@@ -326,10 +393,25 @@ export function GalleryFlythrough({
 }) {
   const reduce = useReducedMotion();
 
-  // Stops exactly on the last photograph's plane, which is what makes it land
-  // at 1:1 and fill the screen rather than nearly doing so.
+  // Clips take a few evenly spaced slots in the field; every other card cycles
+  // the stills.
+  const clipSlots = new Map<number, string>(
+    clips.map((clip, k) => [
+      Math.round(((k + 1) / (clips.length + 1)) * PLACEMENTS),
+      clip,
+    ]),
+  );
+  const sourceFor = (index: number) =>
+    clipSlots.get(index) ?? photos[index % photos.length];
+
+  // Opens already inside the corridor and stops exactly on the last card's
+  // plane, which is what makes that one land at 1:1 and fill the screen rather
+  // than nearly doing so.
   const distance = -FINALE_Z;
-  const camera = useTransform(progress, (p) => p * distance);
+  const camera = useTransform(
+    progress,
+    (p) => START_AT + p * (distance - START_AT),
+  );
 
   // Pointer drift. Held at zero under reduced motion, where a scene that moves
   // when the pointer does is exactly what is being asked about.
@@ -380,9 +462,9 @@ export function GalleryFlythrough({
         }}
       >
         {Array.from({ length: PLACEMENTS + TAIL }, (_, index) => (
-          <GalleryImage
+          <GalleryCard
             key={index}
-            src={photos[index % photos.length]}
+            src={sourceFor(index)}
             index={index}
             camera={camera}
           />

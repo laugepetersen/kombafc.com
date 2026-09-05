@@ -14,10 +14,14 @@ import { Kicker } from "@/components/ui/kicker";
  * field — it is the one you end up inside.
  */
 const FINALE_INDEX = 13;
+const STILL_COUNT = 29;
 
-const photos = Array.from({ length: 24 }, (_, i) => i + 1)
+const photos = Array.from({ length: STILL_COUNT }, (_, i) => i + 1)
   .filter((n) => n !== FINALE_INDEX)
   .map((n) => `/show/show-${String(n).padStart(2, "0")}.webp`);
+
+/** Walk-ins and a winner, trimmed to six seconds and silent. */
+const clips = ["/show/clip-01.mp4", "/show/clip-02.mp4", "/show/clip-03.mp4"];
 
 const finale = {
   src: `/show/show-${FINALE_INDEX}.webp`,
@@ -66,6 +70,7 @@ export function PreviousShow() {
       <div className="bg-void sticky top-0 h-dvh overflow-clip">
         <GalleryFlythrough
           photos={photos}
+          clips={clips}
           finale={finale}
           label="Photographs from the grand opening at K.B. Hallen, drifting past"
           progress={flight}

@@ -70,14 +70,20 @@ export function Ressurect() {
           </div>
         </div>
 
-        {/* Square when stacked; from md the grid row stretches it to match the
-            text column, which is taller than 1:1 once the copy wraps. */}
-        <div className="relative aspect-square max-lg:order-first lg:aspect-auto">
+        {/* No ratio here on purpose. Grid rows stretch, so whichever column
+            is taller sets the height and the other fills it — the photograph
+            grows with the copy, and short copy is pulled down to the
+            photograph. The floor is what a fill image cannot supply for
+            itself: it contributes no height, so without it the column would
+            collapse to nothing once stacked, and on desktop the panel would
+            be free to shrink to whatever the copy happened to need. */}
+        <div className="relative min-h-125 max-lg:order-first">
           <Image
             src="/ressurect.webp"
             alt="A KOMBA fighter in the ring, flags raised after the bout"
             fill
-            sizes="(min-width: 768px) 50vw, 100vw"
+            // The split is at lg, not md — below it the image is full width.
+            sizes="(min-width: 1024px) 50vw, 100vw"
             className="object-cover"
           />
         </div>

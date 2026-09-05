@@ -597,6 +597,29 @@
 }
 
 /**
+ * The chamfered top-right corner the CTAs wear — a corner cut off rather than
+ * rounded.
+ *
+ * corner-shape, not a clip-path. A clip cuts the box after its shadow is
+ * drawn, so the glow would be sliced off flat along the diagonal and the
+ * border would stop dead where the cut starts. corner-shape changes what the
+ * corner *is*: the border follows it, the fill follows it, and the glow is
+ * cast from the bevelled edge like any other part of the outline.
+ *
+ * Gated on support so an engine without it keeps the square corner. The
+ * ungated fallback is a single rounded corner, which reads as a mistake
+ * rather than as a plainer version of the same idea.
+ */
+@utility corner-cut {
+  @supports (corner-shape: bevel) {
+    /* Three grid steps. A quarter of the 48px control height — enough to read
+       as deliberate at a glance, short of eating the label's padding. */
+    border-top-right-radius: calc(var(--spacing) * 3);
+    corner-shape: bevel;
+  }
+}
+
+/**
  * Press feedback: the surface shrinks under the finger and springs back past
  * its size on release, the way a native app control does.
  *
