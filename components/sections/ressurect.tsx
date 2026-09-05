@@ -20,17 +20,27 @@ export function Ressurect() {
       <div className="grid lg:grid-cols-2">
         <div className="border-rule relative isolate flex flex-col justify-center overflow-clip border-t px-6 py-12 md:px-12 md:py-16 lg:border-t-0 lg:border-r lg:px-12 xl:px-15 xl:py-20">
           {/* Replaces the flat violet-200/5 that used to lift this panel. */}
-          <div className="absolute inset-0 -z-20">
+          <div className="absolute inset-0 -z-30">
             <PixelNoise />
           </div>
 
-          {/* Solid page colour at the top right, easing to a half-strength
-              violet tint at the bottom left. Hides the field completely where
-              the copy sits and lets it come through towards the far corner, so
-              it reads as depth behind the text rather than texture across it. */}
+          {/* Dims the field. Solid page colour at the top right where the copy
+              sits, easing to half strength at the bottom left, so the noise
+              only comes through towards the far corner and reads as depth
+              behind the text rather than texture across it. */}
           <div
             aria-hidden="true"
-            className="from-void to-panel/50 absolute inset-0 -z-10 bg-gradient-to-bl"
+            className="from-void to-void/50 absolute inset-0 -z-20 bg-gradient-to-bl"
+          />
+
+          {/* A wash of the same pale violet the hairline rules are cut from,
+              5% at the top right to 10% at the bottom left. Sits above the dim
+              rather than being folded into it: the dim is there to bury the
+              noise, this is there to tint the panel, and they want to be
+              tuned separately. */}
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 -z-10 bg-gradient-to-bl from-violet-200/5 to-violet-200/10"
           />
 
           <Kicker>The Ressurect</Kicker>
