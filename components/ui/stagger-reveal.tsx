@@ -11,9 +11,10 @@ import {
 
 /**
  * Brings a block in one element at a time — kicker, then heading, then copy,
- * then the buttons — once the block reaches the viewport. Played on entry
- * rather than tied to scroll position, so it runs at its own pace and reads
- * the same however fast the page is moving.
+ * then the buttons — each piece watching for its own arrival rather than the
+ * block firing them all off one trigger. Played on entry rather than tied to
+ * scroll position, so each piece runs at its own pace however fast the page is
+ * moving.
  *
  * The run follows the reader. Coming down the page the pieces arrive from
  * below, top one first; coming back up they arrive from above, bottom one
@@ -101,141 +102,132 @@ function useScrollingDown() {
 
 export type StaggerVariant = "crop" | "fade" | "rise";
 
-type ItemProps = {
-  shown: boolean;
-  delay: number;
-  /** 1 when the piece arrives from below, -1 when it arrives from above. */
-  direction: 1 | -1;
-  children: ReactNode;
-};
-
 /**
- * The masked one. The clip is dropped once the element has landed — left on,
- * it would cut off anything that paints outside the box afterwards, which on
- * a row of CTAs means their glow and the travel of the magnetic hover.
+ * Each piece watches for itself.
+ *
+ * One observer on the container looked right on a short block and did nothing
+ * useful on a tall one: the container crosses its threshold while the lower
+ * pieces are already well inside the viewport, so they had finished arriving
+ * before the reader ever saw them. An observer each is what makes this
+ * element-by-element, and IntersectionObserver is cheap enough that a handful
+ * of them costs nothing worth counting.
+ *
+ * With the trigger per piece, the scroll does most of the staggering on its
+ * own — the delay below only separates pieces that cross the line together,
+ * which is what happens on a short block or a fast flick.
  */
-function CropItem({ shown, delay, direction, children }: ItemProps) {
-  const [landed, setLanded] = useState(false);
-  const [wasShown, setWasShown] = useState(shown);
-
-  // Adjusted during render rather than in an effect. The clip has to be back
-  // the instant the block starts leaving — waiting for an effect would let a
-  // re-entry begin against a stale unclipped mask, and the elements would be
-  // visible for the first frames of a reveal that is supposed to uncover them.
-  if (wasShown !== shown) {
-    setWasShown(shown);
-    if (landed) setLanded(false);
-  }
-
-  return (
-    <span className={landed ? "block" : "block overflow-hidden"}>
-      <motion.div
-        initial={false}
-        animate={{ y: shown ? "0%" : `${110 * direction}%` }}
-        transition={{ duration: 0.6, delay, ease: EASE }}
-        onAnimationComplete={() => setLanded(shown)}
-      >
-        {children}
-      </motion.div>
-    </span>
-  );
-}
-
-function FadeItem({ shown, delay, children }: ItemProps) {
-  return (
-    <motion.div
-      initial={false}
-      animate={{ opacity: shown ? 1 : 0 }}
-      transition={{ duration: 0.55, delay, ease: EASE }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-/**
- * Fade with just enough travel to give it a direction. The default: it reads
- * as the block settling rather than as anything animating, which is what a
- * page full of these needs.
- */
-function RiseItem({ shown, delay, direction, children }: ItemProps) {
-  return (
-    <motion.div
-      initial={false}
-      animate={{ opacity: shown ? 1 : 0, y: shown ? 0 : 12 * direction }}
-      transition={{ duration: 0.55, delay, ease: EASE }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-const items = {
-  crop: CropItem,
-  fade: FadeItem,
-  rise: RiseItem,
-} satisfies Record<StaggerVariant, (props: ItemProps) => ReactNode>;
-
-export function StaggerReveal({
-  variant = "rise",
-  step = 0.08,
-  className,
+function Item({
+  variant,
+  index,
+  count,
+  step,
   children,
 }: {
-  variant?: StaggerVariant;
-  /** Seconds between one child starting and the next. */
-  step?: number;
-  className?: string;
+  variant: StaggerVariant;
+  index: number;
+  count: number;
+  step: number;
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  // A low threshold: a tall block would otherwise have to be most of the way
-  // up the viewport before it started, by which point the reader is past it.
-  const inView = useInView(ref, { amount: 0.25 });
+  // Enough of the piece to be worth animating, but not so much that a tall
+  // paragraph has to be nearly fully read before it starts.
+  const inView = useInView(ref, { amount: 0.35 });
   const reduce = useReducedMotion();
   const scrollingDownNow = useScrollingDown();
   const shown = inView || reduce;
 
-  // Taken once, as the block enters, and held for the run. Read live it would
+  // Taken once, as the piece enters, and held for the run. Read live it would
   // flip the animation mid-flight the moment the reader changed their mind.
   // Adjusted during render, which is the sanctioned way to derive state from a
   // change rather than an effect a frame later.
   const [wasInView, setWasInView] = useState(inView);
   const [fromBelow, setFromBelow] = useState(true);
-
   if (wasInView !== inView) {
     setWasInView(inView);
     if (inView) setFromBelow(scrollingDownNow);
   }
 
-  const Item = items[variant];
-  const list = Children.toArray(children);
+  // The clip on the masked variant is dropped once the piece has landed. Left
+  // on, it would keep cutting whatever paints outside the box, which on a row
+  // of CTAs means their glow and the travel of the magnetic hover.
+  const [landed, setLanded] = useState(false);
+  const [wasShown, setWasShown] = useState(shown);
+  if (wasShown !== shown) {
+    setWasShown(shown);
+    if (landed) setLanded(false);
+  }
 
-  // Parked out of view the offset follows the reader live, so the block is
+  // Parked out of view the offset follows the reader live, so the piece is
   // already waiting on the side it is going to arrive from — set only at entry
   // it would still be parked below while the reader came up to it, and travel
-  // the wrong way. Frozen to the captured direction once on screen, or a change
-  // of mind would reverse the travel halfway through the run.
-  const direction: 1 | -1 = shown
-    ? fromBelow
-      ? 1
-      : -1
-    : scrollingDownNow
-      ? 1
-      : -1;
+  // the wrong way. Frozen at entry, or a change of mind would reverse the
+  // travel halfway through the run.
+  const direction = shown ? (fromBelow ? 1 : -1) : scrollingDownNow ? 1 : -1;
+
+  // Coming down the page the top piece leads; coming up, the bottom one does,
+  // so a block that crosses the line all at once still builds towards the eye.
+  const delay = shown ? (fromBelow ? index : count - 1 - index) * step : 0;
+
+  if (variant === "crop") {
+    return (
+      <span ref={ref} className={landed ? "block" : "block overflow-hidden"}>
+        <motion.div
+          initial={false}
+          animate={{ y: shown ? "0%" : `${110 * direction}%` }}
+          transition={{ duration: 0.6, delay, ease: EASE }}
+          onAnimationComplete={() => setLanded(shown)}
+        >
+          {children}
+        </motion.div>
+      </span>
+    );
+  }
 
   return (
-    <div ref={ref} className={className}>
+    <motion.div
+      ref={ref}
+      initial={false}
+      animate={{
+        opacity: shown ? 1 : 0,
+        // `fade` moves nothing; `rise` takes just enough travel to have a
+        // direction without reading as motion.
+        ...(variant === "rise" ? { y: shown ? 0 : 12 * direction } : null),
+      }}
+      transition={{ duration: 0.55, delay, ease: EASE }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+export function StaggerReveal({
+  variant = "rise",
+  step = 0.06,
+  className,
+  children,
+}: {
+  variant?: StaggerVariant;
+  /**
+   * Seconds between pieces that enter together. Deliberately short — with a
+   * trigger on each piece this only breaks a tie, it is not carrying the
+   * whole cascade any more.
+   */
+  step?: number;
+  className?: string;
+  children: ReactNode;
+}) {
+  const list = Children.toArray(children);
+
+  return (
+    <div className={className}>
       {list.map((child, index) => (
         <Item
           key={index}
-          shown={shown}
-          direction={direction}
-          // Coming down the page the top piece leads; coming up, the bottom
-          // one does, so the block builds towards the reader either way.
-          delay={
-            shown ? (fromBelow ? index : list.length - 1 - index) * step : 0
-          }
+          variant={variant}
+          index={index}
+          count={list.length}
+          step={step}
         >
           {child}
         </Item>
