@@ -1,12 +1,13 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "motion/react";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 import { Container } from "@/components/layout/container";
+import { VideoModal } from "@/components/media/video-modal";
 import { Button } from "@/components/ui/button";
 import { GalleryFlythrough } from "@/components/ui/gallery-flythrough";
-import { ScrollFill } from "@/components/ui/heading-reveal";
+import { LineRise } from "@/components/ui/line-rise";
 import { Kicker } from "@/components/ui/kicker";
 
 /**
@@ -23,10 +24,14 @@ const photos = Array.from({ length: STILL_COUNT }, (_, i) => i + 1)
 /** Walk-ins and a winner, trimmed to six seconds and silent. */
 const clips = ["/show/clip-01.mp4", "/show/clip-02.mp4", "/show/clip-03.mp4"];
 
+/** The corridor ends on footage rather than a still. */
 const finale = {
-  src: `/show/show-${FINALE_INDEX}.webp`,
-  alt: "Two fighters mid-exchange in the ring at K.B. Hallen, one covering on the ropes as the other lands, the referee close by",
+  src: "/show/scroll-end.mp4",
+  alt: "Closing footage from the night at K.B. Hallen",
 };
+
+/** The full recording, which both this and the hero open. */
+const RECORDING_YOUTUBE_ID = "VKWcRp_3Mgc";
 
 /**
  * Where the camera comes to rest on the last photograph — the very end of the
@@ -44,6 +49,7 @@ function ramp(v: number, from: number, to: number) {
 
 export function PreviousShow() {
   const ref = useRef<HTMLDivElement>(null);
+  const [playerOpen, setPlayerOpen] = useState(false);
 
   // start start → end end: 0 the moment the pin takes hold and 1 as it lets
   // go, so progress is exactly the distance travelled while it is stuck.
@@ -118,20 +124,27 @@ export function PreviousShow() {
                 measure goes on the heading, where `ch` is its own type size —
                 on the wrapper it resolves against the 16px body font and cuts
                 the line to a third of the width. */}
-            <ScrollFill
+            <LineRise
               as="h2"
               text="Rewatch the grand opening in K.B. Hallen."
               className="text-relief mt-6 max-w-[16ch] text-3xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-4xl xl:text-5xl"
             />
 
             <div className="pointer-events-auto mt-8 md:mt-12">
-              <Button href="/rewatch" variant="secondary">
+              <Button variant="secondary" onClick={() => setPlayerOpen(true)}>
                 Rewatch
               </Button>
             </div>
           </div>
         </Container>
       </div>
+
+      <VideoModal
+        youtubeId={RECORDING_YOUTUBE_ID}
+        open={playerOpen}
+        onClose={() => setPlayerOpen(false)}
+        title="KOMBA Fight Club — the grand opening at K.B. Hallen"
+      />
     </section>
   );
 }

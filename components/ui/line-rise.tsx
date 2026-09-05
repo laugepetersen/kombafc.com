@@ -1,7 +1,7 @@
 "use client";
 
 import { type TextSplit, splitText } from "kugiri";
-import { type ElementType, useEffect, useRef } from "react";
+import { type ElementType, type ReactNode, useEffect, useRef } from "react";
 
 /**
  * A heading that rises into place a line at a time, warming from grey to white
@@ -23,10 +23,18 @@ const MASK_REACH = "0.3em";
 
 export function LineRise({
   text,
+  children,
   as,
   className,
 }: {
-  text: string;
+  /** The heading, when it is one run of type at one size. */
+  text?: string;
+  /**
+   * Or its markup, when the lines are not alike — the hero sets each of its
+   * three at a different size. kugiri splits inside block children and keeps
+   * what is on them, so each stays the size it was given.
+   */
+  children?: ReactNode;
   /** A section heading should not render as a <p>. */
   as?: ElementType;
   className?: string;
@@ -67,13 +75,23 @@ export function LineRise({
     /* Both observers are set up now rather than inside the wait for the fonts.
        They do not need the split to exist — and hanging them off a promise
        meant that if anything about that wait went differently the heading was
-       left with no way of ever being told it had been scrolled to. */
+       left with no way of ever being told it had been scrolled to.
+
+       Once only: it stops watching the moment it has fired. A heading that
+       re-runs every time it is scrolled back past draws attention to itself a
+       second and third time for nothing, and it is one less observer alive.
+
+       The bottom of the root is pulled up, so the heading has to be properly
+       on screen rather than clipping the bottom edge — start it there and the
+       reveal is over by the time it is somewhere anyone is looking. */
     const inView = new IntersectionObserver(
       ([entry]) => {
-        onScreen = entry.isIntersecting;
+        if (!entry.isIntersecting) return;
+        onScreen = true;
         apply();
+        inView.disconnect();
       },
-      { threshold: 0.55 },
+      { threshold: 0.8, rootMargin: "0px 0px -18% 0px" },
     );
     inView.observe(target);
 
@@ -105,13 +123,13 @@ export function LineRise({
       onResize.disconnect();
       split?.revert();
     };
-  }, [text]);
+  }, [text, children]);
 
   // data-line-rise from the start, so the lines are parked the moment they are
   // cut rather than flashing at rest for a frame first.
   return (
     <Comp ref={ref} data-line-rise="" className={className}>
-      {text}
+      {children ?? text}
     </Comp>
   );
 }

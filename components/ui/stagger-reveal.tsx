@@ -139,9 +139,14 @@ function Item({
   children: ReactNode;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  // Enough of the piece to be worth animating, but not so much that a tall
-  // paragraph has to be nearly fully read before it starts.
-  const inView = useInView(ref, { amount: 0.35 });
+  // Once, and not until the piece is properly on screen. Enough of it to be
+  // worth animating, but not so much that a tall paragraph has to be nearly
+  // read before it starts.
+  const inView = useInView(ref, {
+    amount: 0.55,
+    margin: "0px 0px -12% 0px",
+    once: true,
+  });
   const reduce = useReducedMotion();
   const scrollingDownNow = useScrollingDown();
   const shown = inView || reduce;

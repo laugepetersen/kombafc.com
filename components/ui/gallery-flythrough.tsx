@@ -397,7 +397,25 @@ function FinaleCard({
         opacity,
       }}
     >
-      <Image src={src} alt={alt} fill sizes="100vw" className="object-cover" />
+      {src.endsWith(".mp4") ? (
+        <video
+          src={src}
+          autoPlay
+          muted
+          loop
+          playsInline
+          aria-label={alt}
+          className="size-full object-cover"
+        />
+      ) : (
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes="100vw"
+          className="object-cover"
+        />
+      )}
     </motion.div>
   );
 }

@@ -75,31 +75,55 @@ const variants = {
 
 export type ButtonVariant = keyof typeof variants;
 
+/**
+ * Either a link or a button, and it renders as whichever it is. A CTA that
+ * opens a player is not a destination, and an anchor with its default
+ * prevented is a link that lies about where it goes — to a screen reader, to
+ * a middle click, to anything that reads the page rather than looks at it.
+ */
 type ButtonProps = {
   variant?: ButtonVariant;
-  href: string;
   children: ReactNode;
   className?: string;
-} & Omit<ComponentPropsWithoutRef<typeof Link>, "href" | "className">;
+} & (
+  | ({ href: string } & Omit<
+      ComponentPropsWithoutRef<typeof Link>,
+      "href" | "className"
+    >)
+  | ({ href?: undefined } & Omit<
+      ComponentPropsWithoutRef<"button">,
+      "className"
+    >)
+);
 
 export function Button({
   variant = "primary",
-  href,
   children,
   className,
   ...rest
 }: ButtonProps) {
+  const classes = cn(base, variants[variant], className);
+
+  // One custom text-* utility through cn, which is the only count that is
+  // safe — see the note in CLAUDE.md.
+  const label = (
+    <span className={cn("relative", variant === "secondary" && chromeLabel)}>
+      {children}
+    </span>
+  );
+
+  if (rest.href !== undefined) {
+    const { href, ...link } = rest;
+    return (
+      <Link href={href} className={classes} {...link}>
+        {label}
+      </Link>
+    );
+  }
+
   return (
-    <Link
-      href={href}
-      className={cn(base, variants[variant], className)}
-      {...rest}
-    >
-      {/* One custom text-* utility through cn, which is the only count that
-          is safe — see the note in CLAUDE.md. */}
-      <span className={cn("relative", variant === "secondary" && chromeLabel)}>
-        {children}
-      </span>
-    </Link>
+    <button type="button" className={classes} {...rest}>
+      {label}
+    </button>
   );
 }

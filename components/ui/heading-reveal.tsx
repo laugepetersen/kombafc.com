@@ -47,9 +47,6 @@ const STAGGER = 0.1;
 const FILL_FROM = "#4a4a4a";
 const FILL_TO = "#ffffff";
 
-/** Nearly even, so the warm-up is visible for the whole of the rise. */
-const FILL_EASE = [0.4, 0, 0.5, 1] as const;
-
 const motionQuery = "(prefers-reduced-motion: reduce)";
 
 function subscribeMotion(onChange: () => void) {
@@ -77,7 +74,15 @@ export function LineReveal({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { amount: 0.6 });
+  // Once, and not until it is properly on screen: started at the bottom edge
+  // the reveal is over before the heading is anywhere anyone is looking, and
+  // a heading that re-runs every time it is scrolled back past is asking for
+  // attention it has already had.
+  const inView = useInView(ref, {
+    amount: 0.8,
+    margin: "0px 0px -18% 0px",
+    once: true,
+  });
   const reduce = useReducedMotion();
   const shown = inView || reduce;
 
@@ -113,24 +118,17 @@ export function LineReveal({
               // Fading as it rises, not only clipped by the mask. The mask
               // alone gives a hard edge travelling up the line; the demo this
               // is taken from fades too, and that is most of why it reads as
-              // smooth rather than as a wipe.
+              // smooth rather than as a wipe. It warmed from grey to white as
+              // well for a while — right to look at, but a second
+              // interpolation per line for something the fade already says.
               animate={{
                 y: shown ? "0%" : "125%",
                 opacity: shown ? 1 : 0,
-                color: shown ? FILL_TO : FILL_FROM,
               }}
               transition={{
                 duration: DURATION,
                 delay: shown ? index * STAGGER : 0,
                 ease: EASE,
-                // The fill gets its own, gentler curve. On the travel's curve
-                // it is all but white a third of the way up and the grey it is
-                // supposed to come from never reads.
-                color: {
-                  duration: DURATION * 1.2,
-                  delay: shown ? index * STAGGER : 0,
-                  ease: FILL_EASE,
-                },
               }}
             >
               {line}

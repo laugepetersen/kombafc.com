@@ -7,6 +7,7 @@ import { BackgroundVideo } from "@/components/media/background-video";
 import { VideoModal } from "@/components/media/video-modal";
 import { CardStack } from "@/components/ui/card-stack";
 import { Icon } from "@/components/ui/icon";
+import { LineRise } from "@/components/ui/line-rise";
 import { PersonCard } from "@/components/ui/person-card";
 import { team } from "@/content/team";
 
@@ -20,7 +21,7 @@ const BACKGROUND_PLAYBACK_ID =
 const FEATURE_PLAYBACK_ID = process.env.NEXT_PUBLIC_MUX_HERO_PLAYBACK_ID;
 
 /** Interim source for the modal. Ignored once FEATURE_PLAYBACK_ID is set. */
-const FEATURE_YOUTUBE_ID = "yR3Cex1Cp10";
+const FEATURE_YOUTUBE_ID = "VKWcRp_3Mgc";
 
 /**
  * Mux renders a poster straight off the asset, which avoids shipping a
@@ -77,7 +78,10 @@ export function Hero() {
             Plain string, not cn: text-chrome and text-paint-room are two
             custom text-* utilities and tailwind-merge would keep only the
             last. See CLAUDE.md. */}
-        <h1 className="font-heading text-chrome text-paint-room [--chrome-to:#ffffff] space-y-(--heading-line-gap) animate-none font-black uppercase italic">
+        <LineRise
+          as="h1"
+          className="font-heading text-chrome text-paint-room animate-none space-y-(--heading-line-gap) font-black uppercase italic [--chrome-to:#ffffff]"
+        >
           <span className="text-trim block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
             The best strikers.
           </span>
@@ -91,7 +95,7 @@ export function Hero() {
           <span className="text-trim block text-lg tracking-[-0.02em] sm:text-2xl md:text-3xl lg:text-4xl">
             In Scandinavia.
           </span>
-        </h1>
+        </LineRise>
 
         <button
           type="button"
