@@ -390,13 +390,23 @@
  * greys out and warms back up with the fill rather than sitting white around
  * grey type.
  */
-@keyframes line-rise {
+/* Two animations rather than one, because the travel and the fill want
+   different curves. On the travel's expo-out the colour is all but white a
+   third of the way up and the grey it is meant to come from never reads. */
+@keyframes line-rise-up {
   from {
     transform: translateY(100%);
-    color: #4a4a4a;
   }
   to {
     transform: none;
+  }
+}
+
+@keyframes line-rise-fill {
+  from {
+    color: #4a4a4a;
+  }
+  to {
     color: #ffffff;
   }
 }
@@ -410,8 +420,10 @@
 }
 
 [data-line-rise="running"] [data-line] {
-  animation: line-rise 900ms cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: calc(var(--line) * 110ms);
+  animation:
+    line-rise-up 1300ms cubic-bezier(0.19, 1, 0.22, 1) both,
+    line-rise-fill 1500ms cubic-bezier(0.4, 0, 0.5, 1) both;
+  animation-delay: calc(var(--line) * 150ms), calc(var(--line) * 150ms);
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -29,8 +29,22 @@ import {
  * prefers-reduced-motion.
  */
 
-/** Decelerating with a long tail. Type settling rather than snapping. */
-const EASE = [0.16, 1, 0.3, 1] as const;
+/**
+ * Decelerating with a very long tail — most of the distance is covered early
+ * and the last of it takes its time, so the line arrives rather than stops.
+ */
+const EASE = [0.19, 1, 0.22, 1] as const;
+
+/**
+ * The two ends of the fill, shared by every reveal here. Neutral greys, not
+ * steps off the ink ramp: those carry a blue-violet cast by design, which
+ * tints type — the same reason `text-chrome` mixes its own.
+ */
+const FILL_FROM = "#4a4a4a";
+const FILL_TO = "#ffffff";
+
+/** Nearly even, so the warm-up is visible for the whole of the rise. */
+const FILL_EASE = [0.4, 0, 0.5, 1] as const;
 
 const motionQuery = "(prefers-reduced-motion: reduce)";
 
@@ -88,11 +102,26 @@ export function LineReveal({
               // it has actually been scrolled to.
               initial={false}
               // Just past the mask, counting its bottom padding, and no more.
-              animate={{ y: shown ? "0%" : "125%" }}
+              // Warms from grey to white on the way up, the same fill
+              // ScrollFill uses — and because text-relief blooms off
+              // currentcolor, the glow comes up with it rather than sitting
+              // white around grey type.
+              animate={{
+                y: shown ? "0%" : "125%",
+                color: shown ? FILL_TO : FILL_FROM,
+              }}
               transition={{
-                duration: 0.55,
-                delay: shown ? index * 0.1 : 0,
+                duration: 1.3,
+                delay: shown ? index * 0.15 : 0,
                 ease: EASE,
+                // The fill gets its own, gentler curve. On the same expo-out
+                // as the travel it is all but white a third of the way up,
+                // and the grey it is supposed to come from never reads.
+                color: {
+                  duration: 1.5,
+                  delay: shown ? index * 0.15 : 0,
+                  ease: FILL_EASE,
+                },
               }}
             >
               {line}
@@ -105,13 +134,6 @@ export function LineReveal({
 }
 
 /* -- Filling word by word, tied to the scroll ----------------------------- */
-
-/**
- * Neutral greys, not steps off the ink ramp: those carry a blue-violet cast by
- * design, which tints type — the same reason `text-chrome` mixes its own.
- */
-const FILL_FROM = "#4a4a4a";
-const FILL_TO = "#ffffff";
 
 function FillWord({
   progress,
@@ -178,46 +200,5 @@ export function ScrollFill({
         </Fragment>
       ))}
     </Comp>
-  );
-}
-
-/* -- Words rising out of blur --------------------------------------------- */
-
-export function BlurRise({
-  text,
-  className,
-}: {
-  text: string;
-  className?: string;
-}) {
-  const ref = useRef<HTMLParagraphElement>(null);
-  const inView = useInView(ref, { amount: 0.5 });
-  const reduce = useReducedMotion();
-  const shown = inView || reduce;
-  const words = text.split(" ");
-
-  return (
-    <p ref={ref} className={className}>
-      {words.map((word, index) => (
-        <Fragment key={`${word}-${index}`}>
-          <motion.span
-            className="inline-block"
-            initial={false}
-            animate={
-              shown
-                ? { opacity: 1, y: 0, filter: "blur(0px)" }
-                : { opacity: 0, y: "0.3em", filter: "blur(10px)" }
-            }
-            transition={{
-              duration: 0.6,
-              delay: shown ? index * 0.05 : 0,
-              ease: EASE,
-            }}
-          >
-            {word}
-          </motion.span>{" "}
-        </Fragment>
-      ))}
-    </p>
   );
 }

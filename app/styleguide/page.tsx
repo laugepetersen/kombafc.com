@@ -6,18 +6,11 @@ import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
 import { Button } from "@/components/ui/button";
 import { CardStack } from "@/components/ui/card-stack";
-import {
-  BlurRise,
-  LineReveal,
-  ScrollFill,
-} from "@/components/ui/heading-reveal";
+import { LineReveal, ScrollFill } from "@/components/ui/heading-reveal";
 import { Kicker } from "@/components/ui/kicker";
 import { LineRise } from "@/components/ui/line-rise";
 import { PersonCard } from "@/components/ui/person-card";
-import {
-  StaggerReveal,
-  type StaggerVariant,
-} from "@/components/ui/stagger-reveal";
+import { StaggerReveal } from "@/components/ui/stagger-reveal";
 import { team } from "@/content/team";
 
 export const metadata = { title: "Styleguide" };
@@ -74,28 +67,6 @@ const REVEAL_LINES = ["We're aiming to set", "our mark Q1, 2027."];
    beside `text-paint-room` drops one of the two without a word. */
 const revealHeading =
   "font-heading text-2xl font-black uppercase italic md:text-3xl";
-
-const blockVariants: {
-  variant: StaggerVariant;
-  title: string;
-  note: string;
-}[] = [
-  {
-    variant: "crop",
-    title: "crop",
-    note: "Each element rides up out of its own mask, so it reads as landing rather than arriving. The clip is dropped once a piece has settled — left on, it would cut the CTAs' glow.",
-  },
-  {
-    variant: "fade",
-    title: "fade",
-    note: "Opacity only. Nothing moves, which is the quietest of the three and the safest above the fold, where movement competes with the hero.",
-  },
-  {
-    variant: "rise",
-    title: "rise",
-    note: "A fade with 12px of travel — just enough to give it a direction without reading as motion. The middle setting.",
-  },
-];
 
 const VIOLET = ["#7a1fff", "#9d5cff", "#c0a0ff", "#5311c4"];
 const WHITE = ["#ffffff", "#d2d2d7", "#a3a3ac"];
@@ -388,63 +359,35 @@ export default function StyleguidePage() {
               sitting white around grey letters.
             </Note>
           </div>
-          <div>
-            <code className="text-ink-400 font-mono text-xs">
-              &lt;BlurRise&gt;
-            </code>
-            <div className="mt-3">
-              <BlurRise
-                text={REVEAL_TEXT}
-                className={`${revealHeading} text-relief text-paint-room`}
-              />
-            </div>
-            <Note>
-              Per word rather than per line, so it suits a heading that wraps
-              unpredictably. The blur is the expensive part — a heading is fine,
-              a paragraph would not be.
-            </Note>
-          </div>
         </div>
       </Block>
 
       <Block title="Block motion">
         <Note>
           A text block arriving one element at a time — kicker, heading, copy,
-          buttons — played when the block reaches the viewport rather than tied
+          buttons — played when each piece reaches the viewport rather than tied
           to scroll position, so it runs at its own pace however fast the page
-          is moving. 80ms between pieces. Spacing lives on the wrapper, not as
-          margins on the children: a margin inside a crop mask is height the
-          mask has to clip through before anything appears.
+          is moving. Coming down the page the top piece leads; coming back up,
+          the bottom one does, so the block always builds towards the eye. Same
+          curve and tempo as
+          <code className="text-violet-300"> &lt;LineReveal&gt;</code>, so a
+          block and a heading arriving together read as one movement.
         </Note>
-        <div className="grid gap-12 lg:grid-cols-3">
-          {blockVariants.map(({ variant, title, note }) => (
-            <div key={variant}>
-              <code className="text-ink-400 font-mono text-xs">
-                variant=&quot;{title}&quot;
-              </code>
-              <StaggerReveal
-                variant={variant}
-                className="mt-4 flex flex-col items-start gap-6"
-              >
-                <Kicker>The Ressurect</Kicker>
-                <p
-                  className={`${revealHeading} text-relief`}
-                >{`We\u2019re aiming to set our mark Q1, 2027.`}</p>
-                <p className="text-ink-200 text-base leading-[1.4]">
-                  We have been silent for almost a year, but not out of the
-                  game.
-                </p>
-                <div className="flex flex-wrap gap-4">
-                  <Button href="#">Become Partner</Button>
-                  <Button href="#" variant="secondary">
-                    About Us
-                  </Button>
-                </div>
-              </StaggerReveal>
-              <Note>{note}</Note>
-            </div>
-          ))}
-        </div>
+        <StaggerReveal className="flex max-w-[46ch] flex-col items-start gap-6">
+          <Kicker>The Ressurect</Kicker>
+          <p
+            className={`${revealHeading} text-relief`}
+          >{`We\u2019re aiming to set our mark Q1, 2027.`}</p>
+          <p className="text-ink-200 text-base leading-[1.4]">
+            We have been silent for almost a year, but not out of the game.
+          </p>
+          <div className="flex flex-wrap gap-4">
+            <Button href="#">Become Partner</Button>
+            <Button href="#" variant="secondary">
+              About Us
+            </Button>
+          </div>
+        </StaggerReveal>
       </Block>
 
       <Block title="Card stack">

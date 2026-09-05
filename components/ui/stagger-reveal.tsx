@@ -16,22 +16,35 @@ import {
  * scroll position, so each piece runs at its own pace however fast the page is
  * moving.
  *
+ * A fade with just enough travel to have a direction. It had a masked variant
+ * and a pure-fade one alongside it; this is the one that reads as the block
+ * settling rather than as anything animating, which is what a page full of
+ * them needs, and the other two were only ever there to be compared against
+ * it.
+ *
  * The run follows the reader. Coming down the page the pieces arrive from
  * below, top one first; coming back up they arrive from above, bottom one
  * first. Either way the block assembles in the direction of travel rather than
  * against it.
  *
  * Each direct child is wrapped. Margins on the children survive that, because
- * a wrapper is a flex item and so its own formatting context — but a margin
- * inside a `crop` mask is height the mask has to clip through before anything
- * appears, so that variant wants its spacing as a gap here instead.
+ * a wrapper is a flex item and so its own formatting context.
  *
  * Replays whenever the block comes back into view. Holds still under
  * prefers-reduced-motion.
  */
 
-/** Decelerating with a long tail, matching the heading reveals. */
-const EASE = [0.16, 1, 0.3, 1] as const;
+/**
+ * The same curve, distance and pacing as the line reveal, so a block and a
+ * heading arriving on the same screen read as one movement rather than two
+ * that happen to overlap.
+ */
+const EASE = [0.19, 1, 0.22, 1] as const;
+const DURATION = 1.3;
+const STEP = 0.15;
+
+/** Enough travel to have a direction, not enough to read as motion. */
+const TRAVEL = 12;
 
 const motionQuery = "(prefers-reduced-motion: reduce)";
 
@@ -100,8 +113,6 @@ function useScrollingDown() {
 
 /* -- Items ---------------------------------------------------------------- */
 
-export type StaggerVariant = "crop" | "fade" | "rise";
-
 /**
  * Each piece watches for itself.
  *
@@ -117,13 +128,11 @@ export type StaggerVariant = "crop" | "fade" | "rise";
  * which is what happens on a short block or a fast flick.
  */
 function Item({
-  variant,
   index,
   count,
   step,
   children,
 }: {
-  variant: StaggerVariant;
   index: number;
   count: number;
   step: number;
@@ -148,16 +157,6 @@ function Item({
     if (inView) setFromBelow(scrollingDownNow);
   }
 
-  // The clip on the masked variant is dropped once the piece has landed. Left
-  // on, it would keep cutting whatever paints outside the box, which on a row
-  // of CTAs means their glow.
-  const [landed, setLanded] = useState(false);
-  const [wasShown, setWasShown] = useState(shown);
-  if (wasShown !== shown) {
-    setWasShown(shown);
-    if (landed) setLanded(false);
-  }
-
   // Parked out of view the offset follows the reader live, so the piece is
   // already waiting on the side it is going to arrive from — set only at entry
   // it would still be parked below while the reader came up to it, and travel
@@ -169,32 +168,12 @@ function Item({
   // so a block that crosses the line all at once still builds towards the eye.
   const delay = shown ? (fromBelow ? index : count - 1 - index) * step : 0;
 
-  if (variant === "crop") {
-    return (
-      <span ref={ref} className={landed ? "block" : "block overflow-hidden"}>
-        <motion.div
-          initial={false}
-          animate={{ y: shown ? "0%" : `${110 * direction}%` }}
-          transition={{ duration: 0.6, delay, ease: EASE }}
-          onAnimationComplete={() => setLanded(shown)}
-        >
-          {children}
-        </motion.div>
-      </span>
-    );
-  }
-
   return (
     <motion.div
       ref={ref}
       initial={false}
-      animate={{
-        opacity: shown ? 1 : 0,
-        // `fade` moves nothing; `rise` takes just enough travel to have a
-        // direction without reading as motion.
-        ...(variant === "rise" ? { y: shown ? 0 : 12 * direction } : null),
-      }}
-      transition={{ duration: 0.55, delay, ease: EASE }}
+      animate={{ opacity: shown ? 1 : 0, y: shown ? 0 : TRAVEL * direction }}
+      transition={{ duration: DURATION, delay, ease: EASE }}
     >
       {children}
     </motion.div>
@@ -202,16 +181,13 @@ function Item({
 }
 
 export function StaggerReveal({
-  variant = "rise",
-  step = 0.06,
+  step = STEP,
   className,
   children,
 }: {
-  variant?: StaggerVariant;
   /**
-   * Seconds between pieces that enter together. Deliberately short — with a
-   * trigger on each piece this only breaks a tie, it is not carrying the
-   * whole cascade any more.
+   * Seconds between pieces that enter together. With a trigger on each piece
+   * this only breaks a tie; it is not carrying the whole cascade.
    */
   step?: number;
   className?: string;
@@ -222,13 +198,7 @@ export function StaggerReveal({
   return (
     <div className={className}>
       {list.map((child, index) => (
-        <Item
-          key={index}
-          variant={variant}
-          index={index}
-          count={list.length}
-          step={step}
-        >
+        <Item key={index} index={index} count={list.length} step={step}>
           {child}
         </Item>
       ))}
