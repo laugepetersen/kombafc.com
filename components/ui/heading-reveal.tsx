@@ -59,35 +59,41 @@ export function LineReveal({
 
   return (
     <div ref={ref} className={className}>
-      {lines.map((line, index) => (
-        // The mask. Padded only as far as the italic overhang and any
-        // descender need, with the padding pulled back out in margin so the
-        // leading is unchanged. Every extra pixel here is a pixel the line
-        // travels while still hidden.
-        <span
-          key={line}
-          className="-mx-[0.3em] -mb-[0.1em] block overflow-hidden px-[0.3em] pb-[0.1em]"
-        >
-          <motion.span
-            className="block"
-            // No mount animation: it starts parked below and only moves once
-            // it has actually been scrolled to.
-            initial={false}
-            // Just past its own height — enough to clear the mask's bottom
-            // padding and no more. Any further and the line spends the start
-            // of its travel invisible, which reads as a fade rather than as
-            // type being uncovered.
-            animate={{ y: shown ? "0%" : "112%" }}
-            transition={{
-              duration: 0.55,
-              delay: shown ? index * 0.07 : 0,
-              ease: EASE,
-            }}
+      {/* Flex, so the masks' negative margins are honoured rather than
+          collapsed, and the leading is the heading line gap outright. */}
+      <span className="flex flex-col gap-(--heading-line-gap)">
+        {lines.map((line, index) => (
+          // The mask, hugging the ink rather than the line box: padded only as
+          // far as the italic overhang and the descenders need, and pulled
+          // back out in margin so it contributes nothing to the leading.
+          <span
+            key={line}
+            className="-mx-[0.3em] -mb-[0.14em] block overflow-hidden px-[0.3em] pb-[0.14em]"
           >
-            {line}
-          </motion.span>
-        </span>
-      ))}
+            <motion.span
+              // Trimmed to cap height and baseline, which is what makes this
+              // read as a crop. At the heading's leading of 1 the ink fills
+              // only the middle two thirds of an untrimmed line box, so a line
+              // translated by its own box height is already fully in view for
+              // most of the travel — it looks like type sliding up rather than
+              // type being uncovered. Trimmed, the box is the ink.
+              className="text-trim block"
+              // No mount animation: it starts parked below and only moves once
+              // it has actually been scrolled to.
+              initial={false}
+              // Just past the mask, counting its bottom padding, and no more.
+              animate={{ y: shown ? "0%" : "125%" }}
+              transition={{
+                duration: 0.55,
+                delay: shown ? index * 0.1 : 0,
+                ease: EASE,
+              }}
+            >
+              {line}
+            </motion.span>
+          </span>
+        ))}
+      </span>
     </div>
   );
 }
