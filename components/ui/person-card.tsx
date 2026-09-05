@@ -35,7 +35,7 @@ export function PersonCard({
   return (
     <div
       className={cn(
-        "border-rule bg-glass/8 flex items-center gap-3 rounded-lg border p-1 pr-4 backdrop-blur-lg",
+        "border-glass-edge bg-glass/8 flex items-center gap-3 rounded-lg border p-1 pr-4 backdrop-blur-lg",
         className,
       )}
     >

@@ -53,6 +53,13 @@
     var(--color-ink-100)
   );
 
+  /* The edge on those glass panels. Half the strength of --color-rule and
+     deliberately not sharing it: a section rule is a line you are meant to
+     read, where this one only has to stop the panel dissolving into whatever
+     is behind it. At the rule's 10% it stops being an edge and starts looking
+     like a border drawn around the card. */
+  --color-glass-edge: rgb(221 204 255 / 0.05);
+
   /* Panel ground: the page colour carrying 10% of the pale violet. Barely a
      tint on its own, but enough to keep a panel from reading as flat black
      next to the surrounding void. */
