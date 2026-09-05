@@ -3,6 +3,7 @@ import Image from "next/image";
 import { PixelNoise } from "@/components/effects/pixel-noise";
 import { SectionFrame } from "@/components/layout/section-frame";
 import { Button } from "@/components/ui/button";
+import { ScrollFill } from "@/components/ui/heading-reveal";
 import { Kicker } from "@/components/ui/kicker";
 
 /**
@@ -45,9 +46,14 @@ export function Ressurect() {
 
           <Kicker>The Ressurect</Kicker>
 
-          <h2 className="text-chrome text-paint-room mt-6 text-2xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-3xl xl:text-4xl">
-            We&rsquo;re aiming to set our mark Q1, 2027.
-          </h2>
+          {/* text-relief, not text-chrome: the gradient is the h1's alone.
+              Class list is a plain string — see the note in CLAUDE.md about
+              what `cn` does to two custom text-* utilities. */}
+          <ScrollFill
+            as="h2"
+            text={"We\u2019re aiming to set our mark Q1, 2027."}
+            className="text-relief mt-6 text-2xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-3xl xl:text-4xl"
+          />
 
           <div className="text-ink-200 mt-8 flex max-w-96 flex-col gap-4 text-base leading-[1.4]">
             <p>

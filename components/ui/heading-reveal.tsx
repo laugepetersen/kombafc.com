@@ -7,7 +7,13 @@ import {
   useScroll,
   useTransform,
 } from "motion/react";
-import { Fragment, type ReactNode, useRef, useSyncExternalStore } from "react";
+import {
+  type ElementType,
+  Fragment,
+  type ReactNode,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 
 /**
  * Three ways a heading arrives.
@@ -130,16 +136,20 @@ function FillWord({
 
 export function ScrollFill({
   text,
+  as,
   className,
   from = FILL_FROM,
   to = FILL_TO,
 }: {
   text: string;
+  /** A section heading should not render as a <p>. */
+  as?: ElementType;
   className?: string;
   from?: string;
   to?: string;
 }) {
-  const ref = useRef<HTMLParagraphElement>(null);
+  const Comp = (as ?? "p") as ElementType;
+  const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const words = text.split(" ");
 
@@ -152,7 +162,7 @@ export function ScrollFill({
   });
 
   return (
-    <p ref={ref} className={className}>
+    <Comp ref={ref} className={className}>
       {words.map((word, index) => (
         <Fragment key={`${word}-${index}`}>
           <FillWord
@@ -167,7 +177,7 @@ export function ScrollFill({
           </FillWord>{" "}
         </Fragment>
       ))}
-    </p>
+    </Comp>
   );
 }
 
