@@ -303,27 +303,38 @@ export function VideoModal({
   }, [open]);
 
   /**
-   * Scroll lock.
+   * Scroll lock — on the scrolling element and nothing else.
    *
-   * It has to go on the *scrolling element*, which here is <html>: this
-   * document has `height: 100%` on html, so body is not the scroller and
-   * `body { overflow: hidden }` does nothing at all. Setting both is the
-   * portable form. Tied to `open` with a cleanup, so the lock is always
-   * released however the dialog was dismissed.
+   * It used to go on <html> and <body> both, on the theory that one of them
+   * is bound to be the scroller. The <body> half is what broke the pinned
+   * sections behind it: `overflow: hidden` makes an element a scroll
+   * container, so <body> became the nearest scrollport for every
+   * `position: sticky` on the page, and that box does not scroll — the pins
+   * released and every section inside them snapped back to its static
+   * position while the player was open. Measured on the previous show: the
+   * sticky screen went from a top of 0 to -1611, taking the heading off
+   * screen and parking its reveal, which then replayed on close.
+   *
+   * Locking <html> alone does not do that, because overflow on the root
+   * propagates to the viewport and leaves the root itself visible — no new
+   * scroll container, so sticky still measures against the viewport. Going
+   * through scrollingElement keeps it right in the quirks-mode case too,
+   * where <body> is the scroller and is already the sticky ancestor.
+   *
+   * Tied to `open` with a cleanup, so the lock is always released however the
+   * dialog was dismissed.
    */
   useEffect(() => {
     if (!open) return;
 
-    const root = document.documentElement;
-    const previousRoot = root.style.overflow;
-    const previousBody = document.body.style.overflow;
+    const scroller = (document.scrollingElement ??
+      document.documentElement) as HTMLElement;
+    const previous = scroller.style.overflow;
 
-    root.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
+    scroller.style.overflow = "hidden";
 
     return () => {
-      root.style.overflow = previousRoot;
-      document.body.style.overflow = previousBody;
+      scroller.style.overflow = previous;
     };
   }, [open]);
 

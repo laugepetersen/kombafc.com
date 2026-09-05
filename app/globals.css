@@ -134,6 +134,15 @@
   --text-8xl--line-height: var(--heading-leading);
   --text-9xl--line-height: var(--heading-leading);
 
+  /* Everything below the base gets 2% of tracking, once, here — a caption or
+     a label set at the same tracking as body copy reads tighter than it, so
+     the smaller steps open up to hold the same colour. Wired onto the scale
+     rather than sprinkled on the components that use it, so a step is a
+     single decision the way its leading already is. An explicit `tracking-*`
+     still wins: the eyebrow and the nav keep their own wider setting. */
+  --text-xs--letter-spacing: 0.02em;
+  --text-sm--letter-spacing: 0.02em;
+
   /* -- Layout ------------------------------------------------------------ *
      Content width is 1280px. The gutter is the *minimum* breathing room,
      so the outer box maxes out at 1280 + 2 * gutter.                       */
