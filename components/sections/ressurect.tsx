@@ -4,7 +4,6 @@ import { PixelNoise } from "@/components/effects/pixel-noise";
 import { SectionFrame } from "@/components/layout/section-frame";
 import { Button } from "@/components/ui/button";
 import { ScrollFill } from "@/components/ui/heading-reveal";
-import { StaggerReveal } from "@/components/ui/stagger-reveal";
 import { Kicker } from "@/components/ui/kicker";
 
 /**
@@ -45,11 +44,7 @@ export function Ressurect() {
             className="absolute inset-0 -z-10 bg-gradient-to-bl from-violet-200/5 to-violet-200/10"
           />
 
-          {/* The four pieces arrive in order once the panel is in view. Their
-              margins stay on the children rather than moving to a gap here:
-              each wrapper is a flex item and so its own formatting context, so
-              the tuned spacing survives being wrapped. */}
-          <StaggerReveal variant="rise" className="flex flex-col">
+          <div className="flex flex-col">
             <Kicker>The Ressurect</Kicker>
 
             {/* text-relief, not text-chrome: the gradient is the h1's alone.
@@ -72,7 +67,7 @@ export function Ressurect() {
                 About Us
               </Button>
             </div>
-          </StaggerReveal>
+          </div>
         </div>
 
         {/* Square when stacked; from md the grid row stretches it to match the

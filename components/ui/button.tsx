@@ -22,6 +22,13 @@ const glow =
 const glowHover =
   "hover:shadow-[0_0_10px_-3px_rgb(157_92_255/0.14),0_0_26px_0_rgb(157_92_255/0.10)]";
 
+/* The same values without the hover: prefix, written out rather than derived
+   from the line above. Tailwind scans source text for whole class names, so a
+   string built at runtime is never generated and the shadow silently does
+   nothing. */
+const glowLit =
+  "shadow-[0_0_10px_-3px_rgb(157_92_255/0.14),0_0_26px_0_rgb(157_92_255/0.10)]";
+
 const variants = {
   /** Filled violet. One per view — this is the primary ask. */
   primary: cn(
@@ -32,16 +39,16 @@ const variants = {
     "hover:brightness-110",
   ),
   /**
-   * Outlined, and transparent at every state — no fill, no backdrop. On hover
-   * it does what the primary does: brightens, and pushes its glow out further.
-   * Starting dimmer, it takes a heavier hand than the primary's 110 to read as
-   * the same amount of lift.
+   * Outlined, and transparent at every state — no fill, no backdrop. It wears
+   * at rest what it used to hold back for hover: the brighter violet and the
+   * wider glow, which is the look worth having all the time rather than only
+   * under a pointer that a touch device never has. Hover still lifts, from a
+   * higher starting point.
    */
   secondary: cn(
-    "border-violet-300 border",
-    glow,
-    glowHover,
-    "hover:brightness-125",
+    "border-violet-300 border brightness-125",
+    glowLit,
+    "hover:brightness-140",
   ),
 } as const;
 

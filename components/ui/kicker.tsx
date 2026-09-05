@@ -20,7 +20,10 @@ export function Kicker({
   const Comp = (as ?? "p") as ElementType;
 
   return (
-    <Comp className={cn("flex items-center gap-2", className)}>
+    // brightness-125 to match the outline CTA, which wears the same lift at
+    // rest — the brackets and the type both come up, so the eyebrow reads as
+    // part of the same violet family rather than a dimmer relative of it.
+    <Comp className={cn("flex items-center gap-2 brightness-125", className)}>
       {/* eslint-disable-next-line @next/next/no-img-element -- fixed-size
           decorative rule; next/image would add a wrapper and a second hop. */}
       <img

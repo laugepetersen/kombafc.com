@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { GalleryFlythrough } from "@/components/ui/gallery-flythrough";
 import { ScrollFill } from "@/components/ui/heading-reveal";
 import { Kicker } from "@/components/ui/kicker";
-import { StaggerReveal } from "@/components/ui/stagger-reveal";
 
 /**
  * The night itself, shot by Sebastian Stigsby. show-13 is held out of the
@@ -85,7 +84,7 @@ export function PreviousShow() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 62% 58% at 50% 50%, rgb(5 5 8 / 0.88) 0%, rgb(5 5 8 / 0.55) 52%, transparent 88%)",
+              "radial-gradient(ellipse 68% 62% at 50% 50%, rgb(5 5 8 / 0.6) 0%, transparent 100%)",
           }}
         />
 
@@ -97,7 +96,7 @@ export function PreviousShow() {
           style={{
             opacity: closingDark,
             background:
-              "radial-gradient(ellipse 58% 54% at 50% 50%, rgb(5 5 8 / 0.8) 0%, rgb(5 5 8 / 0.45) 55%, transparent 90%)",
+              "radial-gradient(ellipse 62% 56% at 50% 50%, rgb(5 5 8 / 0.28) 0%, transparent 100%)",
           }}
         />
 
@@ -107,7 +106,7 @@ export function PreviousShow() {
             apart from the button, so the drift answers across the screen. */}
         {/* Dead centre of the frame, and centred in itself. */}
         <Container className="pointer-events-none relative flex h-full flex-col items-center justify-center text-center">
-          <StaggerReveal className="flex flex-col items-center">
+          <div className="flex flex-col items-center">
             <Kicker>Previous show</Kicker>
 
             {/* text-relief, not text-chrome: the gradient is the h1's. The
@@ -125,7 +124,7 @@ export function PreviousShow() {
                 Rewatch
               </Button>
             </div>
-          </StaggerReveal>
+          </div>
         </Container>
       </div>
     </section>

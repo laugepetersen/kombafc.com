@@ -38,7 +38,7 @@ const PLACEMENTS = 76;
  * last photograph is arriving and it turns up on an empty screen — these are
  * still streaming past the edges while it comes in.
  */
-const TAIL = 18;
+const TAIL = 30;
 
 /** Widest and narrowest a card is drawn, before perspective has its say. */
 const CARD_MIN_W = 170;
@@ -89,8 +89,16 @@ const SETTLE_FROM = 0.72;
 /** Where a photograph fades up out of the distance, and where it passes. */
 const FOG_IN_START = -3600;
 const FOG_IN_END = -2100;
-const PASS_START = 220;
-const PASS_END = 620;
+
+/**
+ * A photograph starts going the moment it reaches the lens and is gone not
+ * long after. Held on longer than this and one that is nearly level with the
+ * camera stays fully lit while perspective blows it up to fill the frame — so
+ * it hangs, enormous, over whatever is behind it, which at the end of the
+ * corridor is the photograph being arrived at.
+ */
+const PASS_START = 60;
+const PASS_END = 340;
 
 /** Beyond this the corridor is behind you. Perspective, in pixels. */
 const LENS = 1200;
@@ -137,11 +145,31 @@ function useReducedMotion() {
 }
 
 /** How much of the corridor the tail is packed into, in pixels. */
-const TAIL_DEPTH = 2600;
+const TAIL_DEPTH = 3400;
+
+/**
+ * The tail is drawn small and thrown wide. Perspective magnifies whatever is
+ * near the lens, so a full-sized card in the last stretch arrives as a slab
+ * across the middle of the frame — which is where the last photograph and the
+ * copy both are. Small and far out, they sweep the edges instead.
+ */
+const TAIL_MAX_W = 230;
+const TAIL_SPREAD = 2;
+
+/**
+ * How far the tail is held off the centre line, as a fraction of its spread.
+ * The grid runs across the middle columns like everything else, so without
+ * this a third of the tail lands on the centre — which is the one part of the
+ * frame that has to stay clear, since the copy and the arriving photograph are
+ * both there.
+ */
+const TAIL_KEEP_OUT = 0.3;
 
 /** Where a photograph hangs, and how big it is drawn. */
 function placeAt(index: number) {
-  const width = CARD_MIN_W + noise(index * 3.1) * (CARD_MAX_W - CARD_MIN_W);
+  const isTail = index >= PLACEMENTS;
+  const widest = isTail ? TAIL_MAX_W : CARD_MAX_W;
+  const width = CARD_MIN_W + noise(index * 3.1) * (widest - CARD_MIN_W);
   // A mix of uprights and landscapes rather than one shape repeated — the
   // field reads as photographs pinned in space, not as a grid of tiles.
   const aspect = [0.75, 1.34, 1][Math.floor(noise(index * 5.7) * 3)];
@@ -158,18 +186,25 @@ function placeAt(index: number) {
   // the DOM serialises a sub-pixel float to three decimals on the way back
   // out. React then compares its own full-precision number against that
   // rounded string during hydration and calls every card a mismatch.
-  // The tail sits in the last stretch of corridor and further out from the
-  // centre, so it sweeps the edges of the frame rather than the middle.
-  const isTail = index >= PLACEMENTS;
-  const spreadX = isTail ? SPREAD_X * 1.35 : SPREAD_X;
-  const spreadY = isTail ? SPREAD_Y * 1.35 : SPREAD_Y;
+  // The tail sits in the last stretch of corridor and much further out from
+  // the centre, so it sweeps the edges of the frame rather than the middle.
+  const spreadX = isTail ? SPREAD_X * TAIL_SPREAD : SPREAD_X;
+  const spreadY = isTail ? SPREAD_Y * TAIL_SPREAD : SPREAD_Y;
   const z = isTail
-    ? FINALE_Z + 700 + Math.round(noise(index * 13.7) * TAIL_DEPTH)
+    ? FINALE_Z + 900 + Math.round(noise(index * 13.7) * TAIL_DEPTH)
     : Math.round(-(index + noise(index * 11.3) * 1.8) * DEPTH_STEP);
 
+  // -0.5 to 0.5 across the grid. The tail gets pushed out of the middle of
+  // that range without losing its scatter: the whole span is remapped into
+  // the outer band rather than clamped, which would pile it on one radius.
+  const nx = (col + 0.5 + jitterX) / COLS - 0.5;
+  const ny = (row + 0.5 + jitterY) / ROWS - 0.5;
+  const outward = (v: number) =>
+    (v < 0 ? -1 : 1) * (TAIL_KEEP_OUT + Math.abs(v) * (1 - TAIL_KEEP_OUT));
+
   return {
-    x: Math.round(((col + 0.5 + jitterX) / COLS - 0.5) * spreadX),
-    y: Math.round(((row + 0.5 + jitterY) / ROWS - 0.5) * spreadY),
+    x: Math.round((isTail ? outward(nx) : nx) * spreadX),
+    y: Math.round((isTail ? outward(ny) : ny) * spreadY),
     // Jittered off the step so they do not arrive on a beat.
     z,
     width: Math.round(width),
