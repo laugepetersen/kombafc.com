@@ -5,11 +5,8 @@ import { useState } from "react";
 import { Container } from "@/components/layout/container";
 import { BackgroundVideo } from "@/components/media/background-video";
 import { VideoModal } from "@/components/media/video-modal";
-import { CardStack } from "@/components/ui/card-stack";
-import { Icon } from "@/components/ui/icon";
+import { BannerCta } from "@/components/ui/banner-cta";
 import { LineRise } from "@/components/ui/line-rise";
-import { PersonCard } from "@/components/ui/person-card";
-import { team } from "@/content/team";
 
 /**
  * Inlined at build time. The short looping backdrop and the full-length film
@@ -35,11 +32,16 @@ export function Hero() {
   const [playerOpen, setPlayerOpen] = useState(false);
 
   return (
-    // Full viewport height, floored at 600px so an unusually short or
-    // landscape-phone window cannot squash it into the section below. dvh
-    // rather than vh, so mobile browser chrome collapsing does not resize it
-    // mid-scroll.
-    <section className="hero-parallax-root relative flex h-dvh min-h-[600px] items-center justify-center overflow-clip">
+    // Full viewport height, floored at 600px so an unusually short window
+    // cannot squash it into the section below — but never above the screen
+    // itself, which is what the min() is for. A bare 600 did the squashing it
+    // was there to prevent: on a phone turned sideways, 812x375, the hero came
+    // out 600 tall in a 375 window and the card stack's bottom edge sat 177px
+    // under the fold. A hero taller than the screen is not a hero.
+    //
+    // dvh rather than vh, so mobile browser chrome collapsing does not resize
+    // it mid-scroll.
+    <section className="hero-parallax-root relative flex h-dvh min-h-[min(600px,100dvh)] items-center justify-center overflow-clip">
       <BackgroundVideo
         className="hero-parallax-media"
         playbackId={BACKGROUND_PLAYBACK_ID}
@@ -48,10 +50,13 @@ export function Hero() {
         poster={poster}
       />
 
-      {/* Legibility scrim. Bottom lands on --color-void so the hero dissolves
-          into the next section rather than ending on a hard edge. */}
+      {/* Legibility scrim, and only that now — it used to land on solid
+          --color-void at the bottom so the hero dissolved into the section
+          below, and the video is meant to end on a clean cut instead. Still
+          heavier at the top than the bottom, which is where the copy needs it
+          least and the frame edge needs it most. */}
       <div
-        className="from-void/50 via-void/30 to-void absolute inset-0 bg-gradient-to-b"
+        className="from-void/50 to-void/30 absolute inset-0 bg-gradient-to-b"
         aria-hidden="true"
       />
 
@@ -93,36 +98,14 @@ export function Hero() {
           </span>
         </LineRise>
 
-        <button
-          type="button"
+        {/* The ask, as the banner rather than as a pill. It names the thing it
+            plays — a rounded "Watch the film" said nothing about which film,
+            and the hero's one job is to sell the last show. */}
+        <BannerCta
+          lines={["KOMBA 1.0", "Aftermovie"]}
+          action="Watch Now"
           onClick={() => setPlayerOpen(true)}
-          className="group mt-10 inline-flex items-center gap-4 rounded-full border border-white/15 bg-white/5 py-2 pr-6 pl-2 backdrop-blur-[12px] transition-colors hover:bg-white/10"
-        >
-          <span className="flex size-11 items-center justify-center rounded-full bg-white/10 transition-colors group-hover:bg-violet-500">
-            <Icon name="play_arrow" className="size-5" />
-          </span>
-          <span className="font-body text-sm tracking-[0.06em] text-white/80 uppercase transition-colors group-hover:text-white">
-            Watch the film
-          </span>
-        </button>
-      </Container>
-
-      {/* Bottom right, pinned to the container edge so it lines up with the
-          page grid rather than floating against the viewport. The stack is
-          only as wide as its widest card, so the row is what gets stretched
-          across the container and the cards sit at its right end.
-
-          Keep it clear of any scroll-driven animation: an animated ancestor
-          becomes the backdrop root for everything under it, and the cards'
-          backdrop-filter would then have only the container to sample rather
-          than the video, so the frosting would silently do nothing. */}
-      <Container className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-end md:bottom-12">
-        <CardStack
-          className="pointer-events-auto"
-          items={team.map((person) => ({
-            id: person.id,
-            content: <PersonCard person={person} />,
-          }))}
+          className="mt-10"
         />
       </Container>
 

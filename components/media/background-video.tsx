@@ -94,6 +94,18 @@ export function BackgroundVideo({
   maxResolution = "720p",
   className,
 }: BackgroundVideoProps) {
+  /* Mux renders the thumbnail at whatever width is asked for, so the poster
+     can be a real srcset rather than one desktop-sized file. Undefined for the
+     plain-file fallback, which is a single asset with no resizer behind it. */
+  const posterSrcSet = playbackId
+    ? [640, 828, 1280, 1920]
+        .map(
+          (w) =>
+            `https://image.mux.com/${playbackId}/thumbnail.webp?width=${w}&time=0 ${w}w`,
+        )
+        .join(", ")
+    : undefined;
+
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -165,10 +177,25 @@ export function BackgroundVideo({
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- poster is a
           fixed full-bleed backdrop, not a content image; next/image would add
-          a wrapper and a second network hop for no benefit here. */}
+          a wrapper and a second network hop for no benefit here.
+
+          `fetchPriority` because this *is* the LCP element and nothing in the
+          markup said so: it is a full-bleed image discovered inside a client
+          component, competing at default priority with every chunk on the
+          page. Next's own dev overlay was naming a 60px avatar in the card
+          stack as the largest paint, which is what that looks like from the
+          outside.
+
+          The srcSet is the other half. `poster` is one URL sized for a desktop
+          — 1920 wide off Mux — and a 375px phone was downloading all of it to
+          paint 375 of them. Only the Mux path can be resized, so the plain
+          fallback is left as the single source it already was. */}
       <img
         src={poster}
+        srcSet={posterSrcSet}
+        sizes="100vw"
         alt=""
+        fetchPriority="high"
         className="absolute inset-0 size-full object-cover"
       />
 

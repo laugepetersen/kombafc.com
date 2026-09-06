@@ -323,18 +323,40 @@ export function VideoModal({
    *
    * Tied to `open` with a cleanup, so the lock is always released however the
    * dialog was dismissed.
+   *
+   * Cleared outright rather than saved-and-restored, and that is the whole of
+   * the fix for a leak that left the page unscrollable after a video.
+   *
+   * This used to read the inline overflow on the way in and put that value
+   * back on the way out. The trouble is that two players can be alive at once
+   * for a frame — the watch grid gives its modal a `key` per video, so
+   * choosing a fight unmounts one instance and mounts another — and if the
+   * incoming one reads the value before the outgoing one has restored it, it
+   * saves "hidden" as the state to return to. From then on every close
+   * "restores" the lock, the page cannot be scrolled, and the next open saves
+   * "hidden" again: the bug repairs itself into permanence, which is why it
+   * looked intermittent rather than broken.
+   *
+   * Nothing else on the site writes inline overflow on the root, so "" is the
+   * resting state and the cleanup can simply assert it. No saved value, no
+   * shared counter, nothing that can drift: two attempts at this were a module
+   * -scope depth count and then a set of tokens, and both of them found new
+   * ways to miss the one state that unlocks the page. An unconditional clear
+   * cannot. During the watch grid's keyed swap the outgoing player clears it a
+   * frame before the incoming one sets it again, and React runs the whole
+   * commit's cleanups before its effects, so the page is never actually
+   * scrollable while a player is up.
    */
   useEffect(() => {
     if (!open) return;
 
     const scroller = (document.scrollingElement ??
       document.documentElement) as HTMLElement;
-    const previous = scroller.style.overflow;
 
     scroller.style.overflow = "hidden";
 
     return () => {
-      scroller.style.overflow = previous;
+      scroller.style.overflow = "";
     };
   }, [open]);
 
@@ -361,7 +383,7 @@ export function VideoModal({
         onClick={requestClose}
         aria-label="Close video"
         className={cn(
-          "absolute top-4 right-4 z-10 flex size-11 items-center justify-center rounded-full border border-white/15 bg-white/5 backdrop-blur-md transition-[background-color,opacity] ease-out hover:bg-white/15 md:top-8 md:right-8",
+          "border-rule absolute top-4 right-4 z-10 flex size-11 items-center justify-center rounded-full border bg-white/5 backdrop-blur-md transition-[background-color,opacity] ease-out hover:bg-white/15 md:top-8 md:right-8",
           exiting && "opacity-0",
         )}
         style={{ transitionDuration: `${EXIT_MS}ms` }}

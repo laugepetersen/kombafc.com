@@ -41,7 +41,7 @@ export function Kicker({
         // 80ms a decrypt that reads well on a heading drags on three words.
         revealDelayMs={60}
         flipDelayMs={60}
-        className="text-chrome-violet font-body text-[0.8125rem] leading-none font-medium tracking-[0.06em] uppercase"
+        className="text-chrome-violet font-body text-sm leading-none font-medium tracking-[0.06em] uppercase"
       />
       {/* eslint-disable-next-line @next/next/no-img-element -- see above */}
       <img

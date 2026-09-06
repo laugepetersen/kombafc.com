@@ -7,6 +7,7 @@ import {
   useMotionValueEvent,
   useTransform,
 } from "motion/react";
+import Link from "next/link";
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 
 import { LineReveal } from "@/components/ui/heading-reveal";
@@ -108,14 +109,22 @@ function useMediaQuery(query: string) {
 
 export function ShowBar({
   action,
-  onAction,
+  href,
   facts,
   progress,
   className,
 }: {
   /** The label on the white block. */
   action: string;
-  onAction: () => void;
+  /**
+   * Where the block goes. An anchor, not a button with a handler — this used
+   * to open a player over the page and now it leaves for the archive, and the
+   * two want different elements. A link is what gives a middle click a new
+   * tab, a right click a copyable address and a screen reader the word
+   * "link"; a button wired to `router.push` is a destination in disguise, and
+   * the site already makes that argument in `Button`.
+   */
+  href: string;
   facts: ShowFact[];
   /**
    * Nought to one across whatever scroll the bar is sitting over. Given one,
@@ -193,15 +202,14 @@ export function ShowBar({
             thumb is, and the fact sits above it. Side by side from md, where
             the row owns the height and both halves take all of it. */}
         <div className="relative flex flex-col-reverse md:h-18 md:flex-row">
-          <button
-            type="button"
-            onClick={onAction}
+          <Link
+            href={href}
             /* No border of its own, and none above it: the rule belongs to the
                facts, so the block runs the full height of the bar and its top
                edge is the same line the rule is drawn on.
 
-               No corner-cut either — the block runs to the edge of the screen,
-               and a bevel on a full-bleed edge reads as a rendering fault
+               No bevel either — the block runs to the edge of the screen, and
+               a cut corner on a full-bleed edge reads as a rendering fault
                rather than as the site's mark. tap still gives it the press. */
             /* px-6 all the way up, which is what every other CTA on the site
                is set at. It was on 32 and then 40, and at that width the
@@ -210,7 +218,7 @@ export function ShowBar({
           >
             <Icon name="play_arrow" className="size-5" />
             {action}
-          </button>
+          </Link>
 
           {/* The rule closes the bar on the right as well as the top from md,
               where it stops at the container's line and needs an edge there.

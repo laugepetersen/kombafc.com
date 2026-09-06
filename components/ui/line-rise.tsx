@@ -1,9 +1,40 @@
 "use client";
 
 import { type TextSplit, splitText } from "kugiri";
-import { type ElementType, type ReactNode, useEffect, useRef } from "react";
+import {
+  type ElementType,
+  isValidElement,
+  type ReactNode,
+  useEffect,
+  useRef,
+} from "react";
 
 import { ENTER_MARGIN } from "@/lib/in-view";
+
+/**
+ * The words inside a node tree, flattened to one string.
+ *
+ * This is the effect's dependency, and it exists because `children` cannot be.
+ * JSX builds a new element object on every render, so a heading given markup
+ * rather than a string had a dependency that changed whenever anything in its
+ * parent did — and the effect's cleanup reverts the split, so the heading was
+ * re-cut and replayed from the start. On the home page that meant the hero
+ * title ran its reveal again every time the player was closed, because closing
+ * sets state on the hero and the hero re-renders.
+ *
+ * The words are what the split is actually a snapshot of, so they are what it
+ * should watch. A change that leaves the words alone but moves the wrap — a
+ * class, a breakpoint, a font landing — is already covered by the resize
+ * observer below, which is the thing that watches for a different set of lines.
+ */
+function wordsOf(node: ReactNode): string {
+  if (typeof node === "string" || typeof node === "number") return String(node);
+  if (Array.isArray(node)) return node.map(wordsOf).join("");
+  if (isValidElement(node)) {
+    return wordsOf((node.props as { children?: ReactNode }).children);
+  }
+  return "";
+}
 
 /**
  * A heading that rises into place a line at a time, warming from grey to white
@@ -53,6 +84,10 @@ export function LineRise({
 }) {
   const Comp = (as ?? "p") as ElementType;
   const ref = useRef<HTMLElement>(null);
+
+  /* What the split is a snapshot of — see `wordsOf`. A string when the heading
+     is given one, and the words out of the markup when it is not. */
+  const words = text ?? wordsOf(children);
 
   useEffect(() => {
     const target = ref.current;
@@ -150,7 +185,7 @@ export function LineRise({
       onResize.disconnect();
       split?.revert();
     };
-  }, [text, children]);
+  }, [words]);
 
   // data-line-rise from the start, so the lines are parked the moment they are
   // cut rather than flashing at rest for a frame first.

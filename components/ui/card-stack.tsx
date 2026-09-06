@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import {
   type ReactNode,
   useEffect,
+  useRef,
   useState,
   useSyncExternalStore,
 } from "react";
@@ -62,6 +63,7 @@ export function CardStack({
   intervalMs = 5000,
   className,
 }: CardStackProps) {
+  const ref = useRef<HTMLDivElement>(null);
   const [cards, setCards] = useState(items);
 
   const reduceMotion = useSyncExternalStore(
@@ -75,11 +77,47 @@ export function CardStack({
     // the deck is a static stack rather than something that moves on its own.
     if (reduceMotion || cards.length < 2) return;
 
-    const id = setInterval(() => {
-      setCards((prev) => [prev[prev.length - 1], ...prev.slice(0, -1)]);
-    }, intervalMs);
+    const el = ref.current;
+    if (!el) return;
 
-    return () => clearInterval(id);
+    /**
+     * Only while somebody could be looking at it.
+     *
+     * The deck lives in the hero and the page runs seven screens past it, so
+     * an unconditional timer went on turning cards over — a React render and a
+     * spring on every card in the stack, every five seconds — for the whole of
+     * the rest of the page, and on into a backgrounded tab. Nothing of it was
+     * ever seen: a stack rotated off screen just presents a different card
+     * when you come back to it, which is not the effect.
+     */
+    let id: ReturnType<typeof setInterval> | undefined;
+    let onScreen = false;
+
+    const sync = () => {
+      const run = onScreen && !document.hidden;
+
+      if (run && id === undefined) {
+        id = setInterval(() => {
+          setCards((prev) => [prev[prev.length - 1], ...prev.slice(0, -1)]);
+        }, intervalMs);
+      } else if (!run && id !== undefined) {
+        clearInterval(id);
+        id = undefined;
+      }
+    };
+
+    const observer = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting;
+      sync();
+    });
+    observer.observe(el);
+    document.addEventListener("visibilitychange", sync);
+
+    return () => {
+      clearInterval(id);
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", sync);
+    };
     // `cards` changes identity every tick but never length, so this holds one
     // timer for the life of the stack rather than tearing it down each cycle.
   }, [reduceMotion, cards.length, intervalMs]);
@@ -90,7 +128,7 @@ export function CardStack({
     // card using backdrop-filter would then have nothing behind it to sample —
     // the blur would silently do nothing. The cards are grid siblings, so
     // their z-indexes already order them against each other.
-    <div className={cn("inline-grid", className)}>
+    <div ref={ref} className={cn("inline-grid", className)}>
       {cards.map((card, index) => (
         <motion.div
           key={card.id}

@@ -38,7 +38,9 @@ export function Marquee({
     >
       <div
         className="animate-marquee flex w-max"
-        style={{ "--marquee-duration": `${durationSeconds}s` } as React.CSSProperties}
+        style={
+          { "--marquee-duration": `${durationSeconds}s` } as React.CSSProperties
+        }
       >
         {row}
         <div aria-hidden="true" className="flex shrink-0">

@@ -1,3 +1,4 @@
+import { Format } from "@/components/sections/format";
 import { Hero } from "@/components/sections/hero";
 import { PreviousShow } from "@/components/sections/previous-show";
 import { FrameSpacer, Ressurect } from "@/components/sections/ressurect";
@@ -11,6 +12,7 @@ export default function HomePage() {
       <Ressurect />
       <Sponsors />
       <PreviousShow />
+      <Format />
     </>
   );
 }

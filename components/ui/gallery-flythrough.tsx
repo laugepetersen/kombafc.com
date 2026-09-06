@@ -4,11 +4,18 @@ import {
   type MotionValue,
   motion,
   useMotionValue,
+  useMotionValueEvent,
   useSpring,
   useTransform,
 } from "motion/react";
 import Image from "next/image";
-import { useMemo, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 /**
  * A corridor of photographs you fly through.
@@ -106,6 +113,32 @@ const PASS_END = 340;
 
 /** Beyond this the corridor is behind you. Perspective, in pixels. */
 const LENS = 1200;
+
+/**
+ * Keeping the middle of the frame clear, for a camera that is parked.
+ *
+ * The flight does not need this: a card drifting over the copy is over it for
+ * a few hundred milliseconds and the copy is moving too. A still does — the
+ * hold pages stand at one point in the corridor and never move, so whatever
+ * lands on the heading is on the heading for as long as anybody is reading it.
+ *
+ * Both numbers are at the lens plane, which is where perspective has already
+ * been applied, so they are CSS pixels and do not move with the viewport.
+ *
+ * Two conditions rather than one, because a rule on position alone took seven
+ * cards out and left a hole in the middle of the field. Only what is drawn big
+ * enough to read *through* is worth removing; the small faint ones behind the
+ * type are the texture the backdrop is there for.
+ *
+ * Measured at the hold pages' standing point: 47 cards on stage become 42. The
+ * three that were actually on the copy — 154, 139 and 194px tall, at 183, 328
+ * and 506px from the centre — and two more that were inside the depth window
+ * but outside the fade, so already at nought opacity and costing a layer for
+ * nothing. What is left in the zone tops out at 119px and 42% opacity, which
+ * is the texture staying where it should be.
+ */
+const PARKED_CLEAR_RADIUS = 560;
+const PARKED_CLEAR_MIN_DRAWN = 130;
 
 /**
  * How far into the corridor the camera already is when the section opens.
@@ -410,14 +443,147 @@ function placeAt(index: number, isClip = false) {
   };
 }
 
+type Frame = { w: number; h: number };
+
+function subscribeFrame(onChange: () => void) {
+  window.addEventListener("resize", onChange);
+  return () => window.removeEventListener("resize", onChange);
+}
+
+let frameSnapshot: Frame | null = null;
+
+/**
+ * The window, as a value the parked pass can measure against.
+ *
+ * Cached and only rebuilt when the numbers actually move, because
+ * useSyncExternalStore compares snapshots by identity and a fresh object every
+ * read is an infinite loop.
+ *
+ * `null` on the server, and on the first client render with it — which is the
+ * point. This only ever *removes* cards, so a null frame means the full field,
+ * which is what the server can safely render and what the client hydrates
+ * against. The trim lands on the pass after mount.
+ */
+function getFrame(): Frame {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  if (!frameSnapshot || frameSnapshot.w !== w || frameSnapshot.h !== h) {
+    frameSnapshot = { w, h };
+  }
+  return frameSnapshot;
+}
+
+function useFrame() {
+  return useSyncExternalStore(
+    subscribeFrame,
+    getFrame,
+    () => null as Frame | null,
+  );
+}
+
+/**
+ * How far past the edge of the window a card has to be before it is dropped.
+ *
+ * The field slides with the pointer — DRIFT at the lens plane, magnified by
+ * whatever the card's own depth does to it — so a card cleared for being just
+ * outside the frame would pop in as soon as the mouse moved. This is that
+ * travel with room over it.
+ */
+const FRAME_MARGIN = 120;
+
+/**
+ * Whether the corridor is anywhere near the screen./**
+ * Whether the corridor is anywhere near the screen.
+ *
+ * The camera's own fade is not enough on its own: at rest the flight sits at
+ * its opening frame, which is a full field of cards at full opacity — true of
+ * the section wherever it happens to be on the page. On the home page that is
+ * two screens below the fold, and two of the three clips are in that opening
+ * frame, so they woke and fetched before anybody had scrolled.
+ *
+ * So the fade says which cards can be seen and this says whether the section
+ * can. The same 200px of warning the poster component gives itself, and once
+ * given it is never taken back — this is a latch for mounting media, not a
+ * visibility flag.
+ */
+function useNearViewport(ref: React.RefObject<HTMLElement | null>) {
+  const [near, setNear] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setNear(true);
+        observer.disconnect();
+      },
+      { rootMargin: "200px" },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [ref]);
+
+  return near;
+}
+
+/**
+ * Whether this card has ever been close enough to see.
+ *
+ * Footage is the whole reason this exists. A `<video autoPlay>` is fetched and
+ * decoded the moment it is in the DOM, wherever it is on the page — measured on
+ * the home page at `scrollY: 0`, with the corridor two screens down and not a
+ * frame of it on stage: three clips and the finale, 2.77MB, all four buffered
+ * end to end. The poster component directly above this defers on an
+ * IntersectionObserver for exactly that reason, and none of it reached in here
+ * because these cards are inside a pinned screen that *is* on stage — it is the
+ * camera, not the viewport, that decides whether they can be seen.
+ *
+ * So it hangs off the fade instead, which is the thing that already knows. One
+ * way only: it latches on the first frame the card is worth anything and never
+ * lets go, because a video torn down and remounted every time it passes the
+ * lens would refetch on every pass.
+ */
+function useAwake(opacity: MotionValue<number>, near: boolean) {
+  const [seen, setSeen] = useState(() => opacity.get() > 0.01);
+
+  useMotionValueEvent(opacity, "change", (value) => {
+    if (value > 0.01) setSeen(true);
+  });
+
+  return near && seen;
+}
+
 function GalleryCard({
   src,
   index,
   camera,
+  near,
+  settled,
 }: {
   src: string;
   index: number;
   camera: MotionValue<number>;
+  /** Whether the corridor is on screen at all. See useNearViewport. */
+  near: boolean;
+  /**
+   * Whether the field it belongs to has stopped changing shape.
+   *
+   * The parked pass needs the window's size to know which cards fall outside
+   * the frame, and the window is not a thing the server has. So the first
+   * render — server, and the client's hydrating pass with it — is the whole
+   * field, and the trim only lands once `useFrame` has been read.
+   *
+   * Left to fetch through that, the browser asked for every photograph in the
+   * untrimmed field before a single one was removed, and then asked again at
+   * a different width when the trim reshuffled which card held which source:
+   * measured on a 1728x1000 window, 38 requests across 22 files to draw 14
+   * cards. So nothing is requested until the assignment it would be requested
+   * for is the final one. It costs a paint on a backdrop behind a scrim.
+   */
+  settled: boolean;
 }) {
   const isClip = src.endsWith(".mp4");
   const { x, y, z, width, height } = placeAt(index, isClip);
@@ -434,6 +600,8 @@ function GalleryCard({
       1 - ramp(depth, PASS_START, PASS_END),
     );
   });
+
+  const awake = useAwake(opacity, near && settled);
 
   return (
     <motion.div
@@ -454,15 +622,20 @@ function GalleryCard({
       }}
     >
       {isClip ? (
-        <video
-          src={src}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="size-full object-cover"
-        />
-      ) : (
+        // Only once the fade has it, and `preload="none"` so a browser that
+        // mounts it a frame early still fetches nothing until it plays.
+        awake ? (
+          <video
+            src={src}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="none"
+            className="size-full object-cover"
+          />
+        ) : null
+      ) : settled ? (
         // Empty alt on purpose. Individually these are ambience, not content —
         // the field as a whole is labelled on the container instead, so a
         // screen reader hears one thing rather than a hundred.
@@ -476,11 +649,30 @@ function GalleryCard({
           src={src}
           alt=""
           fill
-          sizes="430px"
+          /* The card's own box, with room for what perspective does to it.
+             `430px` was the widest a card is ever drawn *before* the lens has
+             had its say, handed to every one of them alike — so a card laid
+             out at 170 and painted at 76 on screen asked for the same file as
+             the slab arriving at the lens. On a 2x phone that resolves to
+             860 and Next serves the 1080 bucket: measured, twenty cards on a
+             hold page all fetching 29KB to be painted between 47 and 461px
+             wide.
+
+             1.4 is the magnification measured at the near end of the field —
+             a 184px card drawn at 248 is the worst of them — so this is the
+             box plus the most the perspective can add to it, and the cards
+             that come right up to the lens still get their resolution. */
+          sizes={`${Math.round(width * 1.4)}px`}
+          /* The field, not a photograph anybody looks at squarely: a hundred
+             of these drifting past behind a scrim, most of them under half
+             opacity for most of their time on screen. 29KB to 18KB each at
+             1080, measured, and the difference is not findable in motion.
+             Declared in next.config — an undeclared quality is refused. */
+          quality={50}
           loading="eager"
           className="object-cover"
         />
-      )}
+      ) : null}
     </motion.div>
   );
 }
@@ -496,39 +688,52 @@ function FinaleCard({
   alt,
   camera,
   z,
+  near,
 }: {
   src: string;
   alt: string;
   camera: MotionValue<number>;
   /** Its plane, which is where the camera stops. */
   z: number;
+  /** Whether the corridor is on screen at all. See useNearViewport. */
+  near: boolean;
 }) {
   const opacity = useTransform(camera, (c) =>
     ramp(c + z, FOG_IN_START, FOG_IN_END),
   );
+
+  const awake = useAwake(opacity, near);
 
   return (
     <motion.div
       className="absolute overflow-hidden"
       style={{
         width: "100vw",
-        height: "100dvh",
+        // svh, matching the pin this sits inside. It was dvh, which resizes
+        // the card mid-flight as the phone's chrome collapses — on the one
+        // element whose whole job is to land at exactly 1:1 with the screen.
+        height: "100svh",
         left: "-50vw",
-        top: "-50dvh",
+        top: "-50svh",
         transform: `translate3d(0px, 0px, ${z}px)`,
         opacity,
       }}
     >
       {src.endsWith(".mp4") ? (
-        <video
-          src={src}
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-label={alt}
-          className="size-full object-cover"
-        />
+        // The 2MB one, and the one furthest down the corridor — so left
+        // unmounted it is the whole of the saving. See useAwake.
+        awake ? (
+          <video
+            src={src}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="none"
+            aria-label={alt}
+            className="size-full object-cover"
+          />
+        ) : null
       ) : (
         <Image
           src={src}
@@ -550,6 +755,7 @@ export function GalleryFlythrough({
   progress,
   leadIn = LEAD_IN,
   runOut = RUN_OUT,
+  clearAt,
   className,
 }: {
   photos: string[];
@@ -569,11 +775,87 @@ export function GalleryFlythrough({
   /** How much of the corridor is cut off each end of the flight. */
   leadIn?: number;
   runOut?: number;
+  /**
+   * Park the framing at this point in the flight and clear the middle of it.
+   *
+   * For a still only. Given a progress value it works out where the camera is
+   * standing, projects every card onto the lens plane at that one depth, and
+   * drops the few that land large and central — see PARKED_CLEAR_RADIUS. Pass
+   * it the same value the progress MotionValue is pinned to; hand it a moving
+   * camera and it clears the frame for one instant of the flight and thins the
+   * field for all the rest.
+   */
+  clearAt?: number;
   className?: string;
 }) {
   const reduce = useReducedMotion();
+  // Only the parked pass reads this; the flight ignores it. See `covering`.
+  const frame = useFrame();
+
+  /* The flight is settled from the first render — its field is the same on the
+     server as on the client, because nothing in it depends on the window. The
+     parked pass has to wait to be told how big the frame is. */
+  const settled = clearAt === undefined || frame !== null;
   const { from: flightFrom, to: flightTo } = flightRange(leadIn, runOut);
   const finaleZ = -flightTo;
+
+  /* What is sitting on the copy, if the camera is parked.
+     
+     Projection is the one bit of maths the cards do not do for themselves: a
+     card's world offset is magnified by how near the lens it is, so where it
+     lands on screen is x * LENS / (LENS - depth), and its drawn size scales the
+     same way. Everything here is the same arithmetic the browser is about to
+     do with `perspective`, run once at this one depth instead of every frame at
+     all of them. */
+  const covering = useMemo(() => {
+    const out = new Set<number>();
+    if (clearAt === undefined) return out;
+
+    const camera = flightFrom + clearAt * (flightTo - flightFrom);
+
+    for (let index = 0; index < CARDS; index++) {
+      const { x, y, z, width, height } = placeAt(index);
+      const depth = camera + z;
+      // Behind the lens or still in the fog: not on screen, nothing to clear.
+      if (depth >= PASS_END || depth <= FOG_IN_START) continue;
+
+      const scale = LENS / (LENS - depth);
+      const dx = x * scale;
+      const dy = y * scale;
+
+      /* Off the side of the window, which until now nothing tested for.
+         `offstage` drops what is outside the depth window and this dropped
+         what sits on the copy, and between them they left every card that had
+         simply been scattered past the edge of the frame — mounted, lit, and
+         fetching a photograph nobody can see. It shows up as the field being
+         thinner than the number of files it asks for: measured on a 1728x1000
+         window, twenty cards lit and six of them outside the frame, so a
+         backdrop drawing thirteen distinct photographs was loading
+         seventeen.
+
+         Only in the parked case, which is what this whole pass is. On the
+         home page the camera travels the length of the corridor and a card
+         at the edge now is down the middle of the frame in a moment. */
+      if (frame) {
+        const halfW = (width * scale) / 2;
+        const halfH = (height * scale) / 2;
+        if (
+          Math.abs(dx) - halfW > frame.w / 2 + FRAME_MARGIN ||
+          Math.abs(dy) - halfH > frame.h / 2 + FRAME_MARGIN
+        ) {
+          out.add(index);
+          continue;
+        }
+      }
+
+      const drawn = Math.max(width, height) * scale;
+      if (drawn < PARKED_CLEAR_MIN_DRAWN) continue;
+
+      if (Math.hypot(dx, dy) <= PARKED_CLEAR_RADIUS) out.add(index);
+    }
+
+    return out;
+  }, [clearAt, flightFrom, flightTo, frame]);
 
   const { sourceFor, live } = useMemo(() => {
     /* Every crowded pair in the opening stretch, worst first, and the smaller
@@ -749,10 +1031,10 @@ export function GalleryFlythrough({
     return {
       sourceFor: (index: number) => clipSlots.get(index) ?? stills.get(index)!,
       live: Array.from({ length: CARDS }, (_, i) => i).filter(
-        (i) => !dropped.has(i) && !offstage.has(i),
+        (i) => !dropped.has(i) && !offstage.has(i) && !covering.has(i),
       ),
     };
-  }, [photos, clips, flightFrom, flightTo]);
+  }, [photos, clips, flightFrom, flightTo, covering]);
 
   // Opens already inside the corridor and stops exactly on the last card's
   // plane, which is what makes that one land at 1:1 and fill the screen rather
@@ -780,6 +1062,12 @@ export function GalleryFlythrough({
 
   const handlePointer = (event: React.PointerEvent<HTMLDivElement>) => {
     if (reduce) return;
+    // Mouse only. A finger dragging the page through the pin is a scroll, not
+    // a look around, and it reports pointermove the whole way — so on a phone
+    // the camera swung sideways every time you scrolled, and stayed swung:
+    // pointerleave is a mouse event and never arrives to put it back. The
+    // drift is a hover affordance and belongs with the rest of them.
+    if (event.pointerType !== "mouse") return;
     const rect = event.currentTarget.getBoundingClientRect();
     // -1 to 1 across the box, so drift is the same whatever the window size.
     pointerX.set(((event.clientX - rect.left) / rect.width - 0.5) * -2 * DRIFT);
@@ -791,8 +1079,14 @@ export function GalleryFlythrough({
     pointerY.set(0);
   };
 
+  // Only the media waits on this. Every card is mounted and positioned as
+  // before — it is the `<video>` inside a handful of them that holds off.
+  const rootRef = useRef<HTMLDivElement>(null);
+  const near = useNearViewport(rootRef);
+
   return (
     <div
+      ref={rootRef}
       className={className}
       role="img"
       aria-label={label}
@@ -816,6 +1110,8 @@ export function GalleryFlythrough({
             src={sourceFor(index)}
             index={index}
             camera={camera}
+            near={near}
+            settled={settled}
           />
         ))}
 
@@ -824,6 +1120,7 @@ export function GalleryFlythrough({
           alt={finale.alt}
           camera={camera}
           z={finaleZ}
+          near={near}
         />
       </motion.div>
     </div>

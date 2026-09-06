@@ -32,13 +32,20 @@
   /* Hairline rules — every section border and divider, and the modal frame.
      Translucent rather than a flattened solid: these sit over backdrops of
      varying opacity, so a fixed dark value would read as a patch against
-     whatever shows through rather than as a hairline. violet-200 at 10%.
-     Excludes the navbar and the CTAs, which carry their own treatments.
+     whatever shows through rather than as a hairline.
 
-     Was 5%, which held up against the hero video but disappeared against flat
-     page colour in every section below it — a rule that only reads over one
-     backdrop is not a rule. */
-  --color-rule: rgb(221 204 255 / 0.1);
+     White at 10%, which is the navbar's. That pill's ring is the most-looked-at
+     edge on the site and it was the one thing not taking this token — the
+     conic ring in `shine-border` sits at white/10 with a brighter band passing
+     over it, so 10% is its resting colour and the 55% is the beam, not the
+     edge. Everything else now matches it.
+
+     It was violet-200 at the same alpha, which is a real tint at this size —
+     enough that a rule beside the navbar's read as a slightly different line
+     rather than the same one. Neutral costs nothing and makes them one.
+
+     Excludes the CTAs, which are controls and carry their own outline. */
+  --color-rule: rgb(255 255 255 / 0.1);
 
   /* Glass panels that sit over media — the team chips. Mostly neutral, turned
      a quarter of the way toward the pale violet so they stay in the same
@@ -57,17 +64,27 @@
      deliberately not sharing it: a section rule is a line you are meant to
      read, where this one only has to stop the panel dissolving into whatever
      is behind it. At the rule's 10% it stops being an edge and starts looking
-     like a border drawn around the card. */
-  --color-glass-edge: rgb(221 204 255 / 0.05);
+     like a border drawn around the card. Neutral, like --color-rule, and for
+     the same reason: two hairlines on one screen should not be two hues. */
+  --color-glass-edge: rgb(255 255 255 / 0.05);
 
-  /* Panel ground: the page colour carrying 10% of the pale violet. Barely a
-     tint on its own, but enough to keep a panel from reading as flat black
-     next to the surrounding void. */
-  --color-panel: color-mix(
-    in srgb,
-    var(--color-violet-200) 10%,
-    var(--color-void)
-  );
+  /* Panel ground: the surface every block that has to read as *on* the page
+     rather than as the page itself sits on — the text-and-image panels, the
+     partner blocks, the format cards. One step off the void, and turned a
+     little towards violet rather than straight up the ink ramp, so a panel
+     beside flat page colour reads as lit rather than as grey.
+
+     A picked value, not a mix. It was `violet-200 at 10% over void`, which
+     lands on #1b1921 — near enough that the difference is a couple of levels
+     per channel, and not the value that was actually wanted. A ground this
+     many blocks share is worth stating outright rather than deriving and then
+     hoping the derivation keeps landing where it should.
+
+     Not on the ink ramp either, deliberately: ink-600 is #22222c and ink-700
+     #17171f, and this sits between them with more blue than both and less
+     green, which is where the violet lean comes from. It is its own thing, so
+     it gets its own name. */
+  --color-panel: #1d1b26;
 
   /* Violet — sampled from arena rigging, extended to an electric 500.
      Clears Tailwind's stock violet first so no off-brand steps survive. */
@@ -82,6 +99,19 @@
   --color-violet-300: #c0a0ff;
   --color-violet-200: #ddccff;
 
+  /* Blush — the violet taken round toward magenta and up in lightness:
+     violet-200 is hsl(260 100% 90%), this is hsl(290 100% 83%). Not a step on
+     the violet ramp, which is why it is not numbered into it — the hue is 30
+     degrees off, and a `violet-100` sitting there would be read as the ramp
+     continuing rather than as leaving it.
+
+     It exists for the outline CTA, whose gradient wanted to be whiter and
+     pinker than the eyebrow's. It is not as pale as it looks written down: a
+     ramp is only ever seen 1px wide on that button, and everything paler than
+     this came out white against the void. Anything else reaching for a light
+     violet should still take violet-200. */
+  --color-blush: #f0a8ff;
+
   /* -- Type -------------------------------------------------------------- *
      Modular scale. Every step is derived from --text-base and --text-ratio,
      so swapping the ratio below rescales the whole site in one edit:
@@ -89,7 +119,11 @@
        1.250  Major Third   (current)
        1.333  Perfect Fourth                                                */
   --text-ratio: 1.25;
-  --text-base: 1rem; /* 16px */
+  /* 15px. The step the whole site is derived from, so this is the one number
+     that moves everything: 12 at sm, 18.75 at lg, and a display 7xl that lands
+     at 57 rather than 61. Held in rem rather than px so a reader who has
+     turned their browser's text up still gets the scale, moved. */
+  --text-base: 0.9375rem;
 
   /* Heading leading, 100%.
      --heading-line-gap is what that leading works out to as a *gap*, for
@@ -194,6 +228,33 @@
 /* The site is dark-first, so the dark values are the defaults on :root
    rather than living behind a .dark class. */
 :root {
+  /* The blush ramp as a bare stop list, so a gradient can take it at whatever
+     angle it needs and the ring around the outline CTA and the type inside it
+     are painted from one declaration. White in the middle rather than a third
+     colour: it is the lightest thing available and it is what makes the ramp
+     read as a highlight travelling over the blush rather than as two tints. */
+  --chrome-blush: var(--color-blush) 24%, #ffffff 47%, var(--color-blush) 76%;
+
+  /* The travelling ring's stops, as a bare list — the same shape as
+     --chrome-blush above, and for the same reason.
+
+     The bright stop is held to a narrow band rather than ramped across the
+     whole sweep, so most of the ring sits at the base value and the highlight
+     reads as a beam passing over it. Shared so the pill in the header and the
+     banner in the hero cannot drift to two slightly different silvers.
+
+     Stops only, never the whole `conic-gradient(from …)`. A custom property
+     inherits its *substituted* value, so a gradient declared here would have
+     resolved `var(--shine-angle)` once, against this element, and every user of
+     it would have inherited a beam frozen at the root's 0deg. That is exactly
+     what happened: it parked the navbar's ring. Each utility builds its own
+     conic and writes `from var(--shine-angle)` itself, so the angle resolves on
+     the element the animation is actually running on. */
+  --shine-ring-stops:
+    rgb(255 255 255 / 0.1) 0%, rgb(255 255 255 / 0.1) 40%,
+    rgb(255 255 255 / 0.55) 50%, rgb(255 255 255 / 0.1) 60%,
+    rgb(255 255 255 / 0.1) 100%;
+
   --background: var(--color-void);
   --foreground: #ffffff;
   --card: var(--color-ink-900);
@@ -211,7 +272,13 @@
   --destructive: #ef4444;
   --border: var(--color-ink-700);
   --input: var(--color-ink-600);
-  --ring: var(--color-violet-500);
+  /* The focus ring, at the eyebrow's violet rather than the fill's. It is
+     drawn at half alpha on a near-black page, and violet-500 is a
+     saturated mid-tone — halved against the void it goes muddy and dark
+     instead of reading as a ring. The pale end of the ramp is the end
+     that survives being made translucent, and it is already what the
+     eyebrow and the violet outline button are drawn in. */
+  --ring: var(--color-violet-300);
   --radius: 0.5rem;
 }
 
@@ -306,7 +373,17 @@
   );
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 8px rgb(255 255 255 / var(--chrome-glow));
+  /* 0.1em, not 8px. The bloom has to be a share of the type or it
+     is a different effect at every step of the scale: 8px against the 76px of
+     a `text-6xl` heading is a tenth of its height and reads as a bloom, and
+     the same 8px against a 16px one is half its height and reads as fog. The
+     small steps were the ones shining, and they were shining because the glow
+     never got the memo that the type had shrunk.
+
+     A tenth of an em is what 8px already was at the largest heading on the
+     site, so the top of the scale is unchanged and everything below it comes
+     down in proportion. */
+  text-shadow: 0 0 0.1em rgb(255 255 255 / var(--chrome-glow));
 
   /* True inner shadow: CSS text-shadow has no inset, so the glyph alpha is
      offset, blurred and punched out of itself in an SVG filter. Matches the
@@ -376,7 +453,17 @@
      words are animating from grey to white carries a glow that travels with
      them — a fixed white one leaves grey type sitting in a white halo. At
      full white the result is identical to the 40% it replaces. */
-  text-shadow: 0 0 8px color-mix(in srgb, currentcolor 40%, transparent);
+  /* 0.1em, not 8px. The bloom has to be a share of the type or it
+     is a different effect at every step of the scale: 8px against the 76px of
+     a `text-6xl` heading is a tenth of its height and reads as a bloom, and
+     the same 8px against a 16px one is half its height and reads as fog. The
+     small steps were the ones shining, and they were shining because the glow
+     never got the memo that the type had shrunk.
+
+     A tenth of an em is what 8px already was at the largest heading on the
+     site, so the top of the scale is unchanged and everything below it comes
+     down in proportion. */
+  text-shadow: 0 0 0.1em color-mix(in srgb, currentcolor 40%, transparent);
   filter: url(#text-inner-shadow);
 
   @media (forced-colors: active) {
@@ -451,6 +538,84 @@
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Heading registers
+
+   Two voices, one ladder. `display-N` is the poster: Eurostile, black, italic,
+   uppercase, and the relief that lights the h1 and h2. `plain-N` is the same
+   size with the volume off: Google Sans Flex at medium, upright, no glow.
+   Anything that has to be read rather than announced takes the plain one.
+
+   Both run the same six steps and the same breakpoints, so a heading can be
+   moved between the two registers without the layout underneath it shifting —
+   that is the whole point of pairing them.
+
+   Leading is set on every step rather than left to the scale. The scale gives
+   the display steps a leading of 1 and the body steps 1.4-1.55, which is right
+   for what each was built for and wrong for a heading that borrows the other
+   one's size: `display-6` off --text-base would come out at 1.55, and
+   `plain-1` off --text-6xl at 1. Set here, a step's leading follows its
+   register instead of its size.
+
+   Not named `text-*`, deliberately. tailwind-merge files every unfamiliar
+   `text-*` class under text-colour and keeps only the last, so `display-2`
+   under that prefix would silently eat a `text-relief` or a `text-chrome`
+   passed through `cn` — see the note in CLAUDE.md.
+--------------------------------------------------------------------------- */
+@utility display-1 {
+  @apply font-heading text-4xl/[1] font-black tracking-[-0.01em] uppercase italic md:text-5xl/[1] xl:text-6xl/[1];
+  @apply text-relief;
+}
+
+@utility display-2 {
+  @apply font-heading text-3xl/[1] font-black tracking-[-0.01em] uppercase italic md:text-4xl/[1] xl:text-5xl/[1];
+  @apply text-relief;
+}
+
+@utility display-3 {
+  @apply font-heading text-2xl/[1] font-black tracking-[-0.01em] uppercase italic md:text-3xl/[1] xl:text-4xl/[1];
+  @apply text-relief;
+}
+
+@utility display-4 {
+  @apply font-heading text-xl/[1.1] font-black uppercase italic md:text-2xl/[1.1] xl:text-3xl/[1.1];
+  @apply text-relief;
+}
+
+@utility display-5 {
+  @apply font-heading text-lg/[1.1] font-black uppercase italic md:text-xl/[1.1];
+  @apply text-relief;
+}
+
+@utility display-6 {
+  @apply font-heading text-base/[1.1] font-black uppercase italic md:text-lg/[1.1];
+  @apply text-relief;
+}
+
+@utility plain-1 {
+  @apply font-body text-4xl/[1.15] font-medium tracking-[-0.01em] not-italic md:text-5xl/[1.15] xl:text-6xl/[1.15];
+}
+
+@utility plain-2 {
+  @apply font-body text-3xl/[1.15] font-medium tracking-[-0.01em] not-italic md:text-4xl/[1.15] xl:text-5xl/[1.15];
+}
+
+@utility plain-3 {
+  @apply font-body text-2xl/[1.15] font-medium tracking-[-0.01em] not-italic md:text-3xl/[1.15] xl:text-4xl/[1.15];
+}
+
+@utility plain-4 {
+  @apply font-body text-xl/[1.25] font-medium not-italic md:text-2xl/[1.25] xl:text-3xl/[1.25];
+}
+
+@utility plain-5 {
+  @apply font-body text-lg/[1.25] font-medium not-italic md:text-xl/[1.25];
+}
+
+@utility plain-6 {
+  @apply font-body text-base/[1.25] font-medium not-italic md:text-lg/[1.25];
+}
+
 /**
  * A highlight travelling around an element's border.
  *
@@ -475,6 +640,54 @@
   }
 }
 
+/**
+ * The blush counterpart to text-chrome-violet, for the outline CTA's label.
+ * Same construction, same angle; only the ramp differs — see --chrome-blush.
+ */
+@utility text-chrome-blush {
+  background-image: linear-gradient(174deg, var(--chrome-blush));
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 2px rgb(240 168 255 / 0.35);
+
+  @media (forced-colors: active) {
+    background-image: none;
+    color: CanvasText;
+    text-shadow: none;
+  }
+}
+
+/**
+ * A 1px ring painted from a gradient rather than from a flat border colour.
+ *
+ * Same trick as shine-border, standing still: the gradient fills the box and a
+ * two-layer mask — one clipped to the content box, one to the border box,
+ * composited to exclude — punches the interior out, leaving only the edge.
+ * `border-image` would do this in one line and then break on every corner
+ * treatment the component offers, because it does not follow a radius.
+ *
+ * The gradient arrives on --ring-image so the ring is one mechanism rather
+ * than one per colour. It is drawn as a pseudo element, so anything using it
+ * needs its own positioning context and, if it is a shape, its own clip.
+ */
+@utility chrome-ring {
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    pointer-events: none;
+    background: var(--ring-image);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+  }
+}
+
 @utility shine-border {
   position: relative;
 
@@ -484,16 +697,12 @@
     inset: 0;
     padding: 1px;
     pointer-events: none;
-    /* The bright stop is held to a narrow band rather than ramped across the
-       whole sweep, so most of the ring sits at the base value and the highlight
-       reads as a beam passing over it. */
+    /* The conic is built here rather than taken whole from a variable, so
+       `from var(--shine-angle)` resolves against this pseudo element — the one
+       the animation below is running on. See the note on --shine-ring-stops. */
     background: conic-gradient(
       from var(--shine-angle),
-      rgb(255 255 255 / 0.1) 0%,
-      rgb(255 255 255 / 0.1) 40%,
-      rgb(255 255 255 / 0.55) 50%,
-      rgb(255 255 255 / 0.1) 60%,
-      rgb(255 255 255 / 0.1) 100%
+      var(--shine-ring-stops)
     );
     mask:
       linear-gradient(#000 0 0) content-box,
@@ -624,6 +833,315 @@
     inset 0.25px 0.25px 0.5px rgb(0 0 0 / 0.2);
 }
 
+/**
+ * One corner chamfered off the top-right, on a 45 degree cut.
+ *
+ * clip-path rather than `corner-shape: bevel`. That property is months old and
+ * this cut is not a progressive enhancement: a card whose photograph is cut to
+ * the angle, degrading to a square panel, would read as a mistake rather than
+ * as a plainer version of the same idea. The clip is supported everywhere and
+ * costs nothing.
+ */
+@utility corner-notch {
+  --corner-notch: calc(var(--spacing) * 8);
+
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--corner-notch)) 0,
+    100% var(--corner-notch),
+    100% 100%,
+    0 100%
+  );
+}
+
+/**
+ * The same cut on the opposite pair: top-right and bottom-left.
+ *
+ * A banner is wide and read across, and one cut corner on a box that long
+ * reads as a clipped corner rather than as a shape. Cutting the diagonal
+ * opposite makes it deliberate — the eye gets the same angle twice and stops
+ * asking what happened to the corner.
+ *
+ * Shares `--corner-notch` with the single-corner version on purpose: they are
+ * the same cut, and a banner beside a card should be cut at the same depth.
+ */
+@utility corner-notch-pair {
+  --corner-notch: calc(var(--spacing) * 8);
+
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--corner-notch)) 0,
+    100% var(--corner-notch),
+    100% 100%,
+    var(--corner-notch) 100%,
+    0 calc(100% - var(--corner-notch))
+  );
+}
+
+/**
+ * The travelling ring as a plain fill: the gradient, the beam and the clock,
+ * with no opinion about what shape is kept.
+ *
+ * `shine-border` masks its own gradient down to a rectangular edge, which is
+ * the whole of that utility. This one leaves the shaping to whatever it is
+ * composed with, so a chamfered box can take the same beam — pair it with
+ * `notch-shine-ring`, which clips it to an outline that follows the cut
+ * corners.
+ */
+@utility shine-fill {
+  /* Built here, not taken whole from a variable — see --shine-ring-stops. */
+  background: conic-gradient(from var(--shine-angle), var(--shine-ring-stops));
+  animation: shine-rotate var(--shine-duration, 6s) linear infinite;
+
+  /* Holds the highlight still rather than looping it, as on shine-border. */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/**
+ * A 1px outline that follows a chamfered box — the ring itself, as a shape.
+ *
+ * Put this on a layer over the panel and give it `shine-fill`: the gradient
+ * fills the layer and the clip keeps only the edge, so the beam travels around
+ * the cut corners the way it travels around the pill in the header.
+ *
+ * It is one polygon, not two boxes. `clip-path` takes a single contour, so the
+ * hole is cut by walking the outer edge clockwise, stepping inside along a
+ * zero-width slit, walking the inner edge anticlockwise, and stepping back
+ * out. Opposite winding is what makes the middle fall outside the shape under
+ * the nonzero fill rule, and the slit has no width to see.
+ *
+ * The inner corner is `--corner-notch` less 0.586px, not less 1px: two
+ * parallel 45 degree cuts sit 1/√2 apart in notch depth for every 1px of
+ * perpendicular gap, so holding the diagonals to the same 1px as the straight
+ * edges means taking 2 − √2 off the depth. Match the depths instead and the
+ * outline is visibly fatter at the two cut corners than everywhere else.
+ *
+ * Why not `shine-border`'s mask: that one excludes a content-box rectangle
+ * from a border-box rectangle, and a rectangle has no diagonals — on a
+ * chamfered box the two cut corners come out bare, which is the one place the
+ * edge is most conspicuous by its absence.
+ */
+@utility notch-shine-ring {
+  --notch-inner: calc(var(--corner-notch) - 0.586px);
+
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--corner-notch)) 0,
+    100% var(--corner-notch),
+    100% 100%,
+    var(--corner-notch) 100%,
+    0 calc(100% - var(--corner-notch)),
+    0 0,
+    1px 1px,
+    1px calc(100% - 1px - var(--notch-inner)),
+    calc(1px + var(--notch-inner)) calc(100% - 1px),
+    calc(100% - 1px) calc(100% - 1px),
+    calc(100% - 1px) calc(1px + var(--notch-inner)),
+    calc(100% - 1px - var(--notch-inner)) 1px,
+    1px 1px,
+    0 0
+  );
+}
+
+/**
+ * The slow swell under the hold page's purple dome.
+ *
+ * Scale and opacity only, and both barely. The point is that the page is not
+ * a still image, not that anything is happening — a dome that visibly pulses
+ * reads as a loading state on a page whose whole message is "wait".
+ *
+ * alternate rather than a full cycle, so the ends of the run are the extremes
+ * and there is no seam where it jumps back to the start. Nine seconds is long
+ * enough that the eye cannot follow it and has to notice it instead.
+ */
+@keyframes glare-breathe {
+  from {
+    transform: scale(1);
+    opacity: 0.65;
+  }
+  to {
+    transform: scale(1.08);
+    opacity: 0.9;
+  }
+}
+
+@utility glare-breathe {
+  animation: glare-breathe 9s ease-in-out infinite alternate;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/**
+ * The bloom, breathing.
+ *
+ * `background-image` is not an interpolable property, so — exactly as with
+ * `--chrome-angle` above — the parts that move are held in registered custom
+ * properties instead. @property gives them a type, and a typed property is
+ * what the browser can actually tween; without the registration this is a
+ * string swap and nothing animates.
+ *
+ * Five clocks, on three kinds of movement.
+ *
+ * Geometry: the core sinks and rises, it slides across, and the left lobe
+ * swells on a clock of its own. The right lobe never moves — it is the pin the
+ * other two swing against, and with all three going the horizon stops reading
+ * as a light and starts reading as a wobble.
+ *
+ * Size: the core and the left lobe take a common scale, so the light draws in
+ * and opens back out as one thing rather than as parts. The right lobe sits
+ * that out too, which is what keeps the swell off-centre.
+ *
+ * Opacity: this was deliberately left out at first, on the grounds that fading
+ * a layer up and down reads as a dimmer where moving a centre reads as light
+ * with somewhere to be. That is true of opacity *alone*. Under a size clock it
+ * is the other half of the same gesture — a light that pulls in without going
+ * down reads as a lens closing, not as a breath — so it went in when the swell
+ * did, and the two are deliberately not on the same period.
+ *
+ * Five periods, none a multiple of another: 4, 5, 6, 7 and 9 seconds come back
+ * into phase once every twenty-one minutes, so the thing never visibly loops.
+ * That is the whole reason for five animations rather than one — a single
+ * `alternate` at any duration is a pulse you can count along with. Each runs
+ * `alternate`, so the felt period is twice the number written: the fastest is
+ * an eight second breath.
+ *
+ * Every initial value is the *brightest* end of its range, and every keyframe
+ * moves away from it: dimmer, smaller, deeper, and further from where the
+ * frame is widest. So the resting state is the ceiling — this only ever takes
+ * prominence away, never adds it, and five clocks out of phase means it is
+ * essentially never at full on all of them at once.
+ */
+@property --bloom-sink {
+  syntax: "<percentage>";
+  initial-value: 124%;
+  inherits: false;
+}
+
+@property --bloom-drift {
+  syntax: "<percentage>";
+  initial-value: 44%;
+  inherits: false;
+}
+
+@property --bloom-lobe {
+  syntax: "<percentage>";
+  initial-value: 116%;
+  inherits: false;
+}
+
+/* A multiplier rather than a size, so the two layers that take it keep their
+   own proportions — the core is wider than it is tall and the lobe is taller
+   than it is wide, and a shared width would flatten both towards each other. */
+@property --bloom-spread {
+  syntax: "<number>";
+  initial-value: 1;
+  inherits: false;
+}
+
+/* Down, across, and down again. Twelve points of sink is about ninety pixels
+   on a footer this tall — the horizon visibly settling and lifting, which is
+   what was asked for, and still well short of the light going out. */
+@keyframes bloom-sink {
+  to {
+    --bloom-sink: 136%;
+  }
+}
+
+@keyframes bloom-drift {
+  to {
+    --bloom-drift: 58%;
+  }
+}
+
+@keyframes bloom-lobe {
+  to {
+    --bloom-lobe: 128%;
+  }
+}
+
+/* A fifth off the radius at the bottom of the breath. Enough to see the light
+   draw in; short of the point where the ramp's dark stops reach the bottom
+   edge and the horizon detaches from it. */
+@keyframes bloom-spread {
+  to {
+    --bloom-spread: 0.8;
+  }
+}
+
+/* The whole layer, the wash included. It has no opacity of its own at rest, so
+   1 is implied at the from end. */
+@keyframes bloom-veil {
+  to {
+    opacity: 0.6;
+  }
+}
+
+@utility bloom-alive {
+  animation:
+    bloom-veil 4s ease-in-out infinite alternate,
+    bloom-spread 5s ease-in-out infinite alternate,
+    bloom-sink 6s ease-in-out infinite alternate,
+    bloom-lobe 7s ease-in-out infinite alternate,
+    bloom-drift 9s ease-in-out infinite alternate;
+
+  /* Holds at the resting state, which is the brightest one — a light that
+     breathes is exactly the kind of motion this setting is for. */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
+/**
+ * The footer's glow: page colour at the top of the panel to violet at the
+ * bottom, breathing.
+ *
+ * The ramp is one hue at two alphas rather than two colours — it starts at
+ * `transparent` and ends at violet-500, so nothing is mixing towards a third
+ * colour on the way down and the top of it is simply whatever the page is.
+ *
+ * The first stop sits at 25%, not 0: the top quarter of the panel is page
+ * colour flat, and the violet only starts climbing below it. Run from the very
+ * top the light had nowhere to build from and the whole panel read as tinted
+ * rather than as lit from underneath.
+ *
+ * The breath is the *element's* opacity rather than a stop inside the
+ * gradient, which is what keeps it cheap: a gradient is not an interpolable
+ * property, so animating a stop means holding it in a registered custom
+ * property and repainting the whole layer every frame — the way --bloom-sink
+ * has to. Opacity is composited, so this costs nothing per frame and the two
+ * numbers in the keyframes are the two numbers that were asked for: the
+ * gradient bottoms out at full violet-500 and the opacity on top of it is the
+ * strength, 15% to 40%.
+ */
+@keyframes footer-glow {
+  from {
+    opacity: 0.15;
+  }
+  to {
+    opacity: 0.4;
+  }
+}
+
+@utility footer-glow {
+  background-image: linear-gradient(
+    to bottom,
+    transparent 25%,
+    var(--color-violet-500) 100%
+  );
+  opacity: 0.15;
+  animation: footer-glow 9s ease-in-out infinite alternate;
+
+  /* Parks at the dim end, which is the resting value — a light that breathes
+     is exactly the kind of motion this setting is for. */
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+}
+
 @keyframes sheen {
   from {
     background-position: 200% 0;
@@ -669,31 +1187,6 @@
   --heading-line-gap: calc(
     (var(--heading-leading) - var(--heading-cap-height)) * 0.7em
   );
-}
-
-/**
- * The chamfered top-right corner the CTAs wear — a corner cut off rather than
- * rounded.
- *
- * corner-shape, not a clip-path. A clip cuts the box after its shadow is
- * drawn, so the glow would be sliced off flat along the diagonal and the
- * border would stop dead where the cut starts. corner-shape changes what the
- * corner *is*: the border follows it, the fill follows it, and the glow is
- * cast from the bevelled edge like any other part of the outline.
- *
- * Gated on support so an engine without it keeps the square corner. The
- * ungated fallback is a single rounded corner, which reads as a mistake
- * rather than as a plainer version of the same idea.
- */
-@utility corner-cut {
-  @supports (corner-shape: bevel) {
-    /* Three grid steps, which is roughly a quarter of the control height —
-       enough to read as deliberate at a glance, short of eating into the
-       label's padding. A shorter control overrides it to keep that ratio;
-       held fixed, the same 12px reads as a much deeper bite out of 36px. */
-    border-top-right-radius: var(--corner-cut, calc(var(--spacing) * 3));
-    corner-shape: bevel;
-  }
 }
 
 /**
@@ -746,7 +1239,18 @@
      inside it is. Both halves are restricted to links and buttons on purpose:
      :active lands on whatever the pointer went down on, including plain
      wrappers, so an unqualified selector would depress a bar from a press on
-     its own dead space. */
+     its own dead space.
+
+     `data-pressed` is the same state reached from pointer events instead, and
+     it is what makes any of this visible on a phone. :active is a mouse state
+     that touch only approximates: iOS Safari refuses it outright on a touch
+     unless the element happens to carry a touch listener, and Chrome holds it
+     back until it knows the finger is not about to scroll — which for a real
+     tap is until after the finger has gone. Either way the 90ms press has
+     nothing to play on. TapPress sets the attribute on pointerdown and clears
+     it on up, cancel or 10px of travel, so the press lands on touchdown and a
+     scroll that starts on a link never flashes one. See tap-press.tsx. */
+  &[data-pressed],
   &:is(a, button):active,
   &:has(:is(a, button):active) {
     /* Going down has to feel instant — the finger is still moving, so any
@@ -761,9 +1265,34 @@
 
   /* The travel is decoration; the dim is the actual affordance, so it stays. */
   @media (prefers-reduced-motion: reduce) {
+    &[data-pressed],
     &:is(a, button):active,
     &:has(:is(a, button):active) {
       transform: none;
+    }
+  }
+}
+
+/**
+ * A list where hovering one item dims the rest — the header's rail, the menu
+ * card, both social rows, every column in the footer.
+ *
+ * It is a hover affordance and nothing else, so it is fenced behind
+ * `(hover: hover)`. On a phone `:hover` is not a state a finger enters and
+ * leaves, it is one a tap *sets* and the next tap somewhere else clears: tap
+ * Athletes and every other link in the list stays greyed out behind you, on a
+ * page you have already left. The fence is what `hover:` gives Tailwind's own
+ * variants for free and what an arbitrary `[&:has(a:hover)]` variant does not.
+ *
+ * Two branches because the header's rail holds a button as well as links and
+ * marks all three with `data-nav-item`; everywhere else the items are anchors
+ * and marking them would be nine attributes for the same rule.
+ */
+@utility dim-rest {
+  @media (hover: hover) {
+    &:has(a:hover) a:not(:hover),
+    &:has([data-nav-item]:hover) [data-nav-item]:not(:hover) {
+      opacity: 0.4;
     }
   }
 }
@@ -789,6 +1318,11 @@
 
   body {
     @apply bg-void font-body text-white;
+    /* Body copy is the base step too. Without this the default inherits the
+       root's 16px and only the `text-*` utilities move, which would put
+       unstyled text a step off the scale it is meant to be on. Size only —
+       leading stays with whoever sets it. */
+    font-size: var(--text-base);
   }
 
   img,

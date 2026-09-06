@@ -1,10 +1,9 @@
 "use client";
 
 import { motion, useScroll, useTransform } from "motion/react";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 import { Container } from "@/components/layout/container";
-import { VideoModal } from "@/components/media/video-modal";
 import {
   GalleryFlythrough,
   LEAD_IN,
@@ -35,9 +34,6 @@ const finale = {
   alt: "Closing footage from the night at K.B. Hallen",
 };
 
-/** The full recording, which both this and the hero open. */
-const RECORDING_YOUTUBE_ID = "VKWcRp_3Mgc";
-
 /** The night in three lines, lit one at a time along the foot of the screen. */
 const FACTS: ShowFact[] = [
   { label: "A World Champion", detail: "and two European at stake." },
@@ -58,7 +54,6 @@ function ramp(v: number, from: number, to: number) {
 
 export function PreviousShow() {
   const ref = useRef<HTMLDivElement>(null);
-  const [playerOpen, setPlayerOpen] = useState(false);
 
   /* The section's height comes off the trim rather than being written down
      beside it. Change one without the other and the camera covers a different
@@ -105,9 +100,17 @@ export function PreviousShow() {
     <section
       ref={ref}
       className="relative"
-      style={{ height: `${(screens * 100).toFixed(2)}vh` }}
+      /* svh on both halves of the pin, and they have to be the same unit. The
+         track was `vh` — which on a phone is the *large* viewport, the one you
+         get with the URL bar hidden — against a child on `dvh`, which shrinks
+         as the bar comes back. So the sticky screen and the distance it has to
+         travel through moved independently every time the chrome collapsed,
+         and the camera covered a different length of corridor per pixel
+         scrolled depending on which way you had last scrolled. svh is the one
+         that never moves. */
+      style={{ height: `${(screens * 100).toFixed(2)}svh` }}
     >
-      <div className="bg-void sticky top-0 h-dvh overflow-clip">
+      <div className="bg-void sticky top-0 h-svh overflow-clip">
         <GalleryFlythrough
           photos={photos}
           clips={clips}
@@ -182,7 +185,26 @@ export function PreviousShow() {
             <LineRise
               as="h2"
               text="Rewatch the grand opening in K.B. Hallen."
-              className="text-relief mt-6 max-w-[16ch] text-3xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-4xl xl:text-5xl"
+              /* text-xl at the base step only. Every heading on the site is a step down at `md` and
+                above and was level with the hero below it — measured on a 375
+                window: the hero's largest line 29.3px, this one 29.3, and
+                Previous show's 36.6, so the page's h1 was the *smallest* of
+                the three. The hero cannot come up to meet them: "A new fight
+                format." is 299px at text-2xl against a 343px container and
+                374 at text-3xl, so it is already at the largest step that
+                sets on one line. So the sections come down instead.
+
+                  The measure comes off with it below md, and that is what
+                  actually settles the break. 16ch is 240px at this step and
+                  the heading is centred in a column that shrinks to fit, so
+                  the box came out 217 wide and still set as "Rewatch the /
+                  grand opening in / K.B. Hallen." — a first line ending on a
+                  determiner, which was the size's fault only in part. Given
+                  the container's own 343 it is "Rewatch the grand / opening
+                  in K.B. Hallen.", 241 and 275. The measure stays from md,
+                  where the type is large enough for 16ch to be the wider
+                  constraint anyway. */
+              className="text-relief mt-6 max-w-[16ch] text-xl font-black tracking-[-0.01em] uppercase italic max-md:max-w-none md:mt-8 md:text-4xl xl:text-5xl"
             />
           </div>
         </Container>
@@ -192,9 +214,13 @@ export function PreviousShow() {
             heading on one screen. Outside the Container: that one is
             pointer-transparent so the drift answers across it, and this has a
             button in it. */}
+        {/* To the archive, not to a player over this page. The bar used to
+            open the main event on top of the flight you were still scrolling
+            through, which answered "rewatch KOMBA 1.0" with one fight of the
+            ten. /watch is the whole card. */}
         <ShowBar
           action="Rewatch KOMBA 1.0"
-          onAction={() => setPlayerOpen(true)}
+          href="/watch"
           facts={FACTS}
           // The same value that drives the camera, so the rule along the top
           // of the bar is exactly how far down the corridor you are.
@@ -202,13 +228,6 @@ export function PreviousShow() {
           className="absolute inset-x-0 bottom-0"
         />
       </div>
-
-      <VideoModal
-        youtubeId={RECORDING_YOUTUBE_ID}
-        open={playerOpen}
-        onClose={() => setPlayerOpen(false)}
-        title="KOMBA Fight Club — the grand opening at K.B. Hallen"
-      />
     </section>
   );
 }

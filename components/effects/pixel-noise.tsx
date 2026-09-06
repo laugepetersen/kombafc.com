@@ -79,7 +79,7 @@ export function PixelNoise({
     let cellOpacity = new Float32Array(0);
     let cellColor = new Uint8Array(0);
     let frame = 0;
-    let visible = false;
+    let onScreen = false;
     let lastDraw = 0;
 
     const roll = (i: number) => {
@@ -127,8 +127,7 @@ export function PixelNoise({
 
     const tick = (now: number) => {
       frame = requestAnimationFrame(tick);
-      if (!visible || !enabledRef.current || now - lastDraw < 1000 / fps)
-        return;
+      if (!enabledRef.current || now - lastDraw < 1000 / fps) return;
       lastDraw = now;
 
       const rolls = Math.round(cellOpacity.length * churn);
@@ -138,18 +137,43 @@ export function PixelNoise({
       draw();
     };
 
+    /**
+     * The loop is started and stopped rather than left running and skipped.
+     *
+     * It used to re-arm at the top of `tick` and then early-return, so a field
+     * that was off screen or in a hidden tab still woke the main thread sixty
+     * times a second to decide against doing anything — and there is one of
+     * these per CTA as well as the footer's, so a page carries several. Off
+     * screen it now costs nothing at all.
+     */
+    const sync = () => {
+      const run = onScreen && !document.hidden && !reduceMotion;
+
+      if (run && !frame) {
+        // Fresh clock. Carrying the old one over means the first frame back
+        // is always past its interval, so the field jumps a beat on return.
+        lastDraw = 0;
+        frame = requestAnimationFrame(tick);
+      } else if (!run && frame) {
+        cancelAnimationFrame(frame);
+        frame = 0;
+      }
+    };
+
     layout();
     draw();
 
     // Nothing is spent while the field is scrolled past or the tab is hidden.
     const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting && !document.hidden;
+      onScreen = entry.isIntersecting;
+      sync();
     });
     observer.observe(canvas);
 
-    const onVisibility = () => {
-      visible = !document.hidden && visible;
-    };
+    // Both directions. This read `visible = !document.hidden && visible`,
+    // which is a one-way latch: hide the tab with the footer on screen, come
+    // back, and the field stayed dead until it was scrolled off and on again.
+    const onVisibility = sync;
     document.addEventListener("visibilitychange", onVisibility);
 
     const resizeObserver = new ResizeObserver(() => {
@@ -157,8 +181,6 @@ export function PixelNoise({
       draw();
     });
     resizeObserver.observe(canvas);
-
-    if (!reduceMotion) frame = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(frame);

@@ -98,10 +98,7 @@ function Ramp({ tokens, label }: { tokens: string[][]; label: string }) {
       </div>
       <div className="mt-2 flex">
         {tokens.map(([name]) => (
-          <code
-            key={name}
-            className="text-ink-400 flex-1 font-mono text-[10px]"
-          >
+          <code key={name} className="text-ink-400 flex-1 font-mono text-xs">
             {name}
           </code>
         ))}
@@ -177,26 +174,53 @@ export default function StyleguidePage() {
       </Block>
 
       <Block title="Calls to action">
+        {/* The four, filled above outlined and violet before white, so the
+            grid reads as the two axes it is rather than as a row of options. */}
         <div className="flex flex-wrap items-center gap-4">
           <Button href="#">Become Partner</Button>
-          <Button href="#" variant="secondary">
-            About Us
+          <Button href="#" variant="fill-white">
+            Become Partner
           </Button>
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-4">
+          <Button href="#" variant="outline-violet">
+            About Us
+          </Button>
+          <Button href="#" variant="outline-white">
+            About Us
+          </Button>
+        </div>
+        <div className="mt-8 flex flex-wrap items-center gap-4">
           <Button href="#" size="sm">
             Become Partner
           </Button>
-          <Button href="#" variant="secondary" size="sm">
+          <Button href="#" variant="fill-white" size="sm">
+            Become Partner
+          </Button>
+          <Button href="#" variant="outline-violet" size="sm">
+            About Us
+          </Button>
+          <Button href="#" variant="outline-white" size="sm">
             About Us
           </Button>
         </div>
         <Note>
-          Primary is filled violet; secondary is a white outline carrying no
-          fill at any state, its label on text-chrome for the sheen. Both press
-          on tap and wear a chamfered top-right corner, cut with corner-shape
-          so the border and the glow follow it rather than being clipped off.
-          Two sizes: 44px with base type, 36px with the step below it.
+          Four, on two axes — filled or outlined, violet or white.
+          <code className="text-violet-300"> fill-violet</code> is the primary
+          ask and the default, with a dot field that comes up under the pointer;
+          <code className="text-violet-300"> fill-white</code> is the same
+          weight off the other end of the palette, its label on void. Neither
+          outline carries a fill at any state:
+          <code className="text-violet-300"> outline-violet</code> is drawn as a
+          1px gradient ring rather than a flat border, off the same
+          --chrome-blush its label is painted with — blush at the ends, white
+          through the middle, so the edge and the type are one ramp seen twice;
+          <code className="text-violet-300"> outline-white</code> takes a plain
+          border, its label on text-chrome for the sheen. All four press on tap.
+          Two sizes: 44px with base type, 36px with the step below it. One
+          shape, square, and no way to ask for another — the shape a button
+          takes is a site-wide decision, and a prop for it is that decision
+          taken again in every call site.
         </Note>
       </Block>
 
@@ -392,7 +416,7 @@ export default function StyleguidePage() {
           </p>
           <div className="flex flex-wrap gap-4">
             <Button href="#">Become Partner</Button>
-            <Button href="#" variant="secondary">
+            <Button href="#" variant="outline-white">
               About Us
             </Button>
           </div>

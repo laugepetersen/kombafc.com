@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "sync:youtube": "node scripts/sync-youtube.mjs"
   },
   "dependencies": {
     "@mux/mux-background-video": "^0.2.3",
@@ -33,8 +34,10 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
+    "flag-icons": "^7.5.0",
     "prettier": "^3.9.6",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "simple-icons": "^16.30.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

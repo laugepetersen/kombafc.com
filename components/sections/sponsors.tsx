@@ -28,16 +28,17 @@ const sponsors = [
 
 export function Sponsors() {
   return (
-    // Closes the run of frames explicitly. SectionFrame leaves its bottom rule
-    // to the next frame's top and only closes itself when it is the last child
-    // — which this stopped being once an unframed section was added below it,
-    // leaving the verticals running into nothing.
-    <SectionFrame outerClassName="border-b">
+    <SectionFrame>
       {/* Items stretch rather than centre: the marquee has to run the full
           width, and each staggered child sits in a wrapper of its own. The
           copy centres itself instead. */}
       <StaggerReveal className="flex flex-col gap-10 py-16 md:py-20">
-        <p className="text-ink-200 mx-auto max-w-72 px-6 text-center text-base leading-[1.4] tracking-[0.01em]">
+        {/* No px of its own. The Container above already holds the gutter, and
+            24px more on each side of a 288px measure left 240px of line on a
+            375px phone — narrow enough that the two-line break the <br/> is
+            there to set could not be trusted to hold. Width belongs to the
+            Container and the measure; see CLAUDE.md. */}
+        <p className="text-ink-200 mx-auto max-w-72 text-center text-base leading-[1.4] tracking-[0.01em]">
           <span className="text-white">Proudly sponsored by partners</span>
           <br />
           who believe in what we do
