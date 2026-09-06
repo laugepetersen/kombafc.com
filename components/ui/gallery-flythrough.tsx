@@ -562,12 +562,19 @@ export function GalleryFlythrough({
 
     /* Anything outside the trimmed flight, first, and not against the quota —
        these are not thinning, they are cards that no longer have a moment.
-       Too near and it is already past the lens when the section opens; deeper
-       than the last photograph and it is behind a card that fills the screen. */
+
+       Too near and it is already past the lens when the section opens. At the
+       other end the cut is FINALE_GAP short of the last photograph rather than
+       at it: that gap is what empties the corridor before you arrive, so the
+       screen is dark when the video fills it instead of having a still or two
+       still coming past its corners. Trimming the flight moved the finale
+       nearer without moving the field, which left the deepest card 32px in
+       front of it. */
+    const CLEAR_RUN = FINALE_GAP * DEPTH_STEP;
     const offstage = new Set<number>();
     for (let index = 0; index < CARDS; index++) {
       const depth = -placeAt(index, clipSlots.has(index)).z;
-      if (depth < FLIGHT_FROM - PASS_END || depth > FLIGHT_TO) {
+      if (depth < FLIGHT_FROM - PASS_END || depth > FLIGHT_TO - CLEAR_RUN) {
         offstage.add(index);
       }
     }
