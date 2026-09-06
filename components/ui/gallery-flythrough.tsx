@@ -135,14 +135,15 @@ const CORRIDOR = (CARDS + FINALE_GAP) * DEPTH_STEP;
 /**
  * How much comes off each end of the flight.
  *
- * The section was five screens of scroll for a corridor whose first tenth was
- * mostly cards already going past the lens and whose last tenth was the run-out
- * after the field had thinned. Taking a tenth off each end takes a fifth off
- * the scroll and changes nothing in between: the camera covers the same
- * distance per pixel scrolled, so the flight reads exactly as it did, only
- * without the parts nobody was looking at.
+ * The section was five screens of scroll and it read as long. Nearly half of
+ * that was an approach — cards going past the lens before the field had
+ * gathered — and the last tenth was the run-out after it had thinned again.
+ * Cutting both leaves the stretch that is worth flying through, at the same
+ * distance of corridor per pixel scrolled, so what is left reads exactly as it
+ * did. Settled on the sliders below; anything here changes the section's
+ * height with it.
  */
-export const LEAD_IN = 0.1;
+export const LEAD_IN = 0.44;
 export const RUN_OUT = 0.1;
 
 const FULL_TRAVEL = CORRIDOR - START_AT;
@@ -575,14 +576,6 @@ export function GalleryFlythrough({
   const finaleZ = -flightTo;
 
   const { sourceFor, live } = useMemo(() => {
-    // Clips take a few evenly spaced slots in the field.
-    const clipSlots = new Map<number, string>(
-      clips.map((clip, k) => [
-        Math.round(((k + 1) / (clips.length + 1)) * TAIL_FROM),
-        clip,
-      ]),
-    );
-
     /* Every crowded pair in the opening stretch, worst first, and the smaller
        of each one goes until the quota is met. Scored rather than thresholded
        so the number taken out is the number asked for: a threshold tight
@@ -604,11 +597,31 @@ export function GalleryFlythrough({
     const CLEAR_RUN = FINALE_GAP * DEPTH_STEP;
     const offstage = new Set<number>();
     for (let index = 0; index < CARDS; index++) {
-      const depth = -placeAt(index, clipSlots.has(index)).z;
+      // A card's depth is its index whether it is holding footage or not, so
+      // this does not need to know which slots the clips take.
+      const depth = -placeAt(index).z;
       if (depth < flightFrom - PASS_END || depth > flightTo - CLEAR_RUN) {
         offstage.add(index);
       }
     }
+
+    /* Then the clips, spread across what is left rather than across the field
+       as written. Against the nominal field, a trim that opens the flight
+       halfway down the corridor left two of the three behind the camera
+       before the section had even started. Held inside the first four fifths
+       of the run so none of them lands in the tail, where cards are drawn
+       small and swept out to the edges. */
+    const onStage: number[] = [];
+    for (let index = 0; index < CARDS; index++) {
+      if (!offstage.has(index)) onStage.push(index);
+    }
+    const reach = Math.max(0, Math.floor(onStage.length * 0.8) - 1);
+    const clipSlots = new Map<number, string>(
+      clips.map((clip, k) => [
+        onStage[Math.round(((k + 1) / (clips.length + 1)) * reach)],
+        clip,
+      ]),
+    );
 
     // The footage next: anything sharing its depth and its patch of frame
     // goes, whatever the quota. These count towards it rather than adding to
@@ -640,7 +653,10 @@ export function GalleryFlythrough({
     }
     pairs.sort((p, q) => q.crowd - p.crowd || p.i - q.i || p.j - q.j);
 
-    const quota = Math.round(CARDS * THIN_SHARE);
+    /* A share of the field that is actually flown past, not of the field as
+       written. Against the nominal 98 this took out sixteen however short the
+       flight was trimmed to, which on a trimmed corridor is most of it. */
+    const quota = Math.round((CARDS - offstage.size) * THIN_SHARE);
     for (const { i, j } of pairs) {
       if (dropped.size >= quota) break;
       if (dropped.has(i) || dropped.has(j)) continue;

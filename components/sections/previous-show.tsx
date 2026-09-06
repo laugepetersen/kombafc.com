@@ -9,7 +9,6 @@ import {
   GalleryFlythrough,
   LEAD_IN,
   RUN_OUT,
-  flightRange,
   flightScreens,
 } from "@/components/ui/gallery-flythrough";
 import { LineRise } from "@/components/ui/line-rise";
@@ -53,13 +52,6 @@ const FACTS: ShowFact[] = [
  */
 const ARRIVE_AT = 1;
 
-/**
- * Whether the trim can be dragged about in the browser. Development only —
- * `process.env.NODE_ENV` is a literal at build time, so the panel and its
- * state fall out of the production bundle rather than shipping behind a flag.
- */
-const TUNING = process.env.NODE_ENV === "development";
-
 function ramp(v: number, from: number, to: number) {
   return Math.min(1, Math.max(0, (v - from) / (to - from)));
 }
@@ -68,14 +60,10 @@ export function PreviousShow() {
   const ref = useRef<HTMLDivElement>(null);
   const [playerOpen, setPlayerOpen] = useState(false);
 
-  /* The trim, and in development a pair of sliders for it. The section's
-     height comes off the same numbers rather than being written down beside
-     them: change the trim without changing the height and the camera covers a
-     different distance per pixel scrolled, which is the whole feel of it. */
-  const [leadIn, setLeadIn] = useState(LEAD_IN);
-  const [runOut, setRunOut] = useState(RUN_OUT);
-  const screens = flightScreens(leadIn, runOut);
-  const cameraRange = flightRange(leadIn, runOut);
+  /* The section's height comes off the trim rather than being written down
+     beside it. Change one without the other and the camera covers a different
+     distance per pixel scrolled, which is the whole feel of the thing. */
+  const screens = flightScreens(LEAD_IN, RUN_OUT);
 
   // start start → end end: 0 the moment the pin takes hold and 1 as it lets
   // go, so progress is exactly the distance travelled while it is stuck.
@@ -117,7 +105,7 @@ export function PreviousShow() {
     <section
       ref={ref}
       className="relative"
-      style={{ height: `${screens * 100}vh` }}
+      style={{ height: `${(screens * 100).toFixed(2)}vh` }}
     >
       <div className="bg-void sticky top-0 h-dvh overflow-clip">
         <GalleryFlythrough
@@ -126,8 +114,6 @@ export function PreviousShow() {
           finale={finale}
           label="Photographs from the grand opening at K.B. Hallen, drifting past"
           progress={flight}
-          leadIn={leadIn}
-          runOut={runOut}
           className="absolute inset-0"
         />
 
@@ -216,50 +202,6 @@ export function PreviousShow() {
           className="absolute inset-x-0 bottom-0"
         />
       </div>
-
-      {TUNING ? (
-        <div className="border-rule bg-void/90 font-body fixed bottom-4 left-4 z-50 w-72 rounded border p-4 text-xs text-white">
-          <p className="mb-3 font-medium tracking-[0.06em] uppercase">
-            Flight trim — dev only
-          </p>
-
-          <label className="mb-1 flex justify-between">
-            <span>Cut from the start</span>
-            <span className="tabular-nums">{(leadIn * 100).toFixed(0)}%</span>
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={0.45}
-            step={0.01}
-            value={leadIn}
-            onChange={(e) => setLeadIn(Number(e.target.value))}
-            className="mb-3 w-full"
-          />
-
-          <label className="mb-1 flex justify-between">
-            <span>Cut from the end</span>
-            <span className="tabular-nums">{(runOut * 100).toFixed(0)}%</span>
-          </label>
-          <input
-            type="range"
-            min={0}
-            max={0.45}
-            step={0.01}
-            value={runOut}
-            onChange={(e) => setRunOut(Number(e.target.value))}
-            className="mb-3 w-full"
-          />
-
-          <p className="text-ink-200 tabular-nums">
-            {screens.toFixed(2)} screens of scroll · camera {cameraRange.from}{" "}
-            to {cameraRange.to}
-          </p>
-          <p className="text-ink-300 mt-2">
-            LEAD_IN {leadIn.toFixed(2)} · RUN_OUT {runOut.toFixed(2)}
-          </p>
-        </div>
-      ) : null}
 
       <VideoModal
         youtubeId={RECORDING_YOUTUBE_ID}
