@@ -142,17 +142,38 @@ const CORRIDOR = (CARDS + FINALE_GAP) * DEPTH_STEP;
  * distance per pixel scrolled, so the flight reads exactly as it did, only
  * without the parts nobody was looking at.
  */
-const LEAD_IN = 0.1;
-const RUN_OUT = 0.1;
+export const LEAD_IN = 0.1;
+export const RUN_OUT = 0.1;
 
 const FULL_TRAVEL = CORRIDOR - START_AT;
 
-/** Where the camera opens, and where it comes to rest. */
-const FLIGHT_FROM = Math.round(START_AT + LEAD_IN * FULL_TRAVEL);
-const FLIGHT_TO = Math.round(CORRIDOR - RUN_OUT * FULL_TRAVEL);
+/** The corridor at full length, in screens of scroll. */
+export const FULL_SCREENS = 5;
 
-/** Where the last photograph hangs — the plane the camera stops on. */
-const FINALE_Z = -FLIGHT_TO;
+/**
+ * Where the camera opens and where it comes to rest, for a given trim.
+ *
+ * A function rather than two constants because the section can be dropped
+ * into a different trim — the tuning panel below md does exactly that — and
+ * because the finale's plane is the far end of this, so the two cannot be
+ * allowed to disagree.
+ */
+export function flightRange(leadIn: number, runOut: number) {
+  return {
+    from: Math.round(START_AT + leadIn * FULL_TRAVEL),
+    to: Math.round(CORRIDOR - runOut * FULL_TRAVEL),
+  };
+}
+
+/**
+ * Screens of scroll that trim wants. Keeping this derived is what stops the
+ * section's height and the trim drifting apart: change one and the camera
+ * covers a different distance per pixel scrolled, which is the whole feel of
+ * the thing.
+ */
+export function flightScreens(leadIn: number, runOut: number) {
+  return FULL_SCREENS * (1 - leadIn - runOut);
+}
 
 function ramp(v: number, from: number, to: number) {
   return Math.min(1, Math.max(0, (v - from) / (to - from)));
@@ -473,13 +494,16 @@ function FinaleCard({
   src,
   alt,
   camera,
+  z,
 }: {
   src: string;
   alt: string;
   camera: MotionValue<number>;
+  /** Its plane, which is where the camera stops. */
+  z: number;
 }) {
   const opacity = useTransform(camera, (c) =>
-    ramp(c + FINALE_Z, FOG_IN_START, FOG_IN_END),
+    ramp(c + z, FOG_IN_START, FOG_IN_END),
   );
 
   return (
@@ -490,7 +514,7 @@ function FinaleCard({
         height: "100dvh",
         left: "-50vw",
         top: "-50dvh",
-        transform: `translate3d(0px, 0px, ${FINALE_Z}px)`,
+        transform: `translate3d(0px, 0px, ${z}px)`,
         opacity,
       }}
     >
@@ -523,6 +547,8 @@ export function GalleryFlythrough({
   finale,
   label,
   progress,
+  leadIn = LEAD_IN,
+  runOut = RUN_OUT,
   className,
 }: {
   photos: string[];
@@ -539,9 +565,14 @@ export function GalleryFlythrough({
   label: string;
   /** 0 at the mouth of the corridor, 1 at the plane of the last photograph. */
   progress: MotionValue<number>;
+  /** How much of the corridor is cut off each end of the flight. */
+  leadIn?: number;
+  runOut?: number;
   className?: string;
 }) {
   const reduce = useReducedMotion();
+  const { from: flightFrom, to: flightTo } = flightRange(leadIn, runOut);
+  const finaleZ = -flightTo;
 
   const { sourceFor, live } = useMemo(() => {
     // Clips take a few evenly spaced slots in the field.
@@ -574,7 +605,7 @@ export function GalleryFlythrough({
     const offstage = new Set<number>();
     for (let index = 0; index < CARDS; index++) {
       const depth = -placeAt(index, clipSlots.has(index)).z;
-      if (depth < FLIGHT_FROM - PASS_END || depth > FLIGHT_TO - CLEAR_RUN) {
+      if (depth < flightFrom - PASS_END || depth > flightTo - CLEAR_RUN) {
         offstage.add(index);
       }
     }
@@ -705,14 +736,14 @@ export function GalleryFlythrough({
         (i) => !dropped.has(i) && !offstage.has(i),
       ),
     };
-  }, [photos, clips]);
+  }, [photos, clips, flightFrom, flightTo]);
 
   // Opens already inside the corridor and stops exactly on the last card's
   // plane, which is what makes that one land at 1:1 and fill the screen rather
   // than nearly doing so.
   const camera = useTransform(
     progress,
-    (p) => FLIGHT_FROM + p * (FLIGHT_TO - FLIGHT_FROM),
+    (p) => flightFrom + p * (flightTo - flightFrom),
   );
 
   // Pointer drift. Held at zero under reduced motion, where a scene that moves
@@ -772,7 +803,12 @@ export function GalleryFlythrough({
           />
         ))}
 
-        <FinaleCard src={finale.src} alt={finale.alt} camera={camera} />
+        <FinaleCard
+          src={finale.src}
+          alt={finale.alt}
+          camera={camera}
+          z={finaleZ}
+        />
       </motion.div>
     </div>
   );
