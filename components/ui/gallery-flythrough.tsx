@@ -216,6 +216,23 @@ const TAIL_KEEP_OUT = 0.4;
 const BIG_FROM = 300;
 
 /**
+ * Thinning the opening.
+ *
+ * The field is at its most crowded before the corridor has opened out: cards
+ * that are within a couple of steps of each other in depth and land on nearly
+ * the same spot arrive together, draw over one another, and cost a composited
+ * layer each for the one of them you can see. This takes a share of them out —
+ * the smaller of each crowded pair, worst pair first, until the quota is
+ * filled. Only the first stretch is scanned, which is where they pile up.
+ */
+const THIN_SHARE = 0.13;
+const THIN_UNTIL = 56;
+
+/** What counts as crowded: close enough in depth, and close enough across. */
+const CROWD_Z = 520;
+const CROWD_XY = 1150;
+
+/**
  * How far apart down the corridor the same photograph may be used twice.
  * Comfortably past the fog window, so its two turns are never in the frame
  * together — at the window itself they still overlapped at the edges.
@@ -237,9 +254,20 @@ function placeAt(index: number, isClip = false) {
   // field reads as photographs pinned in space, not as a grid of tiles.
   const aspect = [0.75, 1.34, 1][Math.floor(noise(index * 5.7) * 3)];
 
-  const cell = index % (COLS * ROWS);
-  const col = cell % COLS;
-  const row = Math.floor(cell / COLS);
+  /* Strides rather than a raster. Walking the cells in order gave every card
+     the column next to its neighbour's, and the handful nearest the lens —
+     which are magnified enough to be most of what you see — were therefore
+     always a short run of adjacent columns sweeping across the frame. That is
+     the right-hand pile-up in the opening stretch: 87% of the visible card
+     area on the right through the first fifth, peaking at 95, with the world
+     itself very nearly symmetrical.
+
+     Three and two are coprime with seven and five, so each still visits every
+     column and every row before repeating and the field covers the same 35
+     cells — but consecutive cards land across the grid from one another
+     rather than side by side. */
+  const col = (index * 3) % COLS;
+  const row = (index * 2) % ROWS;
   // Just under a cell of jitter. Past a full cell, neighbours start landing on
   // top of one another — a clump of cards drawing over each other where one is
   // visible, which costs a composited layer each and shows nothing for them.
@@ -257,8 +285,19 @@ function placeAt(index: number, isClip = false) {
   // -0.5 to 0.5 across the grid. The tail gets pushed out of the middle of
   // that range without losing its scatter: the whole span is remapped into
   // the outer band rather than clamped, which would pile it on one radius.
-  const nx = (col + 0.5 + jitterX) / COLS - 0.5;
+  const gridX = (col + 0.5 + jitterX) / COLS - 0.5;
   const ny = (row + 0.5 + jitterY) / ROWS - 0.5;
+
+  /* The grid says how far from the centre line a card sits; its index says
+     which side. Perspective magnifies an offset by how close the card is, so
+     the three or four nearest the lens are most of what is on screen — and
+     which side the frame leans is decided by those few alone. Left to the
+     grid's own signs that is luck, and in the opening stretch the luck was
+     bad: one card at a world x of 251 was taking 43% of the frame on the
+     right, with six of the next seven beside it. Alternating guarantees the
+     run is split however it is sampled. The magnitudes are still the grid's,
+     so the field covers the same width. */
+  const nx = (index % 2 === 0 ? -1 : 1) * Math.abs(gridX);
   const outward = (v: number, keepOut: number) =>
     (v < 0 ? -1 : 1) * (keepOut + Math.abs(v) * (1 - keepOut));
 
@@ -281,18 +320,26 @@ function placeAt(index: number, isClip = false) {
   const px = pushX ? outward(nx, keepOut) : nx;
   const py = pushY ? outward(ny, keepOut) : ny;
 
-  /* One quadrant kept clear of slabs rather than the whole centre line.
-     The copy sits low and to the left, so a card wide enough to matter that
-     is heading for that corner is mirrored across to the other side. It is a
-     swap, not a push: a card near the middle stays near the middle, because
-     its own coordinate barely changes sign — which is the difference between
-     protecting the copy and emptying the frame around it. */
+  /* One quadrant kept clear of slabs rather than the whole centre line. The
+     copy sits low and to the left, so a card wide enough to matter that is
+     heading for that corner is reflected out of it. A swap, not a push: a
+     card near the middle stays near the middle, because its own coordinate
+     barely changes sign — which is the difference between protecting the copy
+     and emptying the frame around it.
+
+     Most of them go up rather than across. Sending every one across doubled
+     the right-hand side: through the first fifth of the flight the right half
+     of the frame carried 87% of the visible card area, peaking at 95, and
+     only 37 of the 98 cards were left of the centre line at all. Going up
+     leaves the horizontal balance alone, so only every third one is allowed
+     to cross. */
   const slab = isClip || width >= BIG_FROM;
-  const mirrored = slab && px < 0 && py > 0 ? -px : px;
+  const inCopyCorner = slab && px < 0 && py > 0;
+  const across = inCopyCorner && index % 3 === 0;
 
   return {
-    x: Math.round(mirrored * spreadX * scale),
-    y: Math.round(py * spreadY * scale),
+    x: Math.round((across ? -px : px) * spreadX * scale),
+    y: Math.round((inCopyCorner && !across ? -py : py) * spreadY * scale),
     // Almost two steps of depth jitter, so neighbours trade places rather than
     // filing past at a fixed interval.
     z: Math.round(-(index + noise(index * 11.3) * 1.8) * DEPTH_STEP),
@@ -456,7 +503,7 @@ export function GalleryFlythrough({
 }) {
   const reduce = useReducedMotion();
 
-  const sourceFor = useMemo(() => {
+  const { sourceFor, live } = useMemo(() => {
     // Clips take a few evenly spaced slots in the field.
     const clipSlots = new Map<number, string>(
       clips.map((clip, k) => [
@@ -465,9 +512,38 @@ export function GalleryFlythrough({
       ]),
     );
 
+    /* Every crowded pair in the opening stretch, worst first, and the smaller
+       of each one goes until the quota is met. Scored rather than thresholded
+       so the number taken out is the number asked for: a threshold tight
+       enough to catch only the bad cases takes out three, and one loose
+       enough to matter takes out forty. Footage is never a candidate — there
+       are only three of them and they are the point. */
+    const dropped = new Set<number>();
+    const pairs: { i: number; j: number; crowd: number }[] = [];
+    for (let i = 0; i < THIN_UNTIL; i++) {
+      if (clipSlots.has(i)) continue;
+      const a = placeAt(i);
+      for (let j = i + 1; j < THIN_UNTIL; j++) {
+        if (clipSlots.has(j)) continue;
+        const b = placeAt(j);
+        const dz = Math.abs(a.z - b.z);
+        const across = Math.hypot(a.x - b.x, a.y - b.y);
+        if (dz > CROWD_Z || across > CROWD_XY) continue;
+        pairs.push({ i, j, crowd: 2 - dz / CROWD_Z - across / CROWD_XY });
+      }
+    }
+    pairs.sort((p, q) => q.crowd - p.crowd || p.i - q.i || p.j - q.j);
+
+    const quota = Math.round(CARDS * THIN_SHARE);
+    for (const { i, j } of pairs) {
+      if (dropped.size >= quota) break;
+      if (dropped.has(i) || dropped.has(j)) continue;
+      dropped.add(placeAt(i).width <= placeAt(j).width ? i : j);
+    }
+
     const slots: { index: number; z: number; width: number }[] = [];
     for (let index = 0; index < CARDS; index++) {
-      if (clipSlots.has(index)) continue;
+      if (clipSlots.has(index) || dropped.has(index)) continue;
       const { z, width } = placeAt(index);
       slots.push({ index, z, width });
     }
@@ -547,7 +623,12 @@ export function GalleryFlythrough({
       stills.set(slot.index, photos[source.get(slot.index)!]);
     }
 
-    return (index: number) => clipSlots.get(index) ?? stills.get(index)!;
+    return {
+      sourceFor: (index: number) => clipSlots.get(index) ?? stills.get(index)!,
+      live: Array.from({ length: CARDS }, (_, i) => i).filter(
+        (i) => !dropped.has(i),
+      ),
+    };
   }, [photos, clips]);
 
   // Opens already inside the corridor and stops exactly on the last card's
@@ -607,7 +688,7 @@ export function GalleryFlythrough({
           transformStyle: "preserve-3d",
         }}
       >
-        {Array.from({ length: CARDS }, (_, index) => (
+        {live.map((index) => (
           <GalleryCard
             key={index}
             src={sourceFor(index)}
