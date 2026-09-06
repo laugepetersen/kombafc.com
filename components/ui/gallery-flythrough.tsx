@@ -129,8 +129,30 @@ const START_AT = 760;
  */
 const FINALE_GAP = 8;
 
-/** Where the last photograph hangs, and where the camera comes to rest. */
-const FINALE_Z = -(CARDS + FINALE_GAP) * DEPTH_STEP;
+/** The corridor end to end, before either end of the flight is trimmed. */
+const CORRIDOR = (CARDS + FINALE_GAP) * DEPTH_STEP;
+
+/**
+ * How much comes off each end of the flight.
+ *
+ * The section was five screens of scroll for a corridor whose first tenth was
+ * mostly cards already going past the lens and whose last tenth was the run-out
+ * after the field had thinned. Taking a tenth off each end takes a fifth off
+ * the scroll and changes nothing in between: the camera covers the same
+ * distance per pixel scrolled, so the flight reads exactly as it did, only
+ * without the parts nobody was looking at.
+ */
+const LEAD_IN = 0.1;
+const RUN_OUT = 0.1;
+
+const FULL_TRAVEL = CORRIDOR - START_AT;
+
+/** Where the camera opens, and where it comes to rest. */
+const FLIGHT_FROM = Math.round(START_AT + LEAD_IN * FULL_TRAVEL);
+const FLIGHT_TO = Math.round(CORRIDOR - RUN_OUT * FULL_TRAVEL);
+
+/** Where the last photograph hangs — the plane the camera stops on. */
+const FINALE_Z = -FLIGHT_TO;
 
 function ramp(v: number, from: number, to: number) {
   return Math.min(1, Math.max(0, (v - from) / (to - from)));
@@ -538,13 +560,26 @@ export function GalleryFlythrough({
        are only three of them and they are the point. */
     const dropped = new Set<number>();
 
-    // The footage first: anything sharing its depth and its patch of frame
+    /* Anything outside the trimmed flight, first, and not against the quota —
+       these are not thinning, they are cards that no longer have a moment.
+       Too near and it is already past the lens when the section opens; deeper
+       than the last photograph and it is behind a card that fills the screen. */
+    const offstage = new Set<number>();
+    for (let index = 0; index < CARDS; index++) {
+      const depth = -placeAt(index, clipSlots.has(index)).z;
+      if (depth < FLIGHT_FROM - PASS_END || depth > FLIGHT_TO) {
+        offstage.add(index);
+      }
+    }
+
+    // The footage next: anything sharing its depth and its patch of frame
     // goes, whatever the quota. These count towards it rather than adding to
     // it, so the field loses the same share either way.
     for (const slot of clipSlots.keys()) {
+      if (offstage.has(slot)) continue;
       const clip = placeAt(slot, true);
       for (let i = 0; i < CARDS; i++) {
-        if (clipSlots.has(i)) continue;
+        if (clipSlots.has(i) || offstage.has(i)) continue;
         const b = placeAt(i);
         if (Math.abs(b.z - clip.z) > CLIP_ROOM_Z) continue;
         if (Math.hypot(b.x - clip.x, b.y - clip.y) > CLIP_ROOM_XY) continue;
@@ -554,10 +589,10 @@ export function GalleryFlythrough({
 
     const pairs: { i: number; j: number; crowd: number }[] = [];
     for (let i = 0; i < THIN_UNTIL; i++) {
-      if (clipSlots.has(i) || dropped.has(i)) continue;
+      if (clipSlots.has(i) || dropped.has(i) || offstage.has(i)) continue;
       const a = placeAt(i);
       for (let j = i + 1; j < THIN_UNTIL; j++) {
-        if (clipSlots.has(j) || dropped.has(j)) continue;
+        if (clipSlots.has(j) || dropped.has(j) || offstage.has(j)) continue;
         const b = placeAt(j);
         const dz = Math.abs(a.z - b.z);
         const across = Math.hypot(a.x - b.x, a.y - b.y);
@@ -576,7 +611,8 @@ export function GalleryFlythrough({
 
     const slots: { index: number; z: number; width: number }[] = [];
     for (let index = 0; index < CARDS; index++) {
-      if (clipSlots.has(index) || dropped.has(index)) continue;
+      if (clipSlots.has(index) || dropped.has(index) || offstage.has(index))
+        continue;
       const { z, width } = placeAt(index);
       slots.push({ index, z, width });
     }
@@ -659,7 +695,7 @@ export function GalleryFlythrough({
     return {
       sourceFor: (index: number) => clipSlots.get(index) ?? stills.get(index)!,
       live: Array.from({ length: CARDS }, (_, i) => i).filter(
-        (i) => !dropped.has(i),
+        (i) => !dropped.has(i) && !offstage.has(i),
       ),
     };
   }, [photos, clips]);
@@ -667,10 +703,9 @@ export function GalleryFlythrough({
   // Opens already inside the corridor and stops exactly on the last card's
   // plane, which is what makes that one land at 1:1 and fill the screen rather
   // than nearly doing so.
-  const distance = -FINALE_Z;
   const camera = useTransform(
     progress,
-    (p) => START_AT + p * (distance - START_AT),
+    (p) => FLIGHT_FROM + p * (FLIGHT_TO - FLIGHT_FROM),
   );
 
   // Pointer drift. Held at zero under reduced motion, where a scene that moves

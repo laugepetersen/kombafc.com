@@ -47,8 +47,13 @@ const FACTS: ShowFact[] = [
  */
 const ARRIVE_AT = 1;
 
-/** Long enough that the corridor is flown through rather than endured. */
-const SCROLL_LENGTH = "h-[500vh]";
+/**
+ * Long enough that the corridor is flown through rather than endured, and no
+ * longer. Was five screens; the flight has a tenth trimmed off each end now,
+ * so this comes down with it and the camera still covers the same distance
+ * per pixel scrolled.
+ */
+const SCROLL_LENGTH = "h-[400vh]";
 
 function ramp(v: number, from: number, to: number) {
   return Math.min(1, Math.max(0, (v - from) / (to - from)));
