@@ -203,7 +203,10 @@ export function ShowBar({
                No corner-cut either — the block runs to the edge of the screen,
                and a bevel on a full-bleed edge reads as a rendering fault
                rather than as the site's mark. tap still gives it the press. */
-            className="tap text-void font-body flex h-14 shrink-0 items-center justify-center gap-2 bg-white px-6 text-base font-medium tracking-[0.02em] hover:brightness-90 md:h-full md:px-8 lg:px-10"
+            /* px-6 all the way up, which is what every other CTA on the site
+               is set at. It was on 32 and then 40, and at that width the
+               label sat in the middle of a panel rather than in a button. */
+            className="tap text-void font-body flex h-14 shrink-0 items-center justify-center gap-2 bg-white px-6 text-base font-medium tracking-[0.02em] hover:brightness-90 md:h-full"
           >
             <Icon name="play_arrow" className="size-5" />
             {action}

@@ -223,14 +223,32 @@ const BIG_FROM = 300;
  * the same spot arrive together, draw over one another, and cost a composited
  * layer each for the one of them you can see. This takes a share of them out —
  * the smaller of each crowded pair, worst pair first, until the quota is
- * filled. Only the first stretch is scanned, which is where they pile up.
+ * filled.
+ *
+ * The whole corridor is scanned rather than only its opening. Sorting by how
+ * crowded a pair is already puts the opening first — that is where they pile
+ * up — and stopping the scan early left pairs eighty pixels apart standing at
+ * the far end simply because nothing looked at them.
  */
-const THIN_SHARE = 0.13;
-const THIN_UNTIL = 56;
+const THIN_SHARE = 0.16;
+const THIN_UNTIL = CARDS;
 
 /** What counts as crowded: close enough in depth, and close enough across. */
 const CROWD_Z = 520;
 const CROWD_XY = 1150;
+
+/**
+ * And the room the footage gets to itself, on both counts.
+ *
+ * A still that arrives at the same depth as a clip and lands on the same part
+ * of the frame draws over the one thing on that screen that is moving — at
+ * best it is a photograph you cannot see, at worst it is the video you
+ * cannot. Deeper than the crowding test above and tighter across: a clip is on
+ * screen for longer than a still, so what matters is anything sharing its
+ * stretch of corridor — but only if it is close enough to land on it.
+ */
+const CLIP_ROOM_Z = 1300;
+const CLIP_ROOM_XY = 720;
 
 /**
  * How far apart down the corridor the same photograph may be used twice.
@@ -519,12 +537,27 @@ export function GalleryFlythrough({
        enough to matter takes out forty. Footage is never a candidate — there
        are only three of them and they are the point. */
     const dropped = new Set<number>();
+
+    // The footage first: anything sharing its depth and its patch of frame
+    // goes, whatever the quota. These count towards it rather than adding to
+    // it, so the field loses the same share either way.
+    for (const slot of clipSlots.keys()) {
+      const clip = placeAt(slot, true);
+      for (let i = 0; i < CARDS; i++) {
+        if (clipSlots.has(i)) continue;
+        const b = placeAt(i);
+        if (Math.abs(b.z - clip.z) > CLIP_ROOM_Z) continue;
+        if (Math.hypot(b.x - clip.x, b.y - clip.y) > CLIP_ROOM_XY) continue;
+        dropped.add(i);
+      }
+    }
+
     const pairs: { i: number; j: number; crowd: number }[] = [];
     for (let i = 0; i < THIN_UNTIL; i++) {
-      if (clipSlots.has(i)) continue;
+      if (clipSlots.has(i) || dropped.has(i)) continue;
       const a = placeAt(i);
       for (let j = i + 1; j < THIN_UNTIL; j++) {
-        if (clipSlots.has(j)) continue;
+        if (clipSlots.has(j) || dropped.has(j)) continue;
         const b = placeAt(j);
         const dz = Math.abs(a.z - b.z);
         const across = Math.hypot(a.x - b.x, a.y - b.y);
