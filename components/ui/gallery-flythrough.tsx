@@ -143,7 +143,7 @@ const CORRIDOR = (CARDS + FINALE_GAP) * DEPTH_STEP;
  * did. Settled on the sliders below; anything here changes the section's
  * height with it.
  */
-export const LEAD_IN = 0.44;
+export const LEAD_IN = 0.3;
 export const RUN_OUT = 0.1;
 
 const FULL_TRAVEL = CORRIDOR - START_AT;
