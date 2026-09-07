@@ -157,13 +157,16 @@ function PackageRow({ tier, index }: { tier: Tier; index: number }) {
     // run of frames.
     <SectionFrame outerClassName="[&>[data-frame-rule]]:border-t">
       <div className="grid lg:grid-cols-2">
-        {/* No ratio. Grid rows stretch, so the copy opposite sets the height
-            and the photograph fills it. The floor is what a fill image cannot
-            supply for itself — it contributes no height, so without it the
-            column would collapse to nothing once stacked. */}
+        {/* Square on a phone, no ratio side by side. Stacked, the floor gave a
+            375-wide column a 288px band, which is a letterbox rather than a
+            photograph; 1:1 is the shape it wants, and it is the home page's
+            block too, so the two read as one layout. From lg the rows stretch
+            again — the copy opposite sets the height and the photograph fills
+            it — and the floor is what a fill image cannot supply for itself,
+            since it contributes no height of its own. */}
         <div
           className={cn(
-            "relative min-h-72 md:min-h-96",
+            "relative aspect-square lg:aspect-auto lg:min-h-96",
             imageRight && "lg:order-last",
           )}
         >
@@ -288,7 +291,13 @@ export function Partners() {
         spacing="none"
         className="pt-32 pb-12 md:pt-40 md:pb-16 xl:pb-20"
       >
-        <div className="flex flex-col items-center text-center">
+        {/* Left on a phone, centred from md. A centred column needs slack
+              either side to read as centred rather than as text that happens to
+              be in the middle — at 343 wide with a six-line heading filling it
+              there is none, so every line is ragged at both ends and the block
+              has no edge to sit on. Ranged left it has one, and the eyebrow,
+              the heading and the blocks below all start on the same line. */}
+        <div className="flex flex-col items-start text-left md:items-center md:text-center">
           <Kicker>Partnerships</Kicker>
 
           {/* The measure is on the heading rather than on a wrapper around it,
@@ -297,7 +306,7 @@ export function Partners() {
           <LineRise
             as="h1"
             text="Together, we shape the future of Striking Sports In Scandinavia."
-            className="display-2 mt-6 max-w-[20ch] md:mt-8"
+            className="display-1 mt-6 max-w-[20ch] md:mt-8"
           />
         </div>
       </Section>

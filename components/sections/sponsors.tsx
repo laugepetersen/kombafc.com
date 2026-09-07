@@ -26,6 +26,47 @@ const sponsors = [
   { name: "Honda", src: "/sponsors/honda.svg", width: 157, height: 20 },
 ];
 
+type Sponsor = (typeof sponsors)[number];
+
+/**
+ * One mark. Stencilled rather than drawn: the SVG supplies the shape as a mask
+ * and the colour comes from the ink ramp, so the logos sit on the palette
+ * instead of being white marks dimmed with opacity.
+ */
+function SponsorMark({ name, src, width, height }: Sponsor) {
+  return (
+    <span
+      role="img"
+      aria-label={name}
+      style={{
+        width,
+        height,
+        maskImage: `url(${src})`,
+        WebkitMaskImage: `url(${src})`,
+        maskSize: "contain",
+        WebkitMaskSize: "contain",
+        maskRepeat: "no-repeat",
+        WebkitMaskRepeat: "no-repeat",
+        maskPosition: "center",
+        WebkitMaskPosition: "center",
+      }}
+      className="bg-ink-300 hover:bg-ink-100 shrink-0 transition-colors duration-200"
+    />
+  );
+}
+
+/**
+ * Half the roster, for the phone's two rows. Alternating rather than split down
+ * the middle, so neither row is all wordmarks and the other all square marks —
+ * the widths run 32 to 157 and taking the list in halves put most of the wide
+ * ones together.
+ */
+function sponsorRow(offset: number) {
+  return sponsors
+    .filter((_, index) => index % 2 === offset)
+    .map((sponsor) => <SponsorMark key={sponsor.name} {...sponsor} />);
+}
+
 export function Sponsors() {
   return (
     <SectionFrame>
@@ -44,33 +85,46 @@ export function Sponsors() {
           who believe in what we do
         </p>
 
-        {/* Fades to void, which is what the section sits on — a fade to any
-            other value would show a seam against the page. */}
-        <Marquee className="w-full" durationSeconds={45}>
-          {sponsors.map(({ name, src, width, height }) => (
-            /* Stencilled rather than drawn: the SVG supplies the shape as a
-               mask and the colour comes from the ink ramp, so the logos sit on
-               the palette instead of being white marks dimmed with opacity. */
-            <span
-              key={name}
-              role="img"
-              aria-label={name}
-              style={{
-                width,
-                height,
-                maskImage: `url(${src})`,
-                WebkitMaskImage: `url(${src})`,
-                maskSize: "contain",
-                WebkitMaskSize: "contain",
-                maskRepeat: "no-repeat",
-                WebkitMaskRepeat: "no-repeat",
-                maskPosition: "center",
-                WebkitMaskPosition: "center",
-              }}
-              className="bg-ink-300 hover:bg-ink-100 shrink-0 transition-colors duration-200"
-            />
-          ))}
-        </Marquee>
+        {/* One row from md, two on a phone running opposite ways.
+
+            Ten marks on a 375 screen is a row you watch four of at a time and
+            wait out the rest of. Split in half and counter-run, the same ten
+            are on screen at once and the two directions read as a field rather
+            than as a queue — which is also what stops the halves looking like
+            one row that has been cut.
+
+            The mobile rows are half the length, and the track travels its own
+            width, so half the duration keeps them moving at the pace the one
+            row does rather than at half of it.
+
+            Both are rendered and one is hidden, rather than a hook reading the
+            width: this is a server component, and the breakpoint is the only
+            thing that differs. */}
+        {/* Both layouts in one box, and that box is what StaggerReveal counts.
+
+            It wraps every direct child in a box of its own, so as two children
+            the hidden one was still a flex item — nought tall, `display: none`
+            inside it, and collecting the column's full 40px gap regardless. On
+            a phone that read as a band of empty page under the marquee that
+            nothing on screen accounted for. One child, one gap. */}
+        <div>
+          <div className="flex flex-col gap-6 md:hidden">
+            <Marquee className="w-full" durationSeconds={22}>
+              {sponsorRow(0)}
+            </Marquee>
+            <Marquee className="w-full" durationSeconds={22} reverse>
+              {sponsorRow(1)}
+            </Marquee>
+          </div>
+
+          {/* Fades to void, which is what the section sits on — a fade to any
+              other value would show a seam against the page. */}
+          <Marquee className="w-full max-md:hidden" durationSeconds={45}>
+            {sponsors.map((sponsor) => (
+              <SponsorMark key={sponsor.name} {...sponsor} />
+            ))}
+          </Marquee>
+        </div>
       </StaggerReveal>
     </SectionFrame>
   );

@@ -89,7 +89,18 @@ function FilterChip({
       type="button"
       onClick={onSelect}
       aria-pressed={active}
-      className={`tap font-body h-11 px-4 text-sm font-medium whitespace-nowrap md:h-9 ${
+      /* Rounded, and that is the rule rather than this chip's own taste: a CTA
+         is square and a filter is not. They are different kinds of control —
+         one is the thing the page wants you to do and carries the site's
+         corner, the other is a switch on a set of results.
+
+         `rounded-lg`, which is `--radius` itself at 8px rather than a multiple
+         of it. The site is otherwise square — five rounded corners in the whole
+         of it — so the token's own base value is the least this can be and
+         still read as a decision. `rounded-xl` is the same decision at 11.2px
+         if it wants to be softer; anything past that on a 36px box is on its
+         way to a pill, which is a third thing again. */
+      className={`tap font-body h-9 rounded-lg px-4 text-sm font-medium whitespace-nowrap ${
         active
           ? "text-void bg-white"
           : "border-rule text-ink-100 border bg-white/5 hover:bg-white/15 hover:text-white"
@@ -188,7 +199,12 @@ function VideoCard({ video, onPlay }: { video: Video; onPlay: () => void }) {
           the caption is the frame on that side. Straight off the roster
           card — these two grids sit one click apart in the nav and a
           different mount on each would show. */}
-      <div className="p-1.5 pb-0">
+      {/* 4px on a phone and 6 from md. The mount is a proportion of the card,
+          not a fixed rule: at one or two cards to the row the panel is 165 to
+          343 wide and a 6px inset reads as a border drawn around the picture,
+          where at a third of a desktop row the same 6 reads as the picture
+          being set into the panel. Which is the thing it is for. */}
+      <div className="p-1 pb-0 md:p-1.5 md:pb-0">
         <div className="bg-ink-800 relative aspect-video overflow-hidden">
           <Image
             src={thumbnailFor(video)}
@@ -196,6 +212,19 @@ function VideoCard({ video, onPlay }: { video: Video; onPlay: () => void }) {
             fill
             sizes={SIZES}
             className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+          />
+
+          {/* A foot of dark inside the still, so the chips have something to sit
+              on. They are pinned to the bottom corner of a photograph nobody
+              chose for them — a bright canvas or a lit crowd under either one
+              and the violet loses its edge and the runtime disappears outright.
+              Bottom quarter only, and to transparent well before the middle, so
+              it reads as the frame falling off rather than as a band laid over
+              it. Under the chips and over the still, which is why it sits here
+              rather than on the box. */}
+          <div
+            aria-hidden="true"
+            className="from-void/70 pointer-events-none absolute inset-0 bg-gradient-to-t to-transparent to-38%"
           />
 
           {/* The preview, mounted only while hovered.
@@ -245,8 +274,14 @@ function VideoCard({ video, onPlay }: { video: Video; onPlay: () => void }) {
               `items-stretch` so the two boxes come out the same height off
               different type sizes — the runtime is set a step larger than the
               billing's caps, and matching their padding would not have matched
-              their heights. */}
-          <div className="absolute right-1.5 bottom-1.5 flex items-stretch gap-1.5">
+              their heights.
+
+              4px between them at every width. The pair is one object in the
+              corner of the still, and 6 was enough air to read as two things
+              parked next to each other. Their inset from the edge stays 6 —
+              that is the gap to the frame, not to each other, and the two are
+              not the same measurement. */}
+          <div className="absolute right-1.5 bottom-1.5 flex items-stretch gap-1">
             {video.topBilling ? (
               // Which cards are not like the others, said once each. On the
               // still rather than in the caption because the caption's line is
@@ -267,8 +302,15 @@ function VideoCard({ video, onPlay }: { video: Video; onPlay: () => void }) {
               // are deliberately left behind. This is a label on a
               // photograph, and a label that lights up is asking to be
               // pressed.
+              //
+              // Set as it is written, not shouted. It wore caps at 8% — the
+              // eyebrow's allowance, which exists to open 12px caps that have
+              // no ascenders or descenders to tell them apart. This is not an
+              // eyebrow, it is a label on a photograph, and at that width the
+              // tracking pushed "Main Event" wider than the runtime beside it
+              // for no gain. Title case at the body's own 2%.
               <span
-                className={`font-body flex items-center px-2 text-sm leading-none font-medium tracking-[0.08em] uppercase ${CTA_FILL}`}
+                className={`font-body flex items-center px-2 text-sm leading-none font-medium tracking-[0.02em] ${CTA_FILL}`}
               >
                 {video.topBilling}
               </span>
@@ -290,7 +332,14 @@ function VideoCard({ video, onPlay }: { video: Video; onPlay: () => void }) {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col p-3 md:p-4">
+      {/* More room above and below than either side, on a phone. The caption
+          is a two-line title over a meta line and 12px all round had it sitting
+          hard against the still above and the card's own edge below — at one
+          card to the row the block is 343 wide and 12 of horizontal padding is
+          already generous, where 12 of vertical is not. 16 top and bottom, 12
+          either side; square again from md, where the card is a third of the
+          row and the two axes are back in proportion. */}
+      <div className="flex flex-1 flex-col px-3 py-4 md:px-4">
         {/* h2 under the page's one h1, and the whole of the caption's first
             job. Plain rather than display: ten titles set in italic caps is a
             wall, and the display face is doing enough work on the heading above
@@ -357,7 +406,7 @@ export function WatchIndex() {
     // clear on a phone. Same as the roster and the news index.
     <Section spacing="lg" className="pt-32 md:pt-40">
       <div className="flex flex-col items-start">
-        <LineRise as="h1" text="Watch" className="display-2" />
+        <LineRise as="h1" text="Watch" className="display-1" />
       </div>
 
       {/* Which show these are from, and the way to say it that survives a
@@ -371,7 +420,10 @@ export function WatchIndex() {
       <div
         role="group"
         aria-label="Filter by event"
-        className="mt-8 flex flex-wrap gap-2 md:mt-10"
+        // The page title's own gap, the same one the roster and the news list
+        // use — see the note in fighters-roster. The filter is what comes
+        // first here, so it is the filter that takes it.
+        className="mt-10 flex flex-wrap gap-2 md:mt-12"
       >
         <FilterChip active={event === "all"} onSelect={() => setEvent("all")}>
           All
@@ -387,7 +439,12 @@ export function WatchIndex() {
         ))}
       </div>
 
-      <ul className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mt-10 lg:grid-cols-3">
+      {/* Tight to the chips above it. Both gaps were 32 — the same distance
+          from the heading to the filter as from the filter to the thing it
+          filters — which left the row floating between the two rather than
+          belonging to either. Halved, the chips read as the grid's own control
+          and the heading keeps the wider gap, which is the ranking. */}
+      <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:mt-6 lg:grid-cols-3">
         {shown.map((video) => (
           <li key={video.id}>
             <VideoCard

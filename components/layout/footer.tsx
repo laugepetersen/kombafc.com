@@ -137,6 +137,13 @@ export function Footer() {
                 A plain string, not `cn`: `text-relief` is a custom text-*
                 utility and tailwind-merge cannot be trusted with those. See
                 the note in CLAUDE.md. */}
+            {/* display-4, and nothing else. It was display-5 with an xl size
+                bolted on, because the ladder stops at md below display-4 — a
+                step up removes the need for the bolt as well: 21.6 / 25.9 /
+                31.1, all of it the step's own.
+
+                The old note, kept because it is why the step sets leading at
+                all: */}
             {/* The leading is set here rather than left to the size utility.
                 `text-lg` and `text-xl` carry the *body* line heights — 1.5 and
                 1.4 — because most type at those sizes is prose; only from
@@ -148,10 +155,7 @@ export function Footer() {
 
                 Off the variable rather than `leading-none`, so retuning the
                 site's heading leading moves this with the display scale. */}
-            <LineRise
-              as="h2"
-              className="text-relief text-lg leading-(--heading-leading) font-black tracking-[-0.01em] uppercase italic md:text-xl xl:text-2xl"
-            >
+            <LineRise as="h2" className="display-4">
               <span className="block">Don’t miss</span>
               <span className="block">the next card.</span>
             </LineRise>

@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/gallery-flythrough";
 import { LineRise } from "@/components/ui/line-rise";
 import { Kicker } from "@/components/ui/kicker";
-import { type ShowFact, ShowBar } from "@/components/ui/show-bar";
+import { ShowBar } from "@/components/ui/show-bar";
+import { showFacts } from "@/content/show";
 
 /**
  * The night itself, shot by Sebastian Stigsby. show-13 is held out of the
@@ -33,13 +34,6 @@ const finale = {
   src: "/show/scroll-end.mp4",
   alt: "Closing footage from the night at K.B. Hallen",
 };
-
-/** The night in three lines, lit one at a time along the foot of the screen. */
-const FACTS: ShowFact[] = [
-  { label: "A World Champion", detail: "and two European at stake." },
-  { label: "1500 Spectators", detail: "and more broadcasting" },
-  { label: "KUNDO x G-SHOCK", detail: "Halftime show" },
-];
 
 /**
  * Where the camera comes to rest on the last photograph — the very end of the
@@ -204,7 +198,7 @@ export function PreviousShow() {
                   in K.B. Hallen.", 241 and 275. The measure stays from md,
                   where the type is large enough for 16ch to be the wider
                   constraint anyway. */
-              className="text-relief mt-6 max-w-[16ch] text-xl font-black tracking-[-0.01em] uppercase italic max-md:max-w-none md:mt-8 md:text-4xl xl:text-5xl"
+              className="display-2 mt-6 max-w-[16ch] max-md:max-w-none md:mt-8"
             />
           </div>
         </Container>
@@ -221,7 +215,7 @@ export function PreviousShow() {
         <ShowBar
           action="Rewatch KOMBA 1.0"
           href="/watch"
-          facts={FACTS}
+          facts={showFacts}
           // The same value that drives the camera, so the rule along the top
           // of the bar is exactly how far down the corridor you are.
           progress={flight}

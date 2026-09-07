@@ -64,7 +64,12 @@ function FighterCard({
           Its own wrapper rather than padding on the box below: an absolutely
           positioned child fills its containing block's padding box, so `fill`
           would step straight over padding set there. */}
-      <div className="p-1.5 pb-0">
+      {/* 4px on a phone and 6 from md. The mount is a proportion of the card,
+          not a fixed rule: at one or two cards to the row the panel is 165 to
+          343 wide and a 6px inset reads as a border drawn around the picture,
+          where at a third of a desktop row the same 6 reads as the picture
+          being set into the panel. Which is the thing it is for. */}
+      <div className="p-1 pb-0 md:p-1.5 md:pb-0">
         {/* 4:5 off a 2:3 source — every file is 1200x1800 — so the box keeps
             five sixths of the frame's height. Held to the top, not centred:
             the portraits are shot standing with headroom, and a centred crop
@@ -228,14 +233,20 @@ export function FightersRoster() {
             leaves them floating short at both ends. */}
         <Kicker>1.0 selection</Kicker>
 
-        <LineRise as="h1" text="Athletes" className="display-2 mt-6 md:mt-8" />
+        <LineRise as="h1" text="Athletes" className="display-1 mt-6 md:mt-8" />
       </div>
 
       {/* A list, because that is what it is. Each card lifts and leans out of
           its own cell, so the cell is given a stacking order to lift into —
           without it the card would still be painted under every sibling that
-          comes after it in the grid. */}
-      <ul className="mt-12 grid grid-cols-2 gap-4 md:mt-16 md:grid-cols-3 lg:grid-cols-4">
+          comes after it in the grid.
+
+          One value for every page title on the site: 40 on a phone, 48 from
+          md. It was three — 48/64 here, 40/48 on the news list and 32/40 on
+          the archive — for the same relationship, a page's h1 and the thing
+          the page is. A reader moving between them met a differently spaced
+          page each time for no reason they could see. */}
+      <ul className="mt-10 grid grid-cols-2 gap-4 md:mt-12 md:grid-cols-3 lg:grid-cols-4">
         {fighters.map((fighter) => (
           <li key={fighter.id} className="relative hover:z-10">
             {/* The notch goes on the comet card's own moving box, not on the

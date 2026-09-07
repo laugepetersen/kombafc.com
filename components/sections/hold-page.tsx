@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 
 import { Container } from "@/components/layout/container";
 import { HoldBackdrop } from "@/components/sections/hold-backdrop";
@@ -110,21 +110,15 @@ export function HoldPage({
   return (
     <section className="relative flex min-h-dvh flex-col overflow-clip">
       {image ? (
-        /* A still of the thing the page is holding.
+        /* A still of the thing the page is holding, filling the frame at every
+           width.
 
-           Cover from md, where the frame is landscape and a landscape source
-           fills it without being blown up. Contained below that, and this is
-           the whole of why the two differ: covering a 375x812 window with a
-           16:9 render scales it to more than four times the width of the
-           screen, so a phone got a fragment of the card magnified until the
-           lit face filled the display and the heading sat on top of the
-           brightest thing on the page. Contained, the card arrives whole and
-           at its own size.
-
-           Held to the bottom on a phone rather than centred, so the picture is
-           under the copy instead of behind it — the column is centred in the
-           frame, and a contained band is centred too, which is the one place
-           it should not be.
+           It was contained below md, on the argument that covering a 375x812
+           window with a 16:9 render scales it past four times the width of the
+           screen — so a phone got a fragment of the card, magnified. True, and
+           the wrong trade: contained, the picture arrives as a band across the
+           middle of a mostly empty page and stops being a backdrop at all. It
+           is a backdrop, so it covers, and the crop is the price. Lauge's call.
 
            `priority`: it is the largest thing above the fold on a page with
            almost nothing else on it, so leaving it to lazy-load spends the
@@ -135,7 +129,7 @@ export function HoldPage({
           fill
           priority
           sizes="100vw"
-          className="max-md:object-contain max-md:object-bottom md:object-cover"
+          className="object-cover"
         />
       ) : (
         /* The show gallery, parked. The home page flies the length of it on
@@ -204,33 +198,83 @@ export function HoldPage({
         <Kicker>{kicker}</Kicker>
 
         {/* Same beat as the home hero — short, long, short at three lines, and
-            long, short at two — one step down the scale at every breakpoint,
-            so the front page keeps the largest type on the site.
+            long, short at two — and now the same step, display-1, rather than
+            one below it.
+
+            The step down was deliberate once: the front page was meant to keep
+            the largest type on the site. It cost more than it bought. An h1 is
+            the page's title and there was no rule saying what one takes, so
+            the site had grown three answers to that question — display-1 here,
+            display-2 on five routes, display-3 on an article — and a reader
+            moving between them met a different-sized title each time for no
+            reason they could see. The front page is still the front page; it
+            has a hero, a film and three sentences to say it with.
+
+            And, like the hero, level below sm: the beat is a display effect
+            and a 375px screen has no room to play it. Every line at text-xl,
+            which the longest of them — "There is no front desk." at 281px —
+            clears inside 343 of container. The step-down still holds there,
+            against the hero's text-2xl.
 
             text-relief on the block and text-trim on each line: both are
             custom text-* utilities, and two of those in one class list is the
             one thing `cn` cannot be trusted with. So these two class strings
             are written out whole and chosen between, rather than merged. See
-            CLAUDE.md. */}
+            CLAUDE.md.
+
+            Inline below sm, block from it. The sentences are separate lines by
+            design — that is the beat the copy is written to — but a forced
+            break only reads as one when the line it forces actually fits. On a
+            375 window they do not, so each sentence broke where the column ran
+            out *and* again where the design said, and the stack came out as
+            statements alternating with orphans: "The store is not / open. /
+            You'll get first / pick." Run together they are one paragraph that
+            wraps where it wants and strands nothing. kugiri cuts at the line
+            boxes the browser painted, so the reveal follows either way. */}
         <LineRise
           as="h1"
-          className="font-heading text-relief mt-6 space-y-(--heading-line-gap) font-black uppercase italic md:mt-8"
+          className="display-1 text-trim mt-6 sm:space-y-(--heading-line-gap) md:mt-8"
         >
           {lines.map((line, index) => (
-            <span
-              key={index}
-              className={
-                index === heroLine(lines)
-                  ? // space-y hangs its margin on the upper sibling, so this
-                    // line owns the gap beneath it — and being the largest,
-                    // its em would open the widest one on the stack without
-                    // the tightening.
-                    "text-trim line-gap-tight block text-xl tracking-[-0.02em] sm:text-3xl md:text-4xl lg:text-5xl"
-                  : "text-trim block text-lg tracking-[-0.02em] sm:text-xl md:text-2xl lg:text-3xl"
-              }
-            >
-              {line}
-            </span>
+            <Fragment key={index}>
+              {/* A space between the sentences, and it has to be written. JSX
+                  drops the whitespace between two elements on separate lines,
+                  so inline they would run together. Inert while they are
+                  blocks. */}
+              {index > 0 ? " " : null}
+              <span
+                className={
+                  index === heroLine(lines)
+                    ? // space-y hangs its margin on the upper sibling, so this
+                      // line owns the gap beneath it — and being the largest,
+                      // its em would open the widest one on the stack without
+                      // the tightening.
+                      //
+                      // From sm, which is where it *is* the largest. Below that
+                      // every line is set alike, so the gaps are already even
+                      // and tightening one of them only kinks the stack.
+                      // No size of its own: display-1's, the whole way up. It
+                      // carried `lg:text-5xl`, which is what display-1 is at
+                      // md anyway — and being an lg it then sat on top of the
+                      // xl step too, so the statement stopped growing at 1024
+                      // and never reached 6xl.
+                      "text-trim sm:line-gap-tight inline tracking-[-0.02em] sm:block"
+                    : // display-2's ladder, one step under the statement at
+                      // every width — 31.1 / 37.3 / 44.8 against 37.3 / 44.8 /
+                      // 53.8. It was two steps under, which on a two-line hold
+                      // page read as a caption stuck to a heading rather than
+                      // as the second half of what it says.
+                      //
+                      // Written out rather than taken as `display-2`, because
+                      // the step is only wanted from sm: below that the lines
+                      // are inline and flow as one paragraph, and a paragraph
+                      // cannot be two sizes.
+                      "text-trim inline tracking-[-0.02em] sm:block sm:text-3xl md:text-4xl xl:text-5xl"
+                }
+              >
+                {line}
+              </span>
+            </Fragment>
           ))}
         </LineRise>
 

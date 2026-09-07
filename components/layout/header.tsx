@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { DropdownMenu } from "radix-ui";
 import { useEffect, useId, useRef, useState } from "react";
 
@@ -62,17 +63,47 @@ const menuGroups = [
  * The pill row's type — the rail links and the language segment, which sit on
  * the same line and cannot be set differently without the row looking wrong.
  *
- * The CTA's type exactly — `font-body font-medium tracking-[0.02em]` — at the
- * scale's base step. The caps are gone and the 4% went with them —
- * that allowance was the caps' own, opening 12.8px words that have no
- * ascenders or descenders to keep them apart, and set lowercase the row wants
- * the 2% the scale is tuned for. Nothing in the bar is set differently from a
- * button now.
+ * The scale's base step at the body's own 2%. The caps are gone and the 4%
+ * went with them — that allowance was the caps' own, opening 12.8px words that
+ * have no ascenders or descenders to keep them apart, and set lowercase the
+ * row wants the 2% the scale is tuned for.
+ *
+ * Regular, not medium. It was the CTA's weight exactly, on the argument that
+ * nothing in the bar should be set differently from a button — but a button is
+ * one thing asking to be pressed and this is a row of six, and six mediums
+ * side by side read as six asks. Navigation is where you are, not what to do.
  */
-const railTypeClass = "font-body text-base font-medium tracking-[0.02em]";
+const railTypeClass = "font-body text-base font-normal tracking-[0.02em]";
+
+/**
+ * The page you are on, in the eyebrow's paint.
+ *
+ * `text-chrome-violet` and the same brightness-125 the Kicker wears, so the
+ * two violets on the site are one violet — a gradient clipped to the glyphs,
+ * never a flat `violet-*`.
+ *
+ * Written out whole rather than merged onto the resting class, and both
+ * variants kept apart, because `text-chrome-violet` sets `color: transparent`
+ * and a resting `text-white/80` sitting alongside it would win or lose by
+ * stylesheet order rather than by intent — and `cn` would eat one of the two
+ * outright. So a link takes one string or the other, never both. See CLAUDE.md.
+ */
+const ACTIVE_PAINT = "text-chrome-violet brightness-125";
+
+/**
+ * Whether a link is the page being looked at.
+ *
+ * Prefix-matched below the root so a story counts as News and a fighter counts
+ * as Athletes — the nav names sections, and a reader inside one has not left
+ * it. `/` is exact, or it would light on every page in the site.
+ */
+function isCurrent(pathname: string, href: string) {
+  return href === "/" ? pathname === "/" : pathname.startsWith(href);
+}
 
 /** The rail. */
 const navLinkClass = `${railTypeClass} text-white/80 transition-[color,opacity] duration-200 hover:text-white`;
+const navLinkActiveClass = `${railTypeClass} ${ACTIVE_PAINT} transition-[color,opacity] duration-200`;
 
 /**
  * The menu card, and deliberately not the row's type.
@@ -85,6 +116,7 @@ const navLinkClass = `${railTypeClass} text-white/80 transition-[color,opacity] 
  */
 const menuLinkClass =
   "font-body tap block w-fit py-1 text-2xl font-normal tracking-[0.02em] text-white/70 hover:text-white";
+const menuLinkActiveClass = `font-body tap block w-fit py-1 text-2xl font-normal tracking-[0.02em] ${ACTIVE_PAINT}`;
 
 /**
  * The third tier — two steps down the scale, and dimmer to match.
@@ -99,6 +131,7 @@ const menuLinkClass =
  */
 const menuMinorLinkClass =
   "font-body tap block w-fit py-1.5 text-base font-normal tracking-[0.02em] text-white/45 hover:text-white";
+const menuMinorLinkActiveClass = `font-body tap block w-fit py-1.5 text-base font-normal tracking-[0.02em] ${ACTIVE_PAINT}`;
 
 /**
  * Everything the site is offered in.
@@ -452,6 +485,7 @@ export function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [holdTap, setHoldTap] = useState(false);
   const [pressing, setPressing] = useState(false);
+  const pathname = usePathname();
   const scrolled = useScrolled();
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -643,6 +677,15 @@ export function Header() {
                 <Link
                   href="/"
                   data-nav-item
+                  // Shuts the menu, like every other link that goes somewhere.
+                  // It was the one that did not: the card's nine links each
+                  // close it on the way out and the mark did not, so pressing
+                  // it navigated home *under* an open menu — and pressing it
+                  // while already home did nothing at all, since there was no
+                  // navigation to hide the fact. The outside-press handler
+                  // cannot help here either: the mark is inside the bar, which
+                  // is the one region that handler deliberately ignores.
+                  onClick={() => setMenuOpen(false)}
                   // h-full rather than padding pulled off the layout: the box
                   // is the segment now, so the target holds its size when the
                   // wordmark shrinks to the mark on scroll.
@@ -693,7 +736,14 @@ export function Header() {
                           key={href}
                           href={href}
                           data-nav-item
-                          className={navLinkClass}
+                          aria-current={
+                            isCurrent(pathname, href) ? "page" : undefined
+                          }
+                          className={
+                            isCurrent(pathname, href)
+                              ? navLinkActiveClass
+                              : navLinkClass
+                          }
                         >
                           {label}
                         </Link>
@@ -795,7 +845,12 @@ export function Header() {
                   {menuGroups.map(({ tone, items }) => (
                     <ul
                       key={items[0].href}
-                      className={tone === "major" ? "space-y-2" : "space-y-1"}
+                      /* The minors carry no gap of their own: `py-1.5` on the
+                         link is already 12px of separation, and 4px of
+                         space-y on top of it opened the third tier wider than
+                         the majors above it. The padding is the target and the
+                         spacing both. */
+                      className={tone === "major" ? "space-y-2" : undefined}
                     >
                       {items.map(({ label, href }) => (
                         <li key={href}>
@@ -805,10 +860,17 @@ export function Header() {
                           <Link
                             href={href}
                             onClick={() => setMenuOpen(false)}
+                            aria-current={
+                              isCurrent(pathname, href) ? "page" : undefined
+                            }
                             className={
-                              tone === "major"
-                                ? menuLinkClass
-                                : menuMinorLinkClass
+                              isCurrent(pathname, href)
+                                ? tone === "major"
+                                  ? menuLinkActiveClass
+                                  : menuMinorLinkActiveClass
+                                : tone === "major"
+                                  ? menuLinkClass
+                                  : menuMinorLinkClass
                             }
                           >
                             {label}

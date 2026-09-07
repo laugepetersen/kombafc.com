@@ -173,7 +173,7 @@ export function NewsIndex() {
   return (
     // Clearance for the floating nav pill, same as the roster page.
     <Section spacing="lg" container="narrow" className="pt-32 md:pt-40">
-      <LineRise as="h1" text="News" className="display-2" />
+      <LineRise as="h1" text="News" className="display-1" />
 
       {/* Rows draw their own top edge and nothing else. The list used to close
           itself with a rule underneath the last one, which boxed the run — and

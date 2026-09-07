@@ -128,7 +128,12 @@ function FormatCard({ title, body, icon, image, position, sizes }: Card) {
           where the type sits the picture has already become panel before it
           reaches the inset and there is no edge to see, and up in the clear
           quarter the mount is a crisp 6px line, which is the point of it. */}
-      <div className="absolute inset-1.5" aria-hidden="true">
+      {/* 4px on a phone and 6 from md. The mount is a proportion of the card,
+          not a fixed rule: at one or two cards to the row the panel is 165 to
+          343 wide and a 6px inset reads as a border drawn around the picture,
+          where at a third of a desktop row the same 6 reads as the picture
+          being set into the panel. Which is the thing it is for. */}
+      <div className="absolute inset-1 md:inset-1.5" aria-hidden="true">
         <Image
           src={image}
           alt=""
@@ -166,14 +171,19 @@ export function Format() {
       <div className="flex flex-col md:items-end md:text-right">
         <Kicker>The format</Kicker>
 
-        {/* The poster register, at the fourth step: Eurostile black italic
-            with the relief, and the sizes that go with it. The measure opens
-            with the drop — `ch` tracks the type, so 18 of them would hold the
-            same four lines at two thirds the width and read as a column. */}
+        {/* The poster register at display-2, which is where the home page's
+            three section headings all now sit — this one, the text-and-image
+            block and Previous show. It was the fourth step, two below them,
+            and at 21.6px on a phone it read as a lead-in to the cards rather
+            than as the thing they answer to.
+
+            The measure opens with the drop — `ch` tracks the type, so 18 of
+            them would hold the same four lines at two thirds the width and
+            read as a column. */}
         <LineRise
           as="h2"
           text="Every striking sport. Maximum entertainment. Anyone can follow."
-          className="display-4 mt-6 max-w-[24ch] md:mt-8"
+          className="display-2 mt-6 max-w-[24ch] md:mt-8"
         />
       </div>
 

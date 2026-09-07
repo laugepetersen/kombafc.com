@@ -54,18 +54,22 @@ export function Ressurect() {
             <LineRise
               as="h2"
               text={"We\u2019re aiming to set our mark Q1, 2027."}
-              /* text-xl at the base step only. Every heading on the site is a step down at `md` and
-                above and was level with the hero below it — measured on a 375
-                window: the hero's largest line 29.3px, this one 29.3, and
-                Previous show's 36.6, so the page's h1 was the *smallest* of
-                the three. The hero cannot come up to meet them: "A new fight
-                format." is 299px at text-2xl against a 343px container and
-                374 at text-3xl, so it is already at the largest step that
-                sets on one line. So the sections come down instead. */
-              className="text-relief mt-6 text-xl font-black tracking-[-0.01em] uppercase italic md:mt-8 md:text-3xl xl:text-4xl"
+              /* display-2, the same step Previous show takes — the home page's
+                two section headings rank together, under the hero. The partner
+                blocks use display-3 for their own reasons and this is not
+                downstream of that: a step is chosen per block, not inherited
+                from whatever wore it last. */
+              className="display-2 mt-6 md:mt-8"
             />
 
-            <p className="text-ink-200 mt-8 max-w-96 text-base leading-[1.4]">
+            {/* mt-4 on a phone. 32px is the gap between two *blocks* — the
+                heading and the button either side of it get it for that
+                reason — and this paragraph is not a block, it is the second
+                half of what the heading says. At 32 in a column 343 wide it
+                read as a stray sentence under a title rather than as the
+                title's own copy. Back to 32 from md, where the panel is wide
+                enough for the larger gap to read as intended. */}
+            <p className="text-ink-200 mt-4 max-w-96 text-base leading-[1.4] md:mt-8">
               We have been silent for almost a year, but not out of the game.
               Just needed some time to prepare, for the next big thing..
             </p>
@@ -76,14 +80,24 @@ export function Ressurect() {
           </div>
         </div>
 
-        {/* No ratio here on purpose. Grid rows stretch, so whichever column
-            is taller sets the height and the other fills it — the photograph
-            grows with the copy, and short copy is pulled down to the
-            photograph. The floor is what a fill image cannot supply for
+        {/* No ratio side by side, on purpose. Grid rows stretch, so whichever
+            column is taller sets the height and the other fills it — the
+            photograph grows with the copy, and short copy is pulled down to
+            the photograph. The floor is what a fill image cannot supply for
             itself: it contributes no height, so without it the column would
             collapse to nothing once stacked, and on desktop the panel would
             be free to shrink to whatever the copy happened to need. */}
-        <div className="relative min-h-125 max-lg:order-first">
+        {/* Square on a phone, and a floor from lg.
+
+            The floor is 500px and the column is the full width of the screen,
+            so stacked on a 375 window the photograph came out 375x500 — a
+            portrait crop of a landscape frame, taking two thirds of the screen
+            to do it. 1:1 is the shape a stacked image wants: it reads as a
+            plate over the copy rather than as a panel competing with it, and
+            it gives the crop back most of what the tall box was cutting off
+            the sides. `aspect-square` needs the floor out of its way below lg,
+            or min-height wins and the ratio does nothing. */}
+        <div className="relative aspect-square max-lg:order-first lg:aspect-auto lg:min-h-125">
           <Image
             src="/ressurect.webp"
             alt="A KOMBA fighter in the ring, flags raised after the bout"

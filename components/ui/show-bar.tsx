@@ -8,9 +8,16 @@ import {
   useTransform,
 } from "motion/react";
 import Link from "next/link";
-import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useState,
+  useSyncExternalStore,
+} from "react";
 
 import { LineReveal } from "@/components/ui/heading-reveal";
+import { CTA_FILL } from "@/components/ui/button";
 import { Container } from "@/components/layout/container";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/utils";
@@ -21,10 +28,9 @@ import { cn } from "@/lib/utils";
  *
  * Pinned to the bottom of whatever it is dropped into, so on a pinned section
  * it stays under the photographs for the whole flight rather than scrolling
- * with them. Its furniture sits on the container's line from md, where it
- * lands under copy it has to agree with; stacked, it runs to both edges,
- * where the white block is the thing a thumb reaches for. The scrim behind it
- * is full-bleed either way — the dark at the foot of the screen is the page's,
+ * with them. Its furniture sits on the container's line at every width, the
+ * same line every other block on the page starts from. The scrim behind it is
+ * full-bleed regardless — the dark at the foot of the screen is the page's,
  * not the bar's, and stopping it at a gutter would draw an edge that is not
  * there.
  *
@@ -107,24 +113,78 @@ function useMediaQuery(query: string) {
   );
 }
 
+/**
+ * The block itself, as whichever element its job makes it.
+ *
+ * Split out so the choice is made in one place rather than duplicated down two
+ * near-identical branches of the bar's markup — the styling, the two lines and
+ * the icon are the same either way, and only the tag and its one prop differ.
+ */
+function Segment({
+  href,
+  onClick,
+  className,
+  children,
+}: {
+  href?: string;
+  onClick?: () => void;
+  className?: string;
+  children: ReactNode;
+}) {
+  if (href !== undefined) {
+    return (
+      <Link href={href} className={className}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" onClick={onClick} className={className}>
+      {children}
+    </button>
+  );
+}
+
 export function ShowBar({
   action,
   href,
+  onClick,
+  accent = "white",
   facts,
   progress,
   className,
 }: {
-  /** The label on the white block. */
+  /**
+   * The label on the block, and one line of it. It carried an optional second
+   * for a while — the verb over the name of the film — and both bars say
+   * enough in one: "Watch 1.0 Aftermovie", "Rewatch KOMBA 1.0".
+   */
   action: string;
   /**
-   * Where the block goes. An anchor, not a button with a handler — this used
-   * to open a player over the page and now it leaves for the archive, and the
-   * two want different elements. A link is what gives a middle click a new
-   * tab, a right click a copyable address and a screen reader the word
-   * "link"; a button wired to `router.push` is a destination in disguise, and
-   * the site already makes that argument in `Button`.
+   * Where the block goes, when it goes anywhere. An anchor, not a button with
+   * a handler: a link is what gives a middle click a new tab, a right click a
+   * copyable address and a screen reader the word "link"; a button wired to
+   * `router.push` is a destination in disguise, and the site already makes
+   * that argument in `Button`.
+   *
+   * The converse holds too, which is what `onClick` is for. The hero's bar
+   * opens a player over the page it is already on — that is not a navigation
+   * and dressing it as one would promise an address it cannot give.
    */
-  href: string;
+  href?: string;
+  /** Pressed instead of followed. Exactly one of this and `href`. */
+  onClick?: () => void;
+  /**
+   * Which paint the block wears.
+   *
+   * White by default, which is what a bar sitting *over* the site's own violet
+   * moments wants — the flythrough runs a violet-lit corridor behind it and a
+   * violet block on top of that is one violet too many. The hero has no violet
+   * of its own, and there the block is the page's primary ask, so it takes the
+   * primary ask's gradient.
+   */
+  accent?: "white" | "violet";
   facts: ShowFact[];
   /**
    * Nought to one across whatever scroll the bar is sitting over. Given one,
@@ -194,37 +254,84 @@ export function ShowBar({
         background: "linear-gradient(to top, rgb(5 5 8 / 0.8), transparent)",
       }}
     >
-      {/* Zeroing the gutter rather than overriding the padding: the utility
-          reads it from --gutter, so the variable is the supported way to take
-          the container off below md without racing its own declaration. */}
-      <Container className="max-md:[--gutter:0px]">
+      {/* On the container's line at every width. It used to zero the gutter
+          below md so the block ran to the edge of the screen, on the argument
+          that the edge is where a thumb is — but the bar is the only thing on
+          the site that left the grid to make that argument, and a full-bleed
+          band under a page whose every other edge lines up reads as the one
+          element that got away rather than as a deliberate exception.
+
+          The scrim behind it stays full-bleed, which is the part that has to
+          be: the dark at the foot of the screen belongs to the page, and
+          stopping it at a gutter would draw an edge that is not there. */}
+      <Container>
         {/* Reversed on small screens: the ask goes to the bottom edge, where a
             thumb is, and the fact sits above it. Side by side from md, where
             the row owns the height and both halves take all of it. */}
         <div className="relative flex flex-col-reverse md:h-18 md:flex-row">
-          <Link
+          {/* The ask.
+
+              No border of its own, and none above it: the rule belongs to the
+              facts, so the block runs the full height of the bar and its top
+              edge is the same line the rule is drawn on.
+
+              No bevel either. `tap` still gives it the press.
+
+              px-6 all the way up, which is what every other CTA on the site is
+              set at. It was on 32 and then 40, and at that width the label sat
+              in the middle of a panel rather than in a button.
+
+              The paint is the caller's — see `accent`. Violet is CTA_FILL, the
+              same gradient as every primary button on the site and the same one
+              the billing chips carry; the glow and the hover lift stay behind
+              with `Button`, because this runs to the edge of the screen and a
+              halo on a full-bleed block has nowhere to fall.
+
+              56px on a phone and the bar's own height from md.
+
+              No `tap`. The press is for a control you can see the whole of —
+              this one is a segment welded into a bar that runs the width of the
+              container, and shrinking it two per cent pulls it away from the
+              rule and the strip it is butted against, so the bar comes apart
+              for 90ms every time it is pressed.
+
+              Which also settles a conflict that was already here: `tap` sets a
+              `transition` shorthand and so does the brightness fade below it,
+              and two of those on one element resolve by stylesheet order with
+              one dropped silently. See CLAUDE.md.
+
+              The two things `tap` did that are not the press stay, written out.
+              Neither is an effect — they are the absence of the browser's own:
+              iOS paints a grey box over a tapped control, which on a violet
+              gradient is very visible, and `manipulation` drops the wait for a
+              double-tap that would otherwise sit between the finger and the
+              film. */}
+          <Segment
             href={href}
-            /* No border of its own, and none above it: the rule belongs to the
-               facts, so the block runs the full height of the bar and its top
-               edge is the same line the rule is drawn on.
-
-               No bevel either — the block runs to the edge of the screen, and
-               a cut corner on a full-bleed edge reads as a rendering fault
-               rather than as the site's mark. tap still gives it the press. */
-            /* px-6 all the way up, which is what every other CTA on the site
-               is set at. It was on 32 and then 40, and at that width the
-               label sat in the middle of a panel rather than in a button. */
-            className="tap text-void font-body flex h-14 shrink-0 items-center justify-center gap-2 bg-white px-6 text-base font-medium tracking-[0.02em] hover:brightness-90 md:h-full"
+            onClick={onClick}
+            className={cn(
+              "font-body flex h-14 shrink-0 touch-manipulation items-center justify-center gap-2 px-6 text-base font-medium tracking-[0.02em] transition-[filter] duration-300 [-webkit-tap-highlight-color:transparent] md:h-full",
+              accent === "violet"
+                ? cn(CTA_FILL, "hover:brightness-110")
+                : "text-void bg-white hover:brightness-90",
+            )}
           >
-            <Icon name="play_arrow" className="size-5" />
+            <Icon name="play_arrow" className="size-5 shrink-0" />
             {action}
-          </Link>
+          </Segment>
 
-          {/* The rule closes the bar on the right as well as the top from md,
-              where it stops at the container's line and needs an edge there.
-              Nothing on the left or the bottom: the white block is that end of
-              it, and the bottom is the screen. */}
-          <div className="border-rule relative min-w-0 flex-1 md:border-r">
+          {/* The rule closes the strip on the sides as well as the top.
+
+              Which sides depends on where the ask is. Side by side from md the
+              block is the left-hand end of the bar, so only the right needs
+              drawing. Stacked, the block is *below* rather than beside, which
+              leaves the strip open at both ends — so both get the rule there,
+              and the run of facts is a closed box on the container's line
+              rather than a line of type trailing off into the gutter.
+
+              Nothing on the bottom either way: from md that edge is the screen,
+              and stacked it is the block. */}
+          <div className="border-rule relative min-w-0 flex-1 max-md:border-x md:border-r">
             {/* The hairline, and the flight drawn along it. Two absolute rules
                 rather than a border and a child: a border is painted inside the
                 box and cannot be filled part-way, and the fill has to sit on

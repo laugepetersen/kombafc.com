@@ -16,11 +16,20 @@ import { cn } from "@/lib/utils";
 export function Marquee({
   children,
   durationSeconds = 40,
+  reverse = false,
   className,
   fadeClassName = "from-void",
 }: {
   children: ReactNode;
   durationSeconds?: number;
+  /**
+   * Runs the row the other way.
+   *
+   * `animation-direction` rather than a second set of keyframes: the track is
+   * the row plus a copy of itself and travels exactly half its own width, so
+   * the loop is seamless played backwards for the same reason it is forwards.
+   */
+  reverse?: boolean;
   className?: string;
   /** Should match whatever the marquee sits on, or the fade shows a seam. */
   fadeClassName?: string;
@@ -37,7 +46,10 @@ export function Marquee({
       )}
     >
       <div
-        className="animate-marquee flex w-max"
+        className={cn(
+          "animate-marquee flex w-max",
+          reverse && "[animation-direction:reverse]",
+        )}
         style={
           { "--marquee-duration": `${durationSeconds}s` } as React.CSSProperties
         }

@@ -34,13 +34,11 @@ const base =
    base divided by --text-ratio and follows it if the ratio is ever retuned. */
 const sizes = {
   default: "h-11 px-6 text-base",
-  // 44 on a phone and 36 from md, which is the one place a size is allowed
-  // two values. 36px is under the floor for a target a thumb has to find, and
-  // `sm` is the variant that turns up in the footer and beside a field — the
-  // furthest down the page anybody presses anything. The padding and the type
-  // do not step with it: the button still reads as the small one, it is only
-  // the box that opens up where the pointer is a finger.
-  sm: "h-11 px-4 text-sm md:h-9",
+  // One height, at every width. It briefly grew to 44 on a phone to clear the
+  // floor for a target a thumb has to find — and a small button that is not
+  // small on the device most people hold is not the variant it says it is.
+  // Lauge's call; the floor is noted rather than met here.
+  sm: "h-9 px-4 text-sm",
 } as const;
 
 export type ButtonSize = keyof typeof sizes;

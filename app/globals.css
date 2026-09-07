@@ -115,10 +115,20 @@
   /* -- Type -------------------------------------------------------------- *
      Modular scale. Every step is derived from --text-base and --text-ratio,
      so swapping the ratio below rescales the whole site in one edit:
-       1.200  Minor Third
-       1.250  Major Third   (current)
-       1.333  Perfect Fourth                                                */
-  --text-ratio: 1.25;
+       1.200  Minor Third   (current)
+       1.250  Major Third
+       1.333  Perfect Fourth
+
+     On the minor third since the display steps came out too loud on a phone.
+     `display-1` is an h1 and every page has one; at the major third it landed
+     at 45.8px on a 375 window, which is a title that takes a third of the
+     screen before the page has said anything. Down a ratio it is 37.3.
+
+     Note this leaves body copy exactly where it was — `--text-base` is the
+     fixed point the chain runs out from in both directions, so 15px stays
+     15px and only the steps either side of it compress. The top of the ladder
+     moves most: a display 6xl goes 71.5 to 53.8.                            */
+  --text-ratio: 1.2;
   /* 15px. The step the whole site is derived from, so this is the one number
      that moves everything: 12 at sm, 18.75 at lg, and a display 7xl that lands
      at 57 rather than 61. Held in rem rather than px so a reader who has
@@ -550,6 +560,15 @@
    moved between the two registers without the layout underneath it shifting —
    that is the whole point of pairing them.
 
+   One step per breakpoint, all the way down the ladder, and no extra break at
+   the small end. The top three carried one for a while, on the argument that
+   `display-1` at 45.8px on a 375 window is a heading that has run out of room:
+   it wraps a sentence two and three ways. It is, and it should. A hero on a
+   phone is meant to be the largest thing on the screen by a distance, and the
+   step below it — 36.6 — reads as a section heading that has wandered onto the
+   front page. Wrapping is what a display size costs on a narrow column, and
+   the alternative is a title nobody looks at. Lauge's call, twice.
+
    Leading is set on every step rather than left to the scale. The scale gives
    the display steps a leading of 1 and the body steps 1.4-1.55, which is right
    for what each was built for and wrong for a heading that borrows the other
@@ -562,6 +581,28 @@
    under that prefix would silently eat a `text-relief` or a `text-chrome`
    passed through `cn` — see the note in CLAUDE.md.
 --------------------------------------------------------------------------- */
+/**
+ * One step above the ladder, for a page's opening statement and nothing else.
+ *
+ * `display-1` is what an h1 takes, and every route has one — the roster, the
+ * archive, the news index, the five holds. It cannot also be the size that
+ * makes a full-screen hero land, because a size that lands over video at 1728
+ * is a size that flattens a page whose h1 sits above a grid.
+ *
+ * So this is the hero's own, and it is deliberately not `display-0`: there is
+ * no step zero, there is a ladder and one thing standing off the top of it.
+ * Reach for it when the heading *is* the screen. Anywhere else, display-1.
+ *
+ * It starts level with display-1 and pulls away as the screen grows — same
+ * 37.3px on a phone, where the column is the constraint and there is nothing
+ * to be gained, then a step clear at every breakpoint after: 44.8 at sm, 53.8
+ * at md, 64.5 at lg, 77.4 at xl against display-1's 53.8.
+ */
+@utility display-hero {
+  @apply font-heading text-4xl/[1] font-black tracking-[-0.01em] uppercase italic sm:text-5xl/[1] md:text-6xl/[1] lg:text-7xl/[1] xl:text-8xl/[1];
+  @apply text-relief;
+}
+
 @utility display-1 {
   @apply font-heading text-4xl/[1] font-black tracking-[-0.01em] uppercase italic md:text-5xl/[1] xl:text-6xl/[1];
   @apply text-relief;

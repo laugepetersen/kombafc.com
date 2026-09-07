@@ -86,11 +86,8 @@ export function NotifyForm({
 }) {
   // The CTA's own heights, to the class, because the field and the button sit
   // in one shell and any drift between them shows as a step in the middle of
-  // it. Which is why the small one steps at md and not before: 36px is under
-  // the floor for something a thumb has to hit, and this is the variant in the
-  // footer, at the very bottom of the page with nothing under it to catch a
-  // miss. See the note on `sizes` in button.tsx.
-  const control = size === "sm" ? "h-11 md:h-9" : "h-11";
+  // it. See the note on `sizes` in button.tsx.
+  const control = size === "sm" ? "h-9" : "h-11";
   const [state, action, pending] = useActionState<NotifyState, FormData>(
     subscribeToAnnouncements,
     { status: "idle" },
