@@ -75,7 +75,7 @@ const tiers: Tier[] = [
     summary:
       "The room and the people in it. No logo and no placement — a seat on every card, and the table afterwards.",
     includes: [
-      "8 tickets and 8 drinks a year",
+      "Tickets and drinks at every show",
       "A standing discount on further tickets",
       "Straight past the queue",
       "The yearly partner dinner",
@@ -87,8 +87,12 @@ const tiers: Tier[] = [
     name: "Sponsor",
     price: "From 50.000 DKK / event",
     summary:
-      "Your mark on the night. The venue, the screens and the site, on top of everything Network opens.",
-    includes: ["Logo at the venue and on the broadcast", "Logo on kombafc.com"],
+      "Your mark on the night. At the venue and in our marketing, on top of everything Network opens.",
+    includes: [
+      "Logo digitally as part of our marketing",
+      "Logo at the venue",
+      "VIP — more seats, more access",
+    ],
     carries: "Everything in Network",
     image: "/show/show-01.webp",
     alt: "The lit ring and the screens above it, seen from the stands at K.B. Hallen",
@@ -104,7 +108,7 @@ const tiers: Tier[] = [
     includes: [
       "Your brand written into the show itself",
       "Prime placement, venue and broadcast",
-      "Extended VIP — more seats, more access",
+      "Extended VIP — exclusive seats and access",
     ],
     carries: "Everything in Network",
     image: "/show/show-05.webp",
