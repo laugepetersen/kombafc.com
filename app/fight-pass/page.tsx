@@ -5,7 +5,7 @@ import { HoldPage } from "@/components/sections/hold-page";
 export const metadata: Metadata = {
   title: "Fight Pass",
   description:
-    "The experience for fight fans. Every KOMBA FC fight, filmed and kept — the pass is not open yet, so leave an address and you are let in first.",
+    "The experience for fight fans. Every KOMBA FC bout, filmed and kept — the pass opens soon, and the list decides who gets through the door first.",
 };
 
 export default function FightPassPage() {

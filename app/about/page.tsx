@@ -5,7 +5,7 @@ import { HoldPage } from "@/components/sections/hold-page";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Redefining the fight experience — every striking sport in one ring, under a single format, built in Copenhagen. The full story is still under wraps.",
+    "A new era of striking sports — every striking discipline in one ring, under one format. Built in Copenhagen, with more to tell than we are telling yet.",
 };
 
 export default function AboutPage() {

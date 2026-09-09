@@ -5,7 +5,7 @@ import { HoldPage } from "@/components/sections/hold-page";
 export const metadata: Metadata = {
   title: "Store",
   description:
-    "Merch, drops and collectibles. The KOMBA FC store is not open yet — leave an address and you get first pick when the first drop lands.",
+    "Merch, drops and collectibles. The KOMBA FC store has not opened yet; join the list and take first pick when the opening drop lands.",
 };
 
 export default function StorePage() {

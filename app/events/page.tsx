@@ -5,7 +5,7 @@ import { HoldPage } from "@/components/sections/hold-page";
 export const metadata: Metadata = {
   title: "Events",
   description:
-    "The next KOMBA FC card is still under wraps. Leave an address and you hear the date, the venue and the card before anyone else does.",
+    "The next KOMBA FC card is still under wraps. Sign up and the date, the venue and the full card reach you before they reach anyone else.",
 };
 
 export default function EventsPage() {

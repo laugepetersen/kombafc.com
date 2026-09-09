@@ -30,7 +30,7 @@ export const metadata: Metadata = {
   },
   // Serves as the home page's description as well as the site-wide fallback.
   description:
-    "A new era of striking sports. Every discipline in one ring, under a single format — the fights, the athletes, and what comes next, from Copenhagen.",
+    "KOMBA FC puts Muay Thai and K-1 on the same card. The fighters, all ten bouts from the October debut in full, and what comes next.",
   metadataBase: new URL("https://kombafc.com"),
   // The mark now ships on its own ground — a purple squircle tile — so it no
   // longer needs one file per browser chrome. That was only ever necessary

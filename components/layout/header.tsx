@@ -54,6 +54,7 @@ const menuGroups = [
     items: [
       { label: "News", href: "/news" },
       { label: "About", href: "/about" },
+      { label: "Fight Apply", href: "/fight-apply" },
       { label: "Contact", href: "/contact" },
     ],
   },
