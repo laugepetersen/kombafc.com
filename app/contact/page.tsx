@@ -24,7 +24,7 @@ const CONTACT = "hello@kombafc.com";
 export const metadata: Metadata = {
   title: "Contact",
   description:
-    "Reach KOMBA directly. Press, bookings, partnerships and everything else — one address, and a person on the other end of it.",
+    "Reach KOMBA FC directly. Press, bookings, partnerships and everything else — one address, and a person on the other end of it.",
 };
 
 export default function ContactPage() {

@@ -5,7 +5,7 @@ import { WatchIndex } from "@/components/sections/watch-index";
 export const metadata: Metadata = {
   title: "Watch",
   description:
-    "Every fight from KOMBA 1.0 at K.B. Hallen, 11 October 2025 — the main event and nine more, in full.",
+    "Every fight from KOMBA 1.0 at K.B. Hallen on 11 October 2025 — the main event and nine more, in full and free to watch.",
 };
 
 export default function WatchPage() {

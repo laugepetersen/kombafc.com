@@ -5,7 +5,7 @@ import { NewsIndex } from "@/components/sections/news-index";
 export const metadata: Metadata = {
   title: "News",
   description:
-    "Press coverage of KOMBA — every article written about the K.B. Hallen debut, summarised here and linked to the publication that wrote it.",
+    "Press coverage of KOMBA FC — every article written about the K.B. Hallen debut, summarised here and linked back to the publication that wrote it.",
 };
 
 export default function NewsPage() {

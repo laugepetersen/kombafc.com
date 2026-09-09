@@ -13,7 +13,11 @@ import { PersonCard } from "@/components/ui/person-card";
 import { StaggerReveal } from "@/components/ui/stagger-reveal";
 import { team } from "@/content/team";
 
-export const metadata = { title: "Styleguide" };
+export const metadata = {
+  title: "Styleguide",
+  description:
+    "The KOMBA FC design system — type scale, ink ramp, container widths and section rhythm, rendered from the same tokens the site is built on.",
+};
 
 const typeScale = [
   "text-7xl",

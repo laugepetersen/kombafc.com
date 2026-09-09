@@ -14,11 +14,23 @@ export const metadata: Metadata = {
   // keep an already-discovered URL out of the index. The meta tag does, so
   // staging carries both.
   robots: isCanonicalProduction ? undefined : { index: false, follow: false },
+  // Two shapes, and the order is the point. Every inner page reads
+  // "Athletes • KOMBA FC" — what you are looking at first, because that is the
+  // half a search result has room to show and the half that differs. The home
+  // page inverts it and leads with the name, since there the brand *is* the
+  // subject and there is no page title to put in front of it.
+  //
+  // `default` is what the home page renders: it is the only route without a
+  // title of its own, and `template` is not applied to `default`, so the string
+  // below goes out verbatim. A new route that forgets a title would inherit it
+  // too — every current one sets its own.
   title: {
-    template: "%s — KOMBA FC",
-    default: "KOMBA Fight Club",
+    template: "%s • KOMBA FC",
+    default: "KOMBA FC • All Strikers. One Arena.",
   },
-  description: "The best strikers. A new fight format. In Scandinavia.",
+  // Serves as the home page's description as well as the site-wide fallback.
+  description:
+    "Every striking sport in one ring, under a single format. KOMBA FC is a Copenhagen promotion — the fights, the athletes, and what comes next.",
   metadataBase: new URL("https://kombafc.com"),
   // The mark now ships on its own ground — a purple squircle tile — so it no
   // longer needs one file per browser chrome. That was only ever necessary
@@ -42,7 +54,7 @@ export const metadata: Metadata = {
     apple: { url: "/favicon/apple-touch-icon.png", sizes: "180x180" },
   },
   openGraph: {
-    siteName: "KOMBA Fight Club",
+    siteName: "KOMBA FC",
     type: "website",
   },
 };
