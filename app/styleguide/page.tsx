@@ -11,12 +11,24 @@ import { Kicker } from "@/components/ui/kicker";
 import { LineRise } from "@/components/ui/line-rise";
 import { PersonCard } from "@/components/ui/person-card";
 import { StaggerReveal } from "@/components/ui/stagger-reveal";
+import type { Metadata } from "next";
+
 import { team } from "@/content/team";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Styleguide",
   description:
     "The KOMBA FC design system — type scale, ink ramp, container widths and section rhythm, rendered from the same tokens the site is built on.",
+  // Kept out of search on every host, production included. This is a scaffold
+  // for us, not a page for anyone arriving from a search result, and it would
+  // otherwise be the one route the layout's staging rule never covers.
+  //
+  // A meta tag rather than a robots.txt disallow, for the reason the layout
+  // already gives: a disallow stops the crawl before the noindex can be read,
+  // so a URL discovered from a link stays in the index. This is what removes
+  // it. `follow: false` because everything it links to is linked from the nav
+  // anyway.
+  robots: { index: false, follow: false },
 };
 
 const typeScale = [

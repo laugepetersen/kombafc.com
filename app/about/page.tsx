@@ -5,7 +5,7 @@ import { HoldPage } from "@/components/sections/hold-page";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "KOMBA FC is a striking promotion built in Copenhagen — every striking sport in one ring, under a single format. The full story is still under wraps.",
+    "Redefining the fight experience — every striking sport in one ring, under a single format, built in Copenhagen. The full story is still under wraps.",
 };
 
 export default function AboutPage() {
