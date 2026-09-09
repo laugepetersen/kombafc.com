@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import { Section } from "@/components/layout/section";
+import { Button } from "@/components/ui/button";
 import { CometCard } from "@/components/ui/comet-card";
 import { Flag } from "@/components/ui/flag";
 import { Icon } from "@/components/ui/icon";
@@ -261,6 +262,32 @@ export function FightersRoster() {
           </li>
         ))}
       </ul>
+
+      {/* The way in, at the end of the roster rather than at the top of it.
+          Somebody reading this page is either looking for a name or wondering
+          whether theirs could be on it, and the second question is only worth
+          asking once they have seen who is. So it sits under the last row,
+          where the grid runs out.
+
+          Ranged left with the heading — the page starts every line on the
+          container's edge and a centred block at the foot would be the one
+          thing that does not. */}
+      <div className="mt-16 flex flex-col items-start md:mt-20">
+        <LineRise
+          as="h2"
+          text="Do you have what it takes?"
+          className="display-3 max-w-[18ch]"
+        />
+
+        <p className="text-ink-200 mt-4 max-w-96 text-base leading-[1.4] md:mt-6">
+          KOMBA is built on strikers who came from somewhere else. If you fight,
+          we want to see it.
+        </p>
+
+        <Button href="/fight-apply" className="mt-6 md:mt-8">
+          Apply as a fighter
+        </Button>
+      </div>
     </Section>
   );
 }

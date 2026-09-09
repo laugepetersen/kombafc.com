@@ -121,3 +121,128 @@ export async function subscribeToAnnouncements(
 
   return { status: "ok" };
 }
+
+/* ---------------------------------------------------------------------------
+   Fighter applications
+--------------------------------------------------------------------------- */
+
+export type ApplyState =
+  { status: "idle" } | { status: "ok" } | { status: "error"; message: string };
+
+/**
+ * Its own endpoint, not the signup's.
+ *
+ * An address on a list and somebody asking to be put on a card are different
+ * records with different lifetimes, and merging them means whoever owns the
+ * mailing list also owns a stack of applications they cannot act on. Falls
+ * back to nothing rather than to SIGNUP_WEBHOOK_URL — a wrong destination is
+ * worse than a refused submission, because nobody finds out.
+ */
+const APPLY_ENDPOINT = "APPLICATION_WEBHOOK_URL";
+
+/** Room for a paragraph, not for a payload. */
+const MAX_FIELD = 2000;
+
+/**
+ * Which boxes the server insists on, independent of the client.
+ *
+ * The steps in `content/fight-apply.ts` are what the form renders and what it
+ * checks on the way through; this is the same list said again on the far side
+ * of the network, because the first one is advice and this one is the rule.
+ * Kept here rather than imported so a "use server" module has no reason to
+ * pull a client-side content file into the server bundle.
+ */
+const REQUIRED = [
+  "fullName",
+  "email",
+  "phone",
+  "age",
+  "nationality",
+  "division",
+  "gym",
+] as const;
+
+export async function submitFightApplication(
+  _previous: ApplyState,
+  formData: FormData,
+): Promise<ApplyState> {
+  // The same honeypot the signup carries, answered the same way.
+  if (String(formData.get("company") ?? "") !== "") {
+    return { status: "ok" };
+  }
+
+  const entries: Record<string, string> = {};
+
+  for (const [key, value] of formData.entries()) {
+    if (key === "company" || typeof value !== "string") continue;
+    const trimmed = value.trim();
+    if (trimmed === "") continue;
+    if (trimmed.length > MAX_FIELD) {
+      return {
+        status: "error",
+        message: "One of those answers is longer than we can take.",
+      };
+    }
+    entries[key] = trimmed;
+  }
+
+  const email = (entries.email ?? "").toLowerCase();
+
+  if (email.length > MAX_LENGTH || !EMAIL.test(email)) {
+    return {
+      status: "error",
+      message: "That does not look like an email address.",
+    };
+  }
+  entries.email = email;
+
+  if (REQUIRED.some((name) => !entries[name])) {
+    return {
+      status: "error",
+      message: "Something required is missing. Step back and check.",
+    };
+  }
+
+  const endpoint = process.env[APPLY_ENDPOINT];
+
+  if (!endpoint) {
+    /* Same latitude as the signup, and the same reason: never answer "we have
+       it" to an application that went nowhere, except in development, where
+       succeeding is what lets the form be built at all. */
+    if (process.env.NODE_ENV === "development") {
+      console.info(
+        `[apply] ${email} — ${APPLY_ENDPOINT} is unset, not sent`,
+        entries,
+      );
+      return { status: "ok" };
+    }
+
+    console.error(`[apply] ${APPLY_ENDPOINT} is not set — application refused`);
+    return { status: "error", message: GENERIC_FAILURE };
+  }
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        ...entries,
+        source: "fight-apply",
+        submittedAt: new Date().toISOString(),
+      }),
+      signal: AbortSignal.timeout(TIMEOUT_MS),
+    });
+
+    if (!response.ok) {
+      console.error(`[apply] webhook returned ${response.status}`);
+      return { status: "error", message: GENERIC_FAILURE };
+    }
+  } catch (error) {
+    // Nothing of the application in the log — it is somebody's personal data
+    // and it is not what went wrong.
+    console.error("[apply] webhook failed", error);
+    return { status: "error", message: GENERIC_FAILURE };
+  }
+
+  return { status: "ok" };
+}
