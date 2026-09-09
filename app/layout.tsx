@@ -20,33 +20,25 @@ export const metadata: Metadata = {
   },
   description: "The best strikers. A new fight format. In Scandinavia.",
   metadataBase: new URL("https://kombafc.com"),
-  // The K is a bare silhouette with no ground of its own, so it needs one file
-  // per browser chrome — black on light, white on dark — chosen by `media` on
-  // the link rather than by a media query inside a single SVG, which Safari
-  // does not re-evaluate.
+  // The mark now ships on its own ground — a purple squircle tile — so it no
+  // longer needs one file per browser chrome. That was only ever necessary
+  // because the old K was a bare silhouette that vanished into whichever
+  // chrome matched it; a tile reads on both, and the `media`-paired
+  // icon-black/icon-white SVGs it took to do that are gone with it.
   //
-  // These two are the *only* declared icons, deliberately. Declare a .ico
-  // alongside them and Chrome takes the .ico and ignores the scheme entirely —
-  // measured, in both orderings and with and without `sizes`. Left undeclared,
-  // public/favicon.ico still serves the browsers that cannot render an SVG
-  // favicon, which fetch /favicon.ico by convention when no declared icon is
-  // usable. It carries its own dark tile, so it reads on either chrome.
+  // PNG rather than SVG because the tile's gradient came in as raster artwork.
+  // 512 is declared for anything that wants a large icon and 32 for the tab
+  // itself, rather than making every browser downscale half a megabyte.
+  // public/favicon.ico stays undeclared and carries 16/32/48 for the browsers
+  // that fetch it by convention — declare it here and Chrome takes the .ico and
+  // ignores everything else, which is the trap the old pair was written around.
   icons: {
     icon: [
-      {
-        url: "/favicon/icon-black.svg",
-        type: "image/svg+xml",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/favicon/icon-white.svg",
-        type: "image/svg+xml",
-        media: "(prefers-color-scheme: dark)",
-      },
+      { url: "/favicon/icon-192.png", type: "image/png", sizes: "192x192" },
+      { url: "/favicon/icon-512.png", type: "image/png", sizes: "512x512" },
     ],
-    // iOS ignores colour scheme and composites a transparent icon onto black,
-    // so the home-screen icon is the white mark on the void tile, full bleed —
-    // iOS rounds the corners itself.
+    // iOS composites onto its own ground and rounds the corners itself, so it
+    // takes the tile full bleed.
     apple: { url: "/favicon/apple-touch-icon.png", sizes: "180x180" },
   },
   openGraph: {

@@ -49,6 +49,43 @@ const nextConfig: NextConfig = {
         destination: "/partnerships",
         permanent: true,
       },
+
+      /**
+       * The three above are v2 renaming itself. These are the ones that carry
+       * v1's live URLs across the domain move — every path the old site links
+       * to that v2 does not answer on:
+       *
+       *   /            /about   /contact   /events     unchanged
+       *   /fighters -> /athletes                       covered above
+       *   /sponsors -> /partnerships                   here
+       *
+       * `/sponsor` and `/apply` are linked from v1's markup without ever
+       * having had a page behind them. They 404 today, so nothing is being
+       * preserved — but they are the two spellings a hand-typed or
+       * copy-pasted link is most likely to arrive on, and answering them
+       * costs one line each.
+       *
+       * Exact sources, not prefixes, and that matters more here than it did
+       * for /fighters: `public/sponsors/` is where the seven partner logos
+       * live. `/sponsors` matches the page and nothing under it, so
+       * /sponsors/g-shock.svg is still an SVG rather than a redirect to a
+       * page that has no logos on it.
+       */
+      {
+        source: "/sponsors",
+        destination: "/partnerships",
+        permanent: true,
+      },
+      {
+        source: "/sponsor",
+        destination: "/partnerships",
+        permanent: true,
+      },
+      {
+        source: "/apply",
+        destination: "/fight-apply",
+        permanent: true,
+      },
     ];
   },
 };

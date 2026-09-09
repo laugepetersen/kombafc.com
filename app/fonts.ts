@@ -45,4 +45,15 @@ export const googleSans = Google_Sans_Flex({
   subsets: ["latin"],
   variable: "--font-google-sans",
   display: "swap",
+  // Google Sans Flex is too new to be in the table of precalculated metrics
+  // next/font/google ships (1753 families, none of them this one), so
+  // adjustFontFallback can only warn on every compile and emit nothing. Left on
+  // its own it also left the stack a bare `"Google Sans Flex"` with nothing
+  // behind it — during the swap the browser reached past the sans-serifs to its
+  // own default and set body copy 7.7% narrow. Name the stack instead: Arial
+  // lands within 0.7%, which is what the missing size-adjust would have bought.
+  // The ascent and descent overrides would have bought nothing at all — leading
+  // here is a fixed multiple of the type size, so no line box moves either way.
+  adjustFontFallback: false,
+  fallback: ["Arial", "ui-sans-serif", "system-ui", "sans-serif"],
 });

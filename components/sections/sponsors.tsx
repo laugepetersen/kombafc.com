@@ -3,28 +3,59 @@ import { Marquee } from "@/components/ui/marquee";
 import { StaggerReveal } from "@/components/ui/stagger-reveal";
 
 /**
- * Placeholder roster carried over from the comp. Each logo keeps its own
- * exported dimensions rather than being forced to one height — they are
- * optically balanced at these sizes, and normalising them makes the wide
- * wordmarks shrink and the square marks loom.
+ * The roster, minus G-SHOCK — that one is placed by `everyFourth` below rather
+ * than sitting in the list. Six long, and that is load-bearing: see
+ * `everyFourth`.
+ *
+ * Each logo keeps its own dimensions rather than being forced to one height.
+ * Heights are the 4px grid between 20 and 32, ranked by how much ink the
+ * artwork actually lays down — measured by rasterising each mask and summing
+ * alpha, not guessed from the viewBox. The heavy slabs (G-SHOCK, Tolk Danmark,
+ * both near-solid wordmarks) take 20, the sparse lockups (Flypenge's globe,
+ * Skousen's script) take 32, the rest 28. Width is then whatever the artwork's
+ * own ratio asks for, so nothing is stretched.
+ *
+ * Equalising the ink outright rather than ranking it was the first attempt and
+ * it overcorrects — Flypenge is sparse enough that matching areas puts it at
+ * 48px, taller than anything else on the page. Ranked instead, the set spans
+ * 409 to 1498 ink px, against 314 to 1641 for the comp roster this replaced.
  */
 const sponsors = [
-  { name: "ADP", src: "/sponsors/adp.svg", width: 53, height: 24 },
-  { name: "HP", src: "/sponsors/hp.svg", width: 32, height: 32 },
-  { name: "Allstate", src: "/sponsors/allstate.svg", width: 110, height: 24 },
   {
-    name: "Advance Auto Parts",
-    src: "/sponsors/advance.svg",
-    width: 103,
-    height: 24,
+    name: "Cy Consult",
+    src: "/sponsors/cy-consult.svg",
+    width: 108,
+    height: 28,
   },
-  { name: "Amazon", src: "/sponsors/amazon.svg", width: 79, height: 24 },
-  { name: "AMETEK", src: "/sponsors/ametek.svg", width: 122, height: 20 },
-  { name: "Bunge", src: "/sponsors/bunge.svg", width: 92, height: 24 },
-  { name: "Carrier", src: "/sponsors/carrier.svg", width: 80, height: 32 },
-  { name: "Garmin", src: "/sponsors/garmin.svg", width: 119, height: 32 },
-  { name: "Honda", src: "/sponsors/honda.svg", width: 157, height: 20 },
+  { name: "Flypenge", src: "/sponsors/flypenge.svg", width: 71, height: 32 },
+  {
+    name: "Kronborg Byg",
+    src: "/sponsors/kronborg-byg.svg",
+    width: 65,
+    height: 28,
+  },
+  { name: "Skousen", src: "/sponsors/skousen.svg", width: 65, height: 32 },
+  { name: "Tandex", src: "/sponsors/tandex.svg", width: 77, height: 28 },
+  {
+    name: "Tolk Danmark",
+    src: "/sponsors/tolkdanmark.svg",
+    width: 166,
+    height: 20,
+  },
 ];
+
+/**
+ * Kept out of the roster so `everyFourth` can place it. Sized by the same rule
+ * as the rest and deliberately not enlarged — it is the title partner, but the
+ * prominence is meant to come from coming round twice as often, not from
+ * being twice the size.
+ */
+const gShock = {
+  name: "G-SHOCK",
+  src: "/sponsors/g-shock.svg",
+  width: 118,
+  height: 20,
+};
 
 type Sponsor = (typeof sponsors)[number];
 
@@ -56,15 +87,42 @@ function SponsorMark({ name, src, width, height }: Sponsor) {
 }
 
 /**
+ * Drops G-SHOCK into every fourth slot. It is the title partner, so it comes
+ * round more often than a seventh of the time — three others, then the mark,
+ * repeated.
+ *
+ * Which is why the roster above is six long rather than any other number: it
+ * divides into groups of three exactly, so the run ends on a G-SHOCK and the
+ * cadence survives the loop back to the top. The marquee carries the row twice
+ * and travels half its own width, so a list whose length is not a multiple of
+ * four would put two G-SHOCKs within a slot of each other at the seam — the one
+ * place the repeat is meant to be invisible.
+ *
+ * The mobile rows take three each and come out four long, so every fourth holds
+ * there too.
+ */
+function everyFourth(roster: Sponsor[]): Sponsor[] {
+  return roster.flatMap((sponsor, index) =>
+    index % 3 === 2 ? [sponsor, gShock] : [sponsor],
+  );
+}
+
+/**
  * Half the roster, for the phone's two rows. Alternating rather than split down
  * the middle, so neither row is all wordmarks and the other all square marks —
- * the widths run 32 to 157 and taking the list in halves put most of the wide
+ * the widths run 65 to 166 and taking the list in halves put most of the wide
  * ones together.
+ *
+ * Split first and interleave second: filtering the finished list by parity
+ * instead would land both G-SHOCKs on the same row and leave the other with
+ * none, since they sit at the two odd indices.
  */
 function sponsorRow(offset: number) {
-  return sponsors
-    .filter((_, index) => index % 2 === offset)
-    .map((sponsor) => <SponsorMark key={sponsor.name} {...sponsor} />);
+  return everyFourth(sponsors.filter((_, index) => index % 2 === offset)).map(
+    (sponsor, index) => (
+      <SponsorMark key={`${sponsor.name}-${index}`} {...sponsor} />
+    ),
+  );
 }
 
 export function Sponsors() {
@@ -87,8 +145,8 @@ export function Sponsors() {
 
         {/* One row from md, two on a phone running opposite ways.
 
-            Ten marks on a 375 screen is a row you watch four of at a time and
-            wait out the rest of. Split in half and counter-run, the same ten
+            Eight marks on a 375 screen is a row you watch four of at a time and
+            wait out the rest of. Split in half and counter-run, the same eight
             are on screen at once and the two directions read as a field rather
             than as a queue — which is also what stops the halves looking like
             one row that has been cut.
@@ -120,8 +178,8 @@ export function Sponsors() {
           {/* Fades to void, which is what the section sits on — a fade to any
               other value would show a seam against the page. */}
           <Marquee className="w-full max-md:hidden" durationSeconds={45}>
-            {sponsors.map((sponsor) => (
-              <SponsorMark key={sponsor.name} {...sponsor} />
+            {everyFourth(sponsors).map((sponsor, index) => (
+              <SponsorMark key={`${sponsor.name}-${index}`} {...sponsor} />
             ))}
           </Marquee>
         </div>

@@ -1,7 +1,0 @@
-<!-- KOMBA K in brand void, for a light browser chrome. Pair: icon-white.svg.
-     The wordmark's own glyph, path verbatim, squared up with 5 units of side
-     padding and centred vertically in the box. -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-5 -42.4477 139.579 139.579">
-  <title>KOMBA</title>
-  <path fill="#050508" d="M129.579 0C129.579 0 109.035 0.136066 59.8486 20.623C54.2604 22.9506 49.1298 25.1934 44.4248 27.3398C49.1298 29.4863 54.2604 31.729 59.8486 34.0566C109.035 54.5437 129.579 54.6807 129.579 54.6807H51.3447L31.1484 34.2715V39.2578L15.665 54.6836H0C3.28906 47.8391 6.85237 39.9064 10.6426 30.7451C15.5538 18.8744 19.2874 8.66975 22.1279 0.0185547H31.1484V20.4072L51.3262 0.0185547H51.4473V0H129.579Z"/>
-</svg>
