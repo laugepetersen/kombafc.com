@@ -1,3 +1,4 @@
+import { Athletes } from "@/components/sections/athletes";
 import { Format } from "@/components/sections/format";
 import { Hero } from "@/components/sections/hero";
 import { PreviousShow } from "@/components/sections/previous-show";
@@ -13,6 +14,10 @@ export default function HomePage() {
       <Sponsors />
       <PreviousShow />
       <Format />
+      {/* Last, and after the format rather than before it: the page says what
+          the night is, then who is in it, and ends on the two doors out —
+          the roster, and the form for getting onto it. */}
+      <Athletes />
     </>
   );
 }

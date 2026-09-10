@@ -269,14 +269,31 @@ export function FightersRoster() {
           asking once they have seen who is. So it sits under the last row,
           where the grid runs out.
 
-          Ranged left with the heading — the page starts every line on the
-          container's edge and a centred block at the foot would be the one
-          thing that does not. */}
-      <div className="mt-16 flex flex-col items-start md:mt-20">
+          Centred, and the only block on the page that is. Everything above
+          starts on the container's left edge, so breaking that here is what
+          marks the foot as the end of the roster rather than another row of
+          it. */}
+      <div className="mt-16 flex flex-col items-center text-center md:mt-20">
+        {/* w-full, and it is load-bearing. Centring makes a flex item
+            shrink-to-fit, and a LineRise that is shrink-to-fit feeds its own
+            split back into its width: kugiri cuts the lines, the box shrinks
+            to the widest one, the resize observer sees a new width and cuts
+            again — down to the longest single word. Held at 100% the width
+            is definite and the cut settles.
+
+            No measure cap on it either — the line is meant to read as one,
+            and an 18ch limit broke it after "what" at every width with room
+            for the whole of it.
+
+            Below md it needs the step down as well. display-3 opens at
+            text-2xl, which wants 365px for the sentence against the 343px a
+            375px phone leaves inside the gutters; one step down the scale
+            wants 304px and holds. Same leading, and md upward is
+            display-3's own text-3xl/text-4xl untouched. */}
         <LineRise
           as="h2"
           text="Do you have what it takes?"
-          className="display-3 max-w-[18ch]"
+          className="display-3 w-full max-md:text-xl/[1]"
         />
 
         <p className="text-ink-200 mt-4 max-w-96 text-base leading-[1.4] md:mt-6">
@@ -285,7 +302,7 @@ export function FightersRoster() {
         </p>
 
         <Button href="/fight-apply" className="mt-6 md:mt-8">
-          Apply as a fighter
+          Become an athlete
         </Button>
       </div>
     </Section>

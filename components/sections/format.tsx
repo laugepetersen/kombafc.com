@@ -4,7 +4,6 @@ import { Section } from "@/components/layout/section";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { Kicker } from "@/components/ui/kicker";
 import { LineRise } from "@/components/ui/line-rise";
-import { StaggerReveal } from "@/components/ui/stagger-reveal";
 
 /**
  * What KOMBA 2.0 is — four cards, each a photograph fading into a line of
@@ -108,8 +107,13 @@ const show: Card[] = [
  * image block above is built on — a few notches up off the page rather than
  * the page's own black, and the colour the fade has to arrive at or it stops a
  * shade short and draws a line.
+ *
+ * Exported because the About page's creed cards are this card with one line of
+ * copy instead of two. A ramp that has to match across two grids is one value,
+ * not the same string typed out twice.
  */
-const FADE = "linear-gradient(10deg, var(--color-panel) 25%, transparent 75%)";
+export const CARD_FADE =
+  "linear-gradient(10deg, var(--color-panel) 25%, transparent 75%)";
 
 function FormatCard({ title, body, icon, image, position, sizes }: Card) {
   return (
@@ -141,7 +145,7 @@ function FormatCard({ title, body, icon, image, position, sizes }: Card) {
           sizes={sizes}
           className={`object-cover ${position}`}
         />
-        <div className="absolute inset-0" style={{ background: FADE }} />
+        <div className="absolute inset-0" style={{ background: CARD_FADE }} />
       </div>
 
       <div className="relative p-6 md:p-8">
@@ -187,27 +191,34 @@ export function Format() {
         />
       </div>
 
-      {/* Two rows rather than one grid with spans. StaggerReveal wraps each
-          child in a box of its own, so a span would have to live on a wrapper
-          this component does not hand out — which is why the third and two
-          thirds are reached through a child selector rather than set on the
-          card.
+      {/* No entrance on the panels. They used to arrive through StaggerReveal,
+          fading and lifting a card at a time as the row crossed the frame; on
+          Lauge's call they now sit on the page from the moment it is drawn.
+          The heading above still rises — that is LineRise, and it is the
+          section's own title rather than the grid.
+
+          Two rows rather than one grid with spans, which outlived the reason
+          for it: StaggerReveal wrapped every child in a box of its own, so a
+          span had nowhere to live and the third and two thirds had to be
+          reached through a child selector. The selector now lands on the card
+          itself and the split still reads as two mirrored pairs rather than as
+          four cells with two of them stretched, so the shape stays.
 
           Split only from lg. A third of the tablet column is 219px, which
           wraps every title and squeezes the photograph into a portrait slot,
           so md gets two equal panels and the mirror starts where there is room
           for it. */}
-      <StaggerReveal className="mt-12 grid gap-4 md:mt-16 md:grid-cols-2 lg:grid-cols-3 lg:[&>*:last-child]:col-span-2">
+      <div className="mt-12 grid gap-4 md:mt-16 md:grid-cols-2 lg:grid-cols-3 lg:[&>*:last-child]:col-span-2">
         {rules.map((card) => (
           <FormatCard key={card.title} {...card} />
         ))}
-      </StaggerReveal>
+      </div>
 
-      <StaggerReveal className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:[&>*:first-child]:col-span-2">
+      <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3 lg:[&>*:first-child]:col-span-2">
         {show.map((card) => (
           <FormatCard key={card.title} {...card} />
         ))}
-      </StaggerReveal>
+      </div>
     </Section>
   );
 }

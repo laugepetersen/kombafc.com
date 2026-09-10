@@ -167,17 +167,17 @@ export function Sponsors() {
             nothing on screen accounted for. One child, one gap. */}
         <div>
           <div className="flex flex-col gap-6 md:hidden">
-            <Marquee className="w-full" durationSeconds={22}>
+            <Marquee className="w-full" durationSeconds={15}>
               {sponsorRow(0)}
             </Marquee>
-            <Marquee className="w-full" durationSeconds={22} reverse>
+            <Marquee className="w-full" durationSeconds={15} reverse>
               {sponsorRow(1)}
             </Marquee>
           </div>
 
           {/* Fades to void, which is what the section sits on — a fade to any
               other value would show a seam against the page. */}
-          <Marquee className="w-full max-md:hidden" durationSeconds={45}>
+          <Marquee className="w-full max-md:hidden" durationSeconds={30}>
             {everyFourth(sponsors).map((sponsor, index) => (
               <SponsorMark key={`${sponsor.name}-${index}`} {...sponsor} />
             ))}

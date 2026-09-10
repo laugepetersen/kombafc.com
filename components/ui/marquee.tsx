@@ -19,6 +19,7 @@ export function Marquee({
   reverse = false,
   className,
   fadeClassName = "from-void",
+  gapClassName = "gap-15 pe-15",
 }: {
   children: ReactNode;
   durationSeconds?: number;
@@ -33,9 +34,21 @@ export function Marquee({
   className?: string;
   /** Should match whatever the marquee sits on, or the fade shows a seam. */
   fadeClassName?: string;
+  /**
+   * The space between items, and the same step again as trailing padding on
+   * the row.
+   *
+   * Both, always. The row is followed by a copy of itself, so the padding on
+   * its end is the only thing standing between its last item and the copy's
+   * first — set them differently and one gap in every lap is the wrong width,
+   * which is exactly the seam the duplicate exists to hide.
+   */
+  gapClassName?: string;
 }) {
   const row = (
-    <div className="flex shrink-0 items-center gap-15 pe-15">{children}</div>
+    <div className={cn("flex shrink-0 items-center", gapClassName)}>
+      {children}
+    </div>
   );
 
   return (

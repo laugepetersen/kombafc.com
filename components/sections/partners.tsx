@@ -89,9 +89,9 @@ const tiers: Tier[] = [
     summary:
       "Your mark on the night. At the venue and in our marketing, on top of everything Network opens.",
     includes: [
+      "VIP — more seats, more access",
       "Logo digitally as part of our marketing",
       "Logo at the venue",
-      "VIP — more seats, more access",
     ],
     carries: "Everything in Network",
     image: "/show/show-01.webp",
