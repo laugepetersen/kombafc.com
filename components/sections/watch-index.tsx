@@ -205,13 +205,36 @@ function VideoCard({ video, onPlay }: { video: Video; onPlay: () => void }) {
           where at a third of a desktop row the same 6 reads as the picture
           being set into the panel. Which is the thing it is for. */}
       <div className="p-1 pb-0 md:p-1.5 md:pb-0">
-        <div className="bg-ink-800 relative aspect-video overflow-hidden">
+        {/* No `aspect-video` here, and no `fill` on the still — the image is in
+            flow and its own 1280×720 sets the box's height.
+
+            This is the one card on the site that is a `<button>`, and it is
+            the one that broke: on iOS the thumbnails were invisible while the
+            caption under them rendered fine. WebKit lays a button's contents
+            out inside an anonymous box of its own, and an `aspect-ratio` box
+            in there resolves to zero height — with the still absolutely
+            positioned by `fill`, nothing was left to give the frame a size, so
+            `overflow-hidden` clipped ten thumbnails to a 0px strip.
+
+            The roster card is this markup exactly, down to the mount, and it
+            is fine — because it is an `<article>`. That is the whole of the
+            difference, which is why the fix is here and not in the wrapper
+            both grids share.
+
+            Width and height on the image rather than a padding-ratio hack:
+            they are real attributes, so the browser reserves 16:9 before the
+            file lands and there is no shift, and nothing in the card has to
+            know a ratio that the ten files already state. Every overlay below
+            still positions against this box — it keeps `relative`, it has just
+            stopped being the thing that decides how tall it is. */}
+        <div className="bg-ink-800 relative overflow-hidden">
           <Image
             src={thumbnailFor(video)}
             alt=""
-            fill
+            width={1280}
+            height={720}
             sizes={SIZES}
-            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
+            className="block h-auto w-full transition-transform duration-500 ease-out group-hover:scale-[1.04]"
           />
 
           {/* A foot of dark inside the still, so the chips have something to sit
