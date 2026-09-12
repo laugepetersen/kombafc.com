@@ -20,25 +20,33 @@ import { socials } from "@/content/socials";
  * destinations spelled out in words beside it would be the footer saying it
  * twice.
  *
- * Contact is not here either: the two addresses in that block are the contact
- * route, and a link to a page that holds the same two addresses is a hop for
- * nothing.
+ * Three things were wrong with this list against the routes that exist, and
+ * all three are fixed here:
+ *
+ * - **Press pointed at `/press`, which 404s.** There is no such route and
+ *   there never was one. It was also a second name for News, whose own page
+ *   describes itself as the press coverage — so it is gone rather than
+ *   repointed.
+ * - **Merch and Store were one page under two names**, and the header's menu
+ *   says Store. A footer that renames a destination the menu already named
+ *   makes a reader wonder whether they are two places.
+ * - **Contact was missing.** A note here used to say it was left out because
+ *   the addresses were in the block below; they are not, and grep says they
+ *   never were. It is the one page whose whole job is being reachable.
+ *
+ * Groups and their order are Lauge's, confirmed 12 Sep 2026.
  */
 const groups = [
   {
-    label: "Discover",
+    // "Discover" before, which named the reader's mood rather than the
+    // contents. These four are the show: when it is, where to watch it, and
+    // what to buy off it.
+    label: "The show",
     links: [
       { label: "Events", href: "/events" },
       { label: "Watch", href: "/watch" },
       { label: "Fight Pass", href: "/fight-pass" },
-      { label: "Merch", href: "/store" },
-    ],
-  },
-  {
-    label: "KOMBA",
-    links: [
-      { label: "About", href: "/about" },
-      { label: "News", href: "/news" },
+      { label: "Store", href: "/store" },
     ],
   },
   {
@@ -49,10 +57,21 @@ const groups = [
     ],
   },
   {
+    label: "KOMBA",
+    links: [
+      { label: "About", href: "/about" },
+      { label: "News", href: "/news" },
+    ],
+  },
+  {
+    // Contact sits here rather than under KOMBA to keep four columns, and it
+    // is the weaker of the two joins: somebody after support would not think
+    // to look under Business. The contact page's own two desks — fans on one,
+    // press and partners on the other — are what make it defensible.
     label: "Business",
     links: [
-      { label: "Press", href: "/press" },
       { label: "Partnerships", href: "/partnerships" },
+      { label: "Contact", href: "/contact" },
     ],
   },
 ];
