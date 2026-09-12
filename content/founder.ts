@@ -24,7 +24,7 @@
  * PLACEHOLDER, and the only one in the file: `intro`, `story` and `pullQuote`
  * are written here, from the sources above, not given by Lauge. They are
  * accurate and they are not his. Replace them when the real copy lands — the
- * honours, the record and the milestones below are facts and stay.
+ * honours and the record below are facts and stay.
  */
 
 export type Honour = {
@@ -115,30 +115,6 @@ export const honours: Honour[] = [
     division: "−60 kg",
     note: "The first Danish junior gold at the championships",
   },
-];
-
-export type Milestone = { label: string; detail: string };
-
-/**
- * The four things a reader should take away if they read nothing else.
- *
- * `label` is the fact and `detail` is what it is — the same shape the show bar
- * uses, so the two strips read as one device used twice rather than two.
- */
-export const milestones: Milestone[] = [
-  // WIKI.
-  {
-    label: `${record.wins}–${record.losses}`,
-    detail: `As a professional — ${record.knockouts} of them by knockout`,
-  },
-  // WIKI + ONE: debut at ONE Fight Night 25, Bangkok, October 2024, a
-  // unanimous decision over Sinsamut Klinmee.
-  { label: "ONE Championship", detail: "Debut won in Bangkok, October 2024" },
-  // WIKI: Assouik Gym, his own, since 2020. REPO: the pedagogy and the youth
-  // work, off DR and TV 2 Echo.
-  { label: "Assouik Gym", detail: "His own, in Copenhagen, since 2020" },
-  // ONE + REPO: Komeback, the company he runs with the municipality.
-  { label: "Komeback", detail: "The youth work, and the reason for it" },
 ];
 
 /**

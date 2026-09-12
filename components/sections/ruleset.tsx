@@ -2,7 +2,6 @@ import Image from "next/image";
 
 import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
-import { Icon } from "@/components/ui/icon";
 import { Kicker } from "@/components/ui/kicker";
 import { LineRise } from "@/components/ui/line-rise";
 import { StaggerReveal } from "@/components/ui/stagger-reveal";
@@ -110,10 +109,7 @@ export function Ruleset() {
         <Container className="relative pb-12 md:pb-16 lg:pb-20">
           <Kicker>The rules</Kicker>
 
-          <LineRise
-            as="h2"
-            className="display-2 mt-6 md:mt-8"
-          >
+          <LineRise as="h2" className="display-2 mt-6 md:mt-8">
             {/* Forced into two lines, for the reason the page's h1 is: it is
                 two halves of one claim, and left to a measure it broke as
                 "Short enough to explain" over "between fights." on some widths
@@ -132,10 +128,7 @@ export function Ruleset() {
       </section>
 
       <Section spacing="lg">
-        <div className="flex items-center gap-3">
-          <Icon name="gavel" violet className="size-8" />
-          <Kicker as="h3">Six things that are different</Kicker>
-        </div>
+        <Kicker as="h3">Six things that are different</Kicker>
 
         {/* The list, on the frame's hairline. Each row draws its own top edge
             and the last draws a bottom one, so the run is closed at both ends

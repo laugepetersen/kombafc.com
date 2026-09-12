@@ -10,7 +10,6 @@ import { StaggerReveal } from "@/components/ui/stagger-reveal";
 import {
   honours,
   intro,
-  milestones,
   portrait,
   pullQuote,
   role,
@@ -26,19 +25,16 @@ import {
  * standing behind it. The three founder chips introduce the three; this says
  * which of them the room already knows.
  *
- * Three modules rather than one long panel:
+ * Two modules rather than one long panel:
  *
  * 1. The portrait and the prose, side by side — the site's text-and-image
  *    block on a taller floor, because this photograph is 2:3 and the vision
  *    block's is 3:2.
- * 2. The milestones, four across on the show bar's own device — a fact and one
- *    line saying what it is.
- * 3. The belts, as a ruled list, ending on the way through to the press page.
+ * 2. The belts, as a ruled list, ending on the way through to the press page.
  *
- * Split because they are read differently. Prose is read; a strip of facts is
- * scanned; a list of belts is checked. One panel holding all three would set
- * the scannable parts at reading width and bury the numbers in the middle of
- * a column.
+ * Split because they are read differently. Prose is read; a list of belts is
+ * checked. One panel holding both would set the scannable half at reading
+ * width.
  *
  * Every fact here comes off `content/founder.ts`, which carries the source for
  * each one in a comment beside it. Nothing checkable about a living person is
@@ -47,67 +43,6 @@ import {
 
 /** Half the 1280 column at the widest, the whole of it once the row stacks. */
 const SIZES = "(min-width: 1024px) 640px, 100vw";
-
-/**
- * Where the strip's own rules go, and it is all here rather than on the cell.
- *
- * A cell cannot know this. Which of the four starts a row, which one closes
- * it, and which sit in the row that has the frame's own seam above them are
- * all facts about the grid at a given width — one column on a phone, two at
- * md, four at lg — and a cell that writes `not-first:border-l` is guessing at
- * every one of them. That guess was wrong at md: it put a vertical rule down
- * the left of the third cell, which starts the second row, and took the
- * horizontal rule off the top of that row entirely.
- *
- * So the rules are set from the container, one line per fact:
- *
- * - every cell draws its own top rule…
- * - …except the ones in the top row, whichever cells those are at that width,
- *   because the frame above this one has already drawn that line and two
- *   translucent hairlines on the same pixel read as one twice as bright;
- * - a vertical rule goes on every cell that is *not* the start of its row;
- * - and the padding follows the vertical rule, so a cell only carries the
- *   inset on the side it has an edge to stand off.
- */
-const STRIP = [
-  "grid md:grid-cols-2 lg:grid-cols-4",
-  "[&>*]:border-rule [&>*]:border-t",
-  // Top row: child 1 on a phone, 1–2 at md, all four at lg.
-  "[&>*:first-child]:border-t-0",
-  "md:[&>*:nth-child(2)]:border-t-0",
-  "lg:[&>*:nth-child(n+3)]:border-t-0",
-  // Everything that differs between two and four columns is written
-  // `md:max-lg:`, scoped to the two-column band alone, rather than as an md
-  // rule that a wider one has to undo. Two utilities setting the same property
-  // in two media queries resolve by the order Tailwind happens to emit them,
-  // not by which breakpoint is narrower: `md:…pl-0` beat `lg:…pl-8` and left
-  // the third cell's copy sitting on its own divider. Scoped, there is nothing
-  // to win — only one of the two rules is ever live.
-  "md:[&>*]:px-8",
-  // Not the start of a row, so it stands off a rule: 2 and 4 at md, 2–4 at lg.
-  "md:max-lg:[&>*:nth-child(even)]:border-l",
-  "lg:[&>*:not(:first-child)]:border-l",
-  // The starts and ends of rows, which is where the inset comes back off. One
-  // and four are a row's ends at every width; two and three only at md.
-  "[&>*:first-child]:pl-0 [&>*:last-child]:pr-0",
-  "md:max-lg:[&>*:nth-child(2)]:pr-0 md:max-lg:[&>*:nth-child(3)]:pl-0",
-].join(" ");
-
-function Milestone({ label, detail }: { label: string; detail: string }) {
-  return (
-    // Vertical rhythm only. Every rule and every horizontal inset on this cell
-    // is the strip's — see STRIP.
-    <div className="flex flex-col py-6 md:py-8">
-      {/* plain, not display: four of these in a row at the poster's weight is
-          a headline four times over, and the strip is meant to be scanned
-          under the block it belongs to rather than announced beside it. */}
-      <p className="plain-5 text-white">{label}</p>
-      <p className="text-ink-200 mt-2 max-w-[24ch] text-sm leading-[1.4]">
-        {detail}
-      </p>
-    </div>
-  );
-}
 
 export function Founder() {
   return (
@@ -137,13 +72,7 @@ export function Founder() {
           </div>
 
           <div className="border-rule bg-panel flex flex-col justify-center border-t px-6 py-12 md:px-12 md:py-16 lg:border-t-0 lg:border-l lg:px-12 xl:px-15 xl:py-20">
-            <Kicker>Front figure</Kicker>
-
-            <LineRise
-              as="h2"
-              text="Youssef Assouik."
-              className="display-2 mt-6 md:mt-8"
-            />
+            <LineRise as="h2" text="Youssef Assouik." className="display-2" />
 
             {/* The billing, straight under the name and set apart from the
                 prose — it is a caption on the heading rather than the first
@@ -188,16 +117,6 @@ export function Founder() {
         </div>
       </SectionFrame>
 
-      {/* The milestones, on the frame so the strip's own dividers meet the
-          column's verticals rather than floating inside them. */}
-      <SectionFrame>
-        <div className={STRIP}>
-          {milestones.map((milestone) => (
-            <Milestone key={milestone.label} {...milestone} />
-          ))}
-        </div>
-      </SectionFrame>
-
       <Section spacing="lg">
         <div className="flex items-center gap-3">
           <Icon name="military_tech" violet className="size-8" />
@@ -230,9 +149,7 @@ export function Founder() {
                     {honour.body} {honour.title}
                   </span>
                   <span className="text-ink-300 mt-1 block text-sm leading-[1.4]">
-                    {[honour.division, honour.note]
-                      .filter(Boolean)
-                      .join(" · ")}
+                    {[honour.division, honour.note].filter(Boolean).join(" · ")}
                   </span>
                 </span>
               </li>

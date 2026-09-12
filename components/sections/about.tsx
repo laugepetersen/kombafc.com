@@ -6,12 +6,12 @@ import { CARD_FADE } from "@/components/sections/format";
 import { Icon, type IconName } from "@/components/ui/icon";
 import { Kicker } from "@/components/ui/kicker";
 import { LineRise } from "@/components/ui/line-rise";
-import { PersonCard, type Person } from "@/components/ui/person-card";
 import { StaggerReveal } from "@/components/ui/stagger-reveal";
 
 /**
- * Who KOMBA is, in four blocks: the claim, the vision, the character, and the
- * three people who started it.
+ * Who KOMBA is, in three blocks: the claim, the vision and the character. The
+ * people who started it are the two blocks after this one — `CoFounders` and
+ * `Founder`, which give them portraits rather than a credit row of chips.
  *
  * Every line of copy on the page is Lauge's, verbatim. He gave five taglines
  * and three sentences, and the page is the arrangement of them rather than a
@@ -71,36 +71,6 @@ const creed: Creed[] = [
     icon: "autorenew",
     image: "/show/show-03.webp",
     position: "object-center",
-  },
-];
-
-/**
- * The three who started it, in the order Lauge named them.
- *
- * `PersonCard` rather than a panel of its own, and that is the portraits'
- * call as much as the layout's: Youssef's is 160px square, so a card that
- * rendered him any larger than the chip's 60px avatar would be showing an
- * upscale. See the note in the report — a bigger file is the fix, not a
- * bigger box.
- */
-const founders: Person[] = [
-  {
-    id: "youssef-assouik",
-    name: "Youssef Assouik",
-    role: "Co-founder · ONE Fighter",
-    imageSrc: "/team/youssef-assouik.webp",
-  },
-  {
-    id: "lauge-petersen",
-    name: "Lauge Milling Petersen",
-    role: "Co-founder",
-    imageSrc: "/team/lauge-petersen.webp",
-  },
-  {
-    id: "houdaifa-harrar",
-    name: "Houdaifa Harrar",
-    role: "Co-founder",
-    imageSrc: "/team/houdaifa-harrar.webp",
   },
 ];
 
@@ -168,32 +138,16 @@ export function About() {
             <span className="block">One Arena.</span>
           </LineRise>
 
-          {/* The measure is the type's own rather than a wrapper's, so the
+          {/* Lauge's own sentence, and now the only one under the h1 — the
+              paragraph that used to footnote it was written here rather than
+              given, and the block says more without it.
+
+              The measure is the type's own rather than a wrapper's, so the
               lines break where the `ch` runs out instead of wherever the
               column happens to end. */}
           <p className="text-ink-200 mt-6 max-w-[54ch] text-base leading-[1.4] md:mt-8">
             KOMBA is a unique experience where the best strikers in all combat
             sports clash to put on an entertaining show.
-          </p>
-
-          {/* PLACEHOLDER, and the first of several on this page: Lauge's five
-              taglines and three sentences carry the blocks that were here
-              before, and everything added since — this paragraph included — is
-              written from what the repo already establishes rather than given.
-              It is marked at each site rather than once at the top, because
-              these are paragraphs somebody will replace one at a time.
-
-              A second paragraph rather than a longer first one. The line above
-              is the promotion's own sentence and has been since v1; growing it
-              would edit Lauge's copy, where setting a second one under it
-              leaves his intact and says the rest. Held a step down in size and
-              a step down in colour, so the pair reads as a claim and its
-              footnote rather than as two equal openings. */}
-          <p className="text-ink-300 mt-4 max-w-[62ch] text-sm leading-[1.5] md:text-base">
-            Built in Copenhagen, for the people in the room and the ones
-            watching at home. One ring, one rule set, and every striking sport
-            that has ever produced a champion — on a night that is as much a
-            show as it is a fight card.
           </p>
         </div>
       </Section>
@@ -264,7 +218,6 @@ export function About() {
           </div>
         </div>
       </SectionFrame>
-
     </>
   );
 }
@@ -307,21 +260,6 @@ export function Creed() {
         <StaggerReveal className="mt-12 grid gap-4 md:mt-16 md:grid-cols-2 lg:grid-cols-3 md:[&>*:last-child]:col-span-2 lg:[&>*:last-child]:col-span-1">
           {creed.map((card) => (
             <CreedCard key={card.line} {...card} />
-          ))}
-        </StaggerReveal>
-      </Section>
-
-      <Section spacing="lg" className="pt-0 md:pt-0">
-        {/* A heading rather than a label above one: this block is a credit
-            list, and the words over it are the only title it has. */}
-        <Kicker as="h2">Created by</Kicker>
-
-        {/* Content-sized chips on a wrapping row rather than a grid — the
-            card sets its own width off the name in it, and three equal
-            columns would stretch the shortest name across the widest box. */}
-        <StaggerReveal className="mt-8 flex flex-wrap gap-4">
-          {founders.map((person) => (
-            <PersonCard key={person.id} person={person} />
           ))}
         </StaggerReveal>
       </Section>
