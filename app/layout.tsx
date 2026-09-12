@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 
 import { eurostile, googleSans } from "@/app/fonts";
@@ -75,6 +77,22 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+
+        {/* Both were on v1 and came off in the v2 cutover, which stopped a
+            year-old dashboard dead — 7,476 visitors to that point, then
+            nothing. The project has Web Analytics switched on at the Vercel
+            end the whole time; what was missing is the half that lives in the
+            app.
+
+            Last in the body, after the content: neither blocks paint, and a
+            script that measures the page should not be in front of it.
+
+            No prop tells them which environment they are in — Vercel's own
+            scripts no-op off Vercel, and preview builds report separately from
+            production, so staging's traffic does not land in the live
+            numbers. */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
