@@ -18,8 +18,14 @@ const BACKGROUND_PLAYBACK_ID =
   process.env.NEXT_PUBLIC_MUX_BACKGROUND_PLAYBACK_ID;
 const FEATURE_PLAYBACK_ID = process.env.NEXT_PUBLIC_MUX_HERO_PLAYBACK_ID;
 
-/** Interim source for the modal. Ignored once FEATURE_PLAYBACK_ID is set. */
-const FEATURE_YOUTUBE_ID = "VKWcRp_3Mgc";
+/**
+ * The 1.0 aftermovie, off the KOMBA channel. Interim source for the modal —
+ * ignored once FEATURE_PLAYBACK_ID is set.
+ *
+ * It used to point at the main event, which is a 38-minute full fight: the bar
+ * said "Watch 1.0 Aftermovie" and opened something else entirely.
+ */
+const FEATURE_YOUTUBE_ID = "W1G2qjzBW04";
 
 /**
  * Mux renders a poster straight off the asset, which avoids shipping a
@@ -172,7 +178,7 @@ export function Hero() {
         youtubeId={FEATURE_YOUTUBE_ID}
         open={playerOpen}
         onClose={() => setPlayerOpen(false)}
-        title="KOMBA Fight Club — The Ressurect"
+        title="KOMBA 1.0 — Aftermovie"
       />
     </section>
   );
