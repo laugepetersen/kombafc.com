@@ -30,16 +30,17 @@ import { cn } from "@/lib/utils";
  */
 
 /**
- * Where an enquiry lands. One address for all three tiers, with the tier in
- * the subject so a reply knows which conversation it is joining.
+ * Where an enquiry goes: the contact page, not an inbox.
  *
- * Nothing else in the repo names an inbox, so this is the one place to change
- * it — and the one thing on the page that is a guess rather than a decision.
+ * These three CTAs used to be `mailto:` links carrying the tier in the
+ * subject, so a reply knew which conversation it was joining. Lauge's call to
+ * send them to /contact instead, and it costs that: the tier is not in the
+ * mail any more, and the two desks on the contact page are the only sorting
+ * that survives. What it buys is one door — nothing on the site names an
+ * inbox in two places, and a reader who is not ready to open a mail client
+ * gets a page rather than a composer they have to close.
  */
-const CONTACT = "partners@kombafc.com";
-
-const enquiry = (tier: string) =>
-  `mailto:${CONTACT}?subject=${encodeURIComponent(`KOMBA ${tier}`)}`;
+const ENQUIRY = "/contact";
 
 /** Half the 1280 column at the widest, full width once the row stacks. */
 const SIZES = "(min-width: 1280px) 640px, (min-width: 1024px) 50vw, 100vw";
@@ -274,7 +275,7 @@ function PackageRow({ tier, index }: { tier: Tier; index: number }) {
 
           {/* self-start so the CTA is sized by its label rather than stretched
               to the panel. */}
-          <Button href={enquiry(name)} className="mt-8 self-start">
+          <Button href={ENQUIRY} className="mt-8 self-start">
             Contact us
           </Button>
         </div>
