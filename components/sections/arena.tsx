@@ -1,11 +1,10 @@
 import Image from "next/image";
 
-import { Container } from "@/components/layout/container";
 import { Section } from "@/components/layout/section";
+import { StrikingSports } from "@/components/sections/striking-sports";
 import { Icon } from "@/components/ui/icon";
 import { Kicker } from "@/components/ui/kicker";
 import { LineRise } from "@/components/ui/line-rise";
-import { Marquee } from "@/components/ui/marquee";
 import { StaggerReveal } from "@/components/ui/stagger-reveal";
 
 /**
@@ -54,28 +53,6 @@ const frames: Frame[] = [
     alt: "Two fighters exchanging punches on the ropes at K.B. Hallen, the referee a step away",
     position: "object-center",
   },
-];
-
-/**
- * The band.
- *
- * PLACEHOLDER, and the one on this page most worth Lauge's eye: these are
- * striking sports, not a list of what has been in a KOMBA ring. Three of them
- * have — Muay Thai, kickboxing and K-1 are what the 1.0 card was billed as —
- * and the rest are the argument rather than the roster. Cut it to the sports
- * actually being invited before this goes to production, or the band promises
- * a card the matchmaking has not booked.
- */
-const disciplines = [
-  "Muay Thai",
-  "Kickboxing",
-  "K-1",
-  "Karate",
-  "Taekwondo",
-  "Sanda",
-  "Boxing",
-  "Savate",
-  "Lethwei",
 ];
 
 export function Arena() {
@@ -157,47 +134,7 @@ export function Arena() {
         </p>
       </Section>
 
-      {/* Full-bleed, and the only thing on its line. A band of sport names that
-          stops at the 1280 column is a widget; run to both edges it is the
-          page saying the words. Rules top and bottom rather than a Section's
-          own spacing, so it reads as a strip laid into the page. */}
-      <section
-        aria-label="The striking sports"
-        className="border-rule overflow-hidden border-y py-8 md:py-10"
-      >
-        <Container className="mb-6 md:mb-8">
-          <Kicker>All strikers</Kicker>
-        </Container>
-
-        <Marquee
-          durationSeconds={52}
-          // 40px between names on a phone, 64 from md — set on the row rather
-          // than left at the component's 60px default, which is tuned for
-          // sponsor marks rather than for words that already carry their own
-          // side bearings.
-          gapClassName="gap-10 pe-10 md:gap-16 md:pe-16"
-        >
-          {disciplines.map((name, index) => (
-            <span
-              key={name}
-              className={
-                // Solid and hollow, alternating. Purely rhythm: nine names in
-                // one colour is a band of texture the eye slides off, and the
-                // outline is the poster device the wordmark already uses. No
-                // claim is encoded in which is which — see the note above.
-                //
-                // The stroke goes on with a transparent fill, so the glyph is
-                // its own outline rather than a second copy behind it.
-                index % 2 === 0
-                  ? "font-heading text-2xl leading-none font-black whitespace-nowrap text-white/80 uppercase italic md:text-4xl xl:text-5xl"
-                  : "font-heading text-2xl leading-none font-black whitespace-nowrap text-transparent uppercase italic [-webkit-text-stroke:1px_var(--color-ink-400)] md:text-4xl xl:text-5xl"
-              }
-            >
-              {name}
-            </span>
-          ))}
-        </Marquee>
-      </section>
+      <StrikingSports className="border-y" />
     </>
   );
 }
