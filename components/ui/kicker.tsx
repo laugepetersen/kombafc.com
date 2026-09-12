@@ -33,6 +33,17 @@ export function Kicker({
         width={8}
         height={22}
         aria-hidden="true"
+        // React preloads every eager image it renders on the server, and a
+        // `<link rel="preload" as="image">` for this one went into the head of
+        // every page on the site. Most of them do not have an eyebrow above
+        // the fold, so the preload sat there unclaimed and Chrome warned about
+        // it once per bracket — three times a page, on a 1.5KB decoration.
+        //
+        // `lazy` is React's own opt-out: it preloads eager images only. The
+        // cost is that a bracket on a hold page fetches after layout rather
+        // than before it, which for two 8x22 glyphs beside a word is not a
+        // thing anybody sees — and it is one request, cached from then on.
+        loading="lazy"
         className="h-[22px] w-2 -scale-x-100"
       />
       <EncryptedText
@@ -50,6 +61,8 @@ export function Kicker({
         width={8}
         height={22}
         aria-hidden="true"
+        // See the note on its mirror above.
+        loading="lazy"
         className="h-[22px] w-2"
       />
     </Comp>
