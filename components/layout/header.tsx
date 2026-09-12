@@ -149,12 +149,23 @@ const menuMinorLinkActiveClass = `font-body tap block w-fit py-1.5 text-base fon
  * Chinese, Danish, Finnish, French, German, Japanese. Below the first row the
  * reader is scanning for their own script, not for our market priorities.
  *
- * Selecting one moves the check and the trigger's label and changes nothing
- * else: there is no i18n in this project yet. The list is the design's, ready
- * for the routing to land under it.
+ * **Only English is selectable.** There is no i18n in this project yet, and
+ * until there is, a picker that moves a tick and changes nothing on the page is
+ * a control that lies — the reader picks 日本語, the site stays in English, and
+ * the only thing they have learned is not to trust the header.
+ *
+ * The other seven stay on the list, disabled, each tagged `Soon`. Deleting them
+ * would have been the smaller change and it says nothing: a picker holding one
+ * language reads as a site that has no plans for a second. Greyed out, the row
+ * is the roadmap — this is coming, it is not here yet — which is the thing
+ * worth saying while the routing is still missing.
+ *
+ * `ready` is the flag, and it is opt-in rather than opt-out: a language added
+ * to this list without one is off until somebody has actually translated the
+ * site into it, which is the safe direction for the mistake to fall.
  */
 const languages = [
-  { code: "en", label: "English", region: "International" },
+  { code: "en", label: "English", region: "International", ready: true },
   { code: "ar", label: "العربية", region: "العالم" },
   { code: "zh", label: "简体中文", region: "中国" },
   { code: "da", label: "Dansk", region: "Danmark" },
@@ -174,8 +185,13 @@ const languageRowClass = "flex items-center gap-2";
  * The region, beside the language and a step quieter than it. Same size — it
  * is the second half of a name, not an annotation on one — and the contrast
  * carries the ranking instead.
+ *
+ * Two of them, because a disabled row is already dimmer than an active one's
+ * *name*: white/40 on a row set to white/30 would make the region the brighter
+ * half of the name, which is the ranking upside down.
  */
 const languageRegionClass = "text-white/40";
+const languageRegionMutedClass = "text-white/20";
 
 function LanguageSelect({ className }: { className?: string }) {
   const [code, setCode] = useState(DEFAULT_LANGUAGE);
@@ -270,28 +286,57 @@ function LanguageSelect({ className }: { className?: string }) {
             onValueChange={setCode}
             className="[&>*+*]:border-rule [&>*+*]:border-t"
           >
-            {languages.map(({ code: value, label, region }) => (
+            {languages.map(({ code: value, label, region, ready }) => (
               <DropdownMenu.RadioItem
                 key={value}
                 value={value}
+                // Radix's own `disabled`, not a click swallowed in an onSelect:
+                // it sets aria-disabled, drops the row out of the typeahead and
+                // the arrow-key walk, and stops the highlight following a
+                // pointer onto something that cannot be chosen. A row that
+                // lights up under the cursor and then refuses is worse than one
+                // that never lights up.
+                disabled={!ready}
                 // Typeahead matches the language, not the language and its
                 // region run together — "dan" should find Dansk.
                 textValue={label}
                 className={cn(
                   languageRowClass,
-                  "h-12 cursor-pointer px-5 whitespace-nowrap text-white/80 outline-none select-none",
-                  "data-highlighted:bg-white/5 data-highlighted:text-white",
+                  "h-12 px-5 whitespace-nowrap outline-none select-none",
+                  ready
+                    ? cn(
+                        "cursor-pointer text-white/80",
+                        "data-highlighted:bg-white/5 data-highlighted:text-white",
+                      )
+                    : // No hover ground and no pointer. The row is readable —
+                      // it has to be, it is the whole message — but it is
+                      // plainly not a control.
+                      "cursor-default text-white/30",
                 )}
               >
                 {label}
-                <span className={languageRegionClass}>{region}</span>
+                <span
+                  className={
+                    ready ? languageRegionClass : languageRegionMutedClass
+                  }
+                >
+                  {region}
+                </span>
 
-                {/* Only the selected row draws one, so it needs no reserved
-                    box — ml-auto puts it on the right edge of whichever row
-                    that is. */}
-                <DropdownMenu.ItemIndicator className="ml-auto pl-6">
-                  <Icon name="check" className="size-4" />
-                </DropdownMenu.ItemIndicator>
+                {/* The right edge carries whichever of the two applies: a tick
+                    on the language the site is in, and the reason on each of
+                    the ones it is not. Only one row can draw the indicator, so
+                    it needs no reserved box — ml-auto puts each on the right
+                    edge of its own row. */}
+                {ready ? (
+                  <DropdownMenu.ItemIndicator className="ml-auto pl-6">
+                    <Icon name="check" className="size-4" />
+                  </DropdownMenu.ItemIndicator>
+                ) : (
+                  <span className="ml-auto pl-6 text-xs font-medium tracking-[0.06em] text-white/25 uppercase">
+                    Soon
+                  </span>
+                )}
               </DropdownMenu.RadioItem>
             ))}
           </DropdownMenu.RadioGroup>
