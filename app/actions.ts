@@ -4,15 +4,28 @@
  * Announcement signups, from every form on the site that takes an address.
  *
  * It lived under `app/events/` while the hold page there was the only caller.
- * Six of them now — every route that is still under wraps carries the same
- * form — and a shop page importing an events action is a dependency that says
- * something untrue about where the code belongs.
+ * Five now — the four hold pages that take an address, and the footer form on
+ * every route — and a shop page importing an events action is a dependency
+ * that says something untrue about where the code belongs.
  *
- * There is no mailing list in this repo and there should not be one: the
- * address goes straight out to whatever service ends up owning it —
- * Resend, Mailchimp, an n8n hook, a Sheet — over a single POST to
- * `SIGNUP_WEBHOOK_URL`. Swapping providers is then an environment variable
- * rather than a deploy.
+ * It carried a second action underneath, for fighter applications. The form
+ * that called it is gone (see `app/fight-apply/page.tsx`), and an exported
+ * server action is a live endpoint whether or not anything on the site points
+ * at it — so it went with the form rather than sitting here forwarding to a
+ * webhook nobody is reading.
+ *
+ * There is still no mailing list in this repo and there should not be one. The
+ * address goes straight to Klaviyo, which is the audience now.
+ *
+ * It used to POST a bare `{ email, source }` to whatever sat behind
+ * `SIGNUP_WEBHOOK_URL`, on the argument that a provider-agnostic hook makes
+ * swapping ESPs an environment variable rather than a deploy. The argument
+ * does not survive contact with a real one: a raw JSON blob cannot carry
+ * marketing consent, cannot trigger a double opt-in, and cannot put anybody on
+ * a list — it just files the address somewhere and leaves the actual
+ * subscribing to a human. So this speaks Klaviyo's own subscribe endpoint, and
+ * the webhook is gone rather than kept as a second path nobody would notice
+ * breaking.
  */
 
 /* A "use server" module may only export async functions, so this type is the
@@ -52,6 +65,56 @@ const TIMEOUT_MS = 8000;
 const GENERIC_FAILURE =
   "That did not go through. Try again in a moment, or write to us directly.";
 
+/**
+ * Bulk Subscribe Profiles — one profile at a time, which is what the site has.
+ *
+ * This endpoint rather than a profile upsert, because consent is not a field
+ * you can set on a profile: Klaviyo deliberately routes it through the
+ * subscribe endpoints so every subscription carries a consent record saying
+ * when and from where. `POST /api/profile-import` takes custom properties and
+ * refuses subscriptions; this one takes subscriptions and refuses properties.
+ * A signup form needs the consent, so it is this one.
+ */
+const SUBSCRIBE_URL =
+  "https://a.klaviyo.com/api/profile-subscription-bulk-create-jobs";
+
+/**
+ * Klaviyo versions its API by release date and pins behaviour to the revision
+ * you ask for, so this is a hard-coded date and not a "latest" — the whole
+ * point of the header is that the response shape cannot change under a
+ * deployed app. 2026-07-15 is the current GA revision; bump it deliberately,
+ * against their changelog, never because a newer one exists.
+ */
+const KLAVIYO_REVISION = "2026-07-15";
+
+/**
+ * Klaviyo's own error envelope, as much of it as is worth logging.
+ *
+ * Every misconfiguration this integration can have — a key without
+ * `subscriptions:write`, a list id from the wrong account, a revision that has
+ * been retired — comes back as a 400 or a 403 with the reason written out in
+ * `detail`. Logging the status alone turns a five-second fix into an
+ * afternoon.
+ */
+type KlaviyoErrors = {
+  errors?: { code?: string; detail?: string }[];
+};
+
+/** The reasons, joined — or the status on its own if the body is not theirs. */
+async function describeFailure(response: Response) {
+  try {
+    const body = (await response.json()) as KlaviyoErrors;
+    const detail = body.errors
+      ?.map((error) => error.detail ?? error.code)
+      .filter(Boolean)
+      .join("; ");
+
+    return detail ? `${response.status} — ${detail}` : String(response.status);
+  } catch {
+    return String(response.status);
+  }
+}
+
 export async function subscribeToAnnouncements(
   _previous: NotifyState,
   formData: FormData,
@@ -78,169 +141,116 @@ export async function subscribeToAnnouncements(
     };
   }
 
-  const endpoint = process.env.SIGNUP_WEBHOOK_URL;
+  const apiKey = process.env.KLAVIYO_API_KEY;
+  const listId = process.env.KLAVIYO_LIST_ID;
 
-  if (!endpoint) {
+  if (!apiKey || !listId) {
     /* Nowhere to put it. The one thing this must never do is answer "you're on
        the list" to an address it has just dropped, so the only latitude is in
        development, where succeeding is what lets the form be worked on at
-       all. Anywhere else this is a misconfiguration and reads as one. */
+       all. Anywhere else this is a misconfiguration and reads as one.
+
+       Both or neither, and a half-set pair is the loud case rather than the
+       quiet one: a key with no list id would otherwise subscribe people to
+       nothing, and that failure looks exactly like success from the browser.
+       Named individually in the log, because "one of two variables" is not a
+       thing anybody can go and fix. */
+    const missing = [!apiKey && "KLAVIYO_API_KEY", !listId && "KLAVIYO_LIST_ID"]
+      .filter(Boolean)
+      .join(" and ");
+
     if (process.env.NODE_ENV === "development") {
       console.info(
-        `[signup] ${email} (${source}) — SIGNUP_WEBHOOK_URL is unset, not sent`,
+        `[signup] ${email} (${source}) — ${missing} unset, not sent`,
       );
       return { status: "ok" };
     }
 
-    console.error("[signup] SIGNUP_WEBHOOK_URL is not set — signup refused");
+    console.error(`[signup] ${missing} not set — signup refused`);
     return { status: "error", message: GENERIC_FAILURE };
   }
 
   try {
-    const response = await fetch(endpoint, {
+    const response = await fetch(SUBSCRIBE_URL, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: {
+        // Their media type, not `application/json` — JSON:API is what the
+        // endpoint documents and the body below is shaped to. Untested
+        // against a plain JSON content type, because Klaviyo checks the key
+        // before it looks at either: a probe with a bad key answers 401 no
+        // matter what else is wrong with the request.
+        "content-type": "application/vnd.api+json",
+        accept: "application/vnd.api+json",
+        revision: KLAVIYO_REVISION,
+        // The private key, which is why this is a server action and not a
+        // fetch from the form. Klaviyo's client-side subscribe endpoint takes
+        // a public key instead, and would mean shipping a public signup
+        // endpoint for anybody to POST to at any volume.
+        authorization: `Klaviyo-API-Key ${apiKey}`,
+      },
       body: JSON.stringify({
-        email,
-        source,
-        submittedAt: new Date().toISOString(),
+        data: {
+          type: "profile-subscription-bulk-create-job",
+          attributes: {
+            profiles: {
+              data: [
+                {
+                  type: "profile",
+                  attributes: {
+                    email,
+                    subscriptions: {
+                      // SUBSCRIBED, and what that means is set on the list
+                      // rather than here: with double opt-in switched on in
+                      // Klaviyo this asks for a confirmation mail and the
+                      // profile stays pending until they click it. Which is
+                      // what the form already says — "watch your inbox" is
+                      // true either way.
+                      email: { marketing: { consent: "SUBSCRIBED" } },
+                    },
+                  },
+                },
+              ],
+            },
+            // Where the consent came from, verbatim off the form. It lands on
+            // the consent record as the custom method detail, which is what
+            // Klaviyo's segment builder filters subscription method on — so
+            // `store-hold` and `fight-pass-hold` stay separable inside one
+            // audience instead of needing a list each.
+            //
+            // Not a profile property, because this endpoint takes none, and
+            // because a property would be overwritten by whichever page
+            // somebody signed up from last. A consent record is dated and
+            // kept; "where this address came from" is a fact about an event,
+            // not about a person.
+            custom_source: source,
+            // Nothing historical here — every one of these is somebody
+            // pressing a button right now, so Klaviyo stamps the consent
+            // itself and the opt-in mail goes out. Setting it true is how a
+            // migration skips both, and it would silently skip them here too.
+            historical_import: false,
+          },
+          relationships: {
+            list: { data: { type: "list", id: listId } },
+          },
+        },
       }),
       signal: AbortSignal.timeout(TIMEOUT_MS),
     });
 
-    if (!response.ok) {
-      console.error(`[signup] webhook returned ${response.status}`);
+    /* 202, not 200: it is a job, and Klaviyo takes it rather than completing
+       it on the call. `response.ok` would also pass a 200 or a 204, neither of
+       which this endpoint returns — anything but a 202 means the request was
+       not what it expected and is worth a log. */
+    if (response.status !== 202) {
+      console.error(
+        `[signup] klaviyo refused: ${await describeFailure(response)}`,
+      );
       return { status: "error", message: GENERIC_FAILURE };
     }
   } catch (error) {
     // The address itself stays out of the log: it is somebody's personal data
     // and it is not what went wrong.
-    console.error("[signup] webhook failed", error);
-    return { status: "error", message: GENERIC_FAILURE };
-  }
-
-  return { status: "ok" };
-}
-
-/* ---------------------------------------------------------------------------
-   Fighter applications
---------------------------------------------------------------------------- */
-
-export type ApplyState =
-  { status: "idle" } | { status: "ok" } | { status: "error"; message: string };
-
-/**
- * Its own endpoint, not the signup's.
- *
- * An address on a list and somebody asking to be put on a card are different
- * records with different lifetimes, and merging them means whoever owns the
- * mailing list also owns a stack of applications they cannot act on. Falls
- * back to nothing rather than to SIGNUP_WEBHOOK_URL — a wrong destination is
- * worse than a refused submission, because nobody finds out.
- */
-const APPLY_ENDPOINT = "APPLICATION_WEBHOOK_URL";
-
-/** Room for a paragraph, not for a payload. */
-const MAX_FIELD = 2000;
-
-/**
- * Which boxes the server insists on, independent of the client.
- *
- * The steps in `content/fight-apply.ts` are what the form renders and what it
- * checks on the way through; this is the same list said again on the far side
- * of the network, because the first one is advice and this one is the rule.
- * Kept here rather than imported so a "use server" module has no reason to
- * pull a client-side content file into the server bundle.
- */
-const REQUIRED = [
-  "fullName",
-  "email",
-  "phone",
-  "age",
-  "nationality",
-  "division",
-  "gym",
-] as const;
-
-export async function submitFightApplication(
-  _previous: ApplyState,
-  formData: FormData,
-): Promise<ApplyState> {
-  // The same honeypot the signup carries, answered the same way.
-  if (String(formData.get("company") ?? "") !== "") {
-    return { status: "ok" };
-  }
-
-  const entries: Record<string, string> = {};
-
-  for (const [key, value] of formData.entries()) {
-    if (key === "company" || typeof value !== "string") continue;
-    const trimmed = value.trim();
-    if (trimmed === "") continue;
-    if (trimmed.length > MAX_FIELD) {
-      return {
-        status: "error",
-        message: "One of those answers is longer than we can take.",
-      };
-    }
-    entries[key] = trimmed;
-  }
-
-  const email = (entries.email ?? "").toLowerCase();
-
-  if (email.length > MAX_LENGTH || !EMAIL.test(email)) {
-    return {
-      status: "error",
-      message: "That does not look like an email address.",
-    };
-  }
-  entries.email = email;
-
-  if (REQUIRED.some((name) => !entries[name])) {
-    return {
-      status: "error",
-      message: "Something required is missing. Step back and check.",
-    };
-  }
-
-  const endpoint = process.env[APPLY_ENDPOINT];
-
-  if (!endpoint) {
-    /* Same latitude as the signup, and the same reason: never answer "we have
-       it" to an application that went nowhere, except in development, where
-       succeeding is what lets the form be built at all. */
-    if (process.env.NODE_ENV === "development") {
-      console.info(
-        `[apply] ${email} — ${APPLY_ENDPOINT} is unset, not sent`,
-        entries,
-      );
-      return { status: "ok" };
-    }
-
-    console.error(`[apply] ${APPLY_ENDPOINT} is not set — application refused`);
-    return { status: "error", message: GENERIC_FAILURE };
-  }
-
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        ...entries,
-        source: "fight-apply",
-        submittedAt: new Date().toISOString(),
-      }),
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
-
-    if (!response.ok) {
-      console.error(`[apply] webhook returned ${response.status}`);
-      return { status: "error", message: GENERIC_FAILURE };
-    }
-  } catch (error) {
-    // Nothing of the application in the log — it is somebody's personal data
-    // and it is not what went wrong.
-    console.error("[apply] webhook failed", error);
+    console.error("[signup] klaviyo unreachable", error);
     return { status: "error", message: GENERIC_FAILURE };
   }
 
